@@ -3,6 +3,9 @@
 #include <string>
 #include <vector>
 
+#include <vec2.hpp>
+#include <vec3.hpp>
+
 #include "display.h"
 
 #include "savefiles.h"
@@ -11,7 +14,7 @@
 
 display main_display;
 
-bool opengl_context() {
+bool opengl_context(int argc, char * argv[]) {
 	if (!glfwInit()) {
 		std::cout << "GLFW Error" << std::endl;
 		return false;
@@ -27,6 +30,7 @@ bool opengl_context() {
 		std::cout << "GLEW Error" << std::endl;
 		return false;
 	}
+	glutInit(&argc, argv);
 	return true;
 }
 
