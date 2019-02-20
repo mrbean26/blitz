@@ -8,6 +8,8 @@ public:
 	std::string button_name = "";
 
 	bool clicked = false;
+
+	texture used_texture;
 };
 
 std::vector<button> all_buttons;
@@ -30,11 +32,13 @@ public:
 	glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 
 	void *font = GLUT_STROKE_ROMAN;//
+
+	glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
 };
 
 void draw_text(const char * display_text, glm::vec2 position,
 	void *font, display used_display, int length,
-		glm::vec2 scale, glm::vec3 rotation) {
+		glm::vec2 scale, glm::vec3 rotation, glm::vec3 color) {
 	glMatrixMode(GL_PROJECTION);
 	double *matrix = new double[16];
 	glGetDoublev(GL_PROJECTION_MATRIX, matrix);
@@ -48,6 +52,7 @@ void draw_text(const char * display_text, glm::vec2 position,
 	glTranslatef(position.x, position.y, 0.0f);
 	glScalef(scale.x, scale.y, 1.0f);
 	glRotatef(1.0f, rotation.x, rotation.y, rotation.z);
+	glColor3f(color.x, color.y, color.z);
 	for (int i = 0; i < length; i++) {
 		glutStrokeCharacter(font, (int)display_text[i]);
 	}
@@ -55,6 +60,7 @@ void draw_text(const char * display_text, glm::vec2 position,
 	glMatrixMode(GL_PROJECTION);
 	glLoadMatrixd(matrix);
 	glMatrixMode(GL_MODELVIEW);
+	glColor3f(1.0f, 1.0f, 1.0f);
 }
 
 std::vector<text> all_texts;
@@ -85,8 +91,8 @@ public:
 			button current_button = all_buttons[i];
 			glBegin(GL_QUADS);
 			glVertex3f(current_button.position.x-current_button.scale.x,
-					current_button.position.y-current_button.scale.y, 
-						current_button.position.x);
+				current_button.position.y-current_button.scale.y, 
+				current_button.position.z);
 			glVertex3f(current_button.position.x - current_button.scale.x,
 				current_button.position.y + current_button.scale.y,
 				current_button.position.z);
@@ -140,7 +146,7 @@ public:
 			text current_text = all_texts[i];
 			draw_text(current_text.displayed_text.data(), current_text.position,
 				current_text.font, used_display, current_text.displayed_text.length(),
-					current_text.scale, current_text.rotation);
+					current_text.scale, current_text.rotation, current_text.color);
 		}
 	}
 	void interface_mainloop(display used_display) {
