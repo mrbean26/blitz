@@ -8,11 +8,15 @@
 
 GLFWwindow * window;
 
+#include "shader.h"
+#include "texture.h"
 #include "interface.h"
-
-
 
 void backendMainloop() {
 	interfaceMainloop();
+}
+
+void backendBegin() {
+	interfaceBegin();
 }
 

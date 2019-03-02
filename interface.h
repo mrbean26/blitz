@@ -5,6 +5,11 @@ public:
 	float rotation = 0.0f;
 
 	bool clicked = false;
+
+	texture texture;
+
+	unsigned int vertexArray, vertexArrayTwo;
+	unsigned int vertexBuffer, vertexBufferTwo;
 };
 
 std::vector<button> allButtons;
@@ -21,22 +26,22 @@ void renderButtons() {
 	int buttonCount = allButtons.size();
 	for (int i = 0; i < buttonCount; i++) {
 		button currentButton = allButtons[i];
-		glm::vec3 position = currentButton.position;
-		float rotation = currentButton.rotation;
 		glm::vec2 scale = currentButton.scale;
+		glm::vec3 position = currentButton.position;
 		//setup matrix
+		glPushMatrix();
 		glLoadIdentity();
 		glOrtho(0.0, aspect_x, 0.0, aspect_y, -1.0, 1.0);
 		glTranslatef(position.x, position.y, position.z);
-		glRotated(rotation, 0.0, 0.0, 1.0);
 		glScalef(scale.x, scale.y, 1.0f);
-		//draw quad
-		glBegin(GL_QUADS);
-		glVertex2f(-1.0f, -1.0f);
-		glVertex2f(-1.0f, 1.0f);
-		glVertex2f(1.0f, 1.0f);
-		glVertex2f(1.0f, -1.0f);
-		glEnd();
+		//draw
+		glBindVertexArray(currentButton.vertexArray);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindVertexArray(currentButton.vertexArrayTwo);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindVertexArray(0);
+		//reset matrix
+		glPopMatrix();
 	}
 }
 
@@ -88,6 +93,50 @@ void registerClicks() {
 		}
 	}
 	lastClick = true;
+}
+
+void buttonsBegin() {
+	float buttonVertices[] = {
+		-1.0f, -1.0f, 0.0f,
+		-1.0f, 1.0f, 0.0f,
+		1.0f, 1.0f, 0.0f
+	};
+	float buttonVerticesTwo[] = {
+		-1.0f, -1.0f, 0.0f,
+		1.0f, -1.0f, 0.0f,
+		1.0f, 1.0f, 0.0f
+	};
+	int buttonCount = allButtons.size();
+	for (int i = 0; i < buttonCount; i++) {
+		//first triangle
+		glGenVertexArrays(1, &allButtons[i].vertexArray);
+		glGenBuffers(1, &allButtons[i].vertexBuffer);
+		glBindVertexArray(allButtons[i].vertexArray);
+		glBindBuffer(GL_ARRAY_BUFFER, allButtons[i].vertexBuffer);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(buttonVertices),
+			buttonVertices, GL_STATIC_DRAW);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 
+			3 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+		//second triangle
+		glGenVertexArrays(1, &allButtons[i].vertexArrayTwo);
+		glGenBuffers(1, &allButtons[i].vertexBufferTwo);
+		glBindVertexArray(allButtons[i].vertexArrayTwo);
+		glBindBuffer(GL_ARRAY_BUFFER, allButtons[i].vertexBufferTwo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(buttonVerticesTwo),
+			buttonVerticesTwo, GL_STATIC_DRAW);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
+			3 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
+}
+
+void interfaceBegin() {
+	buttonsBegin();
 }
 
 void interfaceMainloop() {
