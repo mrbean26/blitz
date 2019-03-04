@@ -8,8 +8,8 @@ public:
 
 	texture texture;
 
-	unsigned int vertexArray, vertexArrayTwo;
-	unsigned int vertexBuffer, vertexBufferTwo;
+	unsigned int vertexArray;
+	unsigned int vertexBuffer, elementBuffer;
 };
 
 std::vector<button> allButtons;
@@ -22,26 +22,17 @@ int createButton() {
 	return buttonCount;
 }
 
+unsigned int buttonTextureShader;
+
 void renderButtons() {
 	int buttonCount = allButtons.size();
 	for (int i = 0; i < buttonCount; i++) {
 		button currentButton = allButtons[i];
-		glm::vec2 scale = currentButton.scale;
-		glm::vec3 position = currentButton.position;
-		//setup matrix
-		glPushMatrix();
-		glLoadIdentity();
-		glOrtho(0.0, aspect_x, 0.0, aspect_y, -1.0, 1.0);
-		glTranslatef(position.x, position.y, position.z);
-		glScalef(scale.x, scale.y, 1.0f);
-		//draw
+		enableTexture(currentButton.texture); 
+		glUseProgram(buttonTextureShader);
 		glBindVertexArray(currentButton.vertexArray);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		glBindVertexArray(currentButton.vertexArrayTwo);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		glBindVertexArray(0);
-		//reset matrix
-		glPopMatrix();
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 }
 
@@ -63,6 +54,11 @@ void registerClicks() {
 		clickedDown = false;
 		lastClick = false;
 	}
+	//reset
+	int buttonCount = allButtons.size();
+	for (int i = 0; i < buttonCount; i++) {
+		allButtons[i].clicked = false;
+	}
 	//check for button input
 	if (!clickDown()) {
 		return;
@@ -70,7 +66,7 @@ void registerClicks() {
 	//mouse pos
 	double mouseX, mouseY;
 	glfwGetCursorPos(window, &mouseX, &mouseY);
-	int buttonCount = allButtons.size();
+	
 	for (int i = 0; i < buttonCount; i++) {
 		//button
 		button currentButton = allButtons[i];
@@ -96,43 +92,49 @@ void registerClicks() {
 }
 
 void buttonsBegin() {
-	float buttonVertices[] = {
-		-1.0f, -1.0f, 0.0f,
-		-1.0f, 1.0f, 0.0f,
-		1.0f, 1.0f, 0.0f
-	};
-	float buttonVerticesTwo[] = {
-		-1.0f, -1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f,
-		1.0f, 1.0f, 0.0f
-	};
 	int buttonCount = allButtons.size();
 	for (int i = 0; i < buttonCount; i++) {
-		//first triangle
+		button currentButton = allButtons[i];
+		glm::vec3 position = currentButton.position;
+		glm::vec2 scale = currentButton.scale;
+		float vertices[] = {
+			// positions then colors then texture coords
+			 position.x + scale.x, position.y + scale.y, position.z, 
+			 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 
+			 position.x + scale.x, position.y - scale.y, position.z, 
+			 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+			 position.x - scale.x, position.y - scale.y, position.z, 
+			 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+			 position.x - scale.x, position.y + scale.y, position.z, 
+			 1.0f, 1.0f, 0.0f, 0.0f, 1.0f
+		};
+		unsigned int indices[] = {
+			0, 1, 3, // first triangle
+			1, 2, 3  // second triangle
+		};
 		glGenVertexArrays(1, &allButtons[i].vertexArray);
 		glGenBuffers(1, &allButtons[i].vertexBuffer);
+		glGenBuffers(1, &allButtons[i].elementBuffer);
 		glBindVertexArray(allButtons[i].vertexArray);
 		glBindBuffer(GL_ARRAY_BUFFER, allButtons[i].vertexBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(buttonVertices),
-			buttonVertices, GL_STATIC_DRAW);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 
-			3 * sizeof(float), (void*)0);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, allButtons[i].elementBuffer);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+		// position attribute
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-		//second triangle
-		glGenVertexArrays(1, &allButtons[i].vertexArrayTwo);
-		glGenBuffers(1, &allButtons[i].vertexBufferTwo);
-		glBindVertexArray(allButtons[i].vertexArrayTwo);
-		glBindBuffer(GL_ARRAY_BUFFER, allButtons[i].vertexBufferTwo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(buttonVerticesTwo),
-			buttonVerticesTwo, GL_STATIC_DRAW);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
-			3 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
+		// color attribute
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(1);
+		// texture coord attribute
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+		glEnableVertexAttribArray(2);
 	}
+	//create shader
+	int vertexShader, fragmentShader;
+	vertexShader = createShader(textureVertSource, GL_VERTEX_SHADER);
+	fragmentShader = createShader(textureFragSource, GL_FRAGMENT_SHADER);
+	buttonTextureShader = createProgram({ vertexShader, fragmentShader });
 }
 
 void interfaceBegin() {

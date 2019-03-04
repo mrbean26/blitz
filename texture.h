@@ -3,38 +3,28 @@
 
 class texture {
 public:
-	GLuint textureId = 0;
+	unsigned int textureId;
 	int width, height;
+	int channels;
 	unsigned char * data;
 };
 
-void loadTexture(const char * texturePath, texture& newTexture) {
-	int width, height, channels;
-	unsigned char * data = stbi_load(texturePath, &width, &height, &channels, STBI_rgb_alpha);
-	if (!data) {
-		std::cout << "Texture File: " << texturePath << "cannot be found." << std::endl;
-		return;
-	}
-	GLuint textureId;
-	glGenTextures(1, &textureId);
-	newTexture.textureId = textureId;
-	newTexture.width = width;
-	newTexture.height = height;
-	newTexture.data = data;
+texture loadTexture(const char * filePath) {
+	texture newTexture;
+	glGenTextures(1, &newTexture.textureId);
+	newTexture.data = stbi_load(filePath, &newTexture.width,
+		&newTexture.height, &newTexture.channels, STBI_rgb_alpha);
+	if (!newTexture.data) 
+		std::cout << "File cannot be found: " << filePath << std::endl;
+	return newTexture;
 }
 
 void enableTexture(texture usedTexture) {
 	glBindTexture(GL_TEXTURE_2D, usedTexture.textureId);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, usedTexture.width, 
+	// set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, usedTexture.width,
 		usedTexture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, usedTexture.data);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_TEXTURE_GEN_T);
-	glEnable(GL_TEXTURE_GEN_R);
-	glEnable(GL_TEXTURE_GEN_S);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glGenerateMipmap(GL_TEXTURE_2D);
 }
