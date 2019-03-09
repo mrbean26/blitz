@@ -1,11 +1,14 @@
 #include <glew.h>
 #include <glfw3.h>
 
-int aspect_x = 0;
-int aspect_y = 0;
+double aspect_x = 0;
+double aspect_y = 0;
 
 int display_y = 0;
 int display_x = 0;
+
+double frames = 0.0;
+double frameTime = 0.0;
 
 int aspectDivider(int x, int y) {
 	int max = x;
@@ -57,15 +60,17 @@ bool openglBegin(GLFWwindow* &used_window, bool fullscreen,
 	display_x = used_x;
 	display_y = used_y;
 	//get aspect ratio
-	int max = used_x;
-	if (used_y > used_x) {
-		max = used_y;
-	}
-	int aspect_x = used_x / aspectDivider(used_x, used_y);
-	int aspect_y = used_y / aspectDivider(used_x, used_y);
-	glOrtho(0.0, aspect_x, 0.0, aspect_y, -1.0, 1.0);
+	aspect_x = used_x / aspectDivider(used_x, used_y); //gives 16:10
+	aspect_y = used_y / aspectDivider(used_x, used_y);
+	//give 10:x
+	double divider = aspect_x / 10.0;
+	aspect_x = aspect_x / divider;
+	aspect_y = aspect_y / divider;
+	//glOrtho(0.0, aspect_x, 0.0, aspect_y, -1.0, 1.0);
 	glfwSetWindowSizeLimits(used_window, used_x, used_y,
 		used_x, used_y);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	return true;
 }
 
@@ -81,4 +86,17 @@ void resizeWindow(GLFWwindow* &used_window,
 		window_y);
 	int aspect_y = window_y / aspectDivider(window_x,
 		window_y);
+}
+
+double deltaTime = 0.0;
+double lastTime = 0.0;
+double getFrames() {
+	double currentTime = glfwGetTime();
+	deltaTime = currentTime - lastTime;
+	lastTime = currentTime;
+	return 1.0 / deltaTime;
+}
+
+void displayMainloop() {
+	frames = getFrames();
 }

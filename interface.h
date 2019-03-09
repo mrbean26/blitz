@@ -1,15 +1,23 @@
+using namespace glm;
+using namespace std;
+
 class button {
 public:
-	glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec2 scale = glm::vec2(1.0f, 1.0f);
+	vec3 position = vec3(0.0f, 0.0f, 0.0f);
+	vec2 scale = vec2(1.0f, 1.0f);
 	float rotation = 0.0f;
 
 	bool clicked = false;
+	bool interactive = true;
+	bool mouseOver = false;
 
 	texture texture;
 
 	unsigned int vertexArray;
 	unsigned int vertexBuffer, elementBuffer;
+
+	vec3 colour = vec3(1.0f, 1.0f, 1.0f);
+	float alpha = 1.0f;
 };
 
 std::vector<button> allButtons;
@@ -28,10 +36,24 @@ void renderButtons() {
 	int buttonCount = allButtons.size();
 	for (int i = 0; i < buttonCount; i++) {
 		button currentButton = allButtons[i];
+		//make button bigger if mouse is over it
+		glMatrixMode(GL_MODELVIEW);
+		if (currentButton.mouseOver) {
+			
+		}
+		float modelviewMatrix[16];
+		glGetFloatv(GL_MODELVIEW_MATRIX, modelviewMatrix);
+		int matrixLocation = glGetUniformLocation(buttonTextureShader, "modelviewMatrix");
+		glUniformMatrix4fv(matrixLocation, 1, GL_FALSE, modelviewMatrix);
+		//texture color
+		int colourLocation = glGetUniformLocation(buttonTextureShader, "textureColour");
+		vec3 color = currentButton.colour;
+		glUniform4f(colourLocation, color.x, color.y, color.z, currentButton.alpha);
+		//draw
 		enableTexture(currentButton.texture); 
 		glUseProgram(buttonTextureShader);
 		glBindVertexArray(currentButton.vertexArray);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); //if an error is being shown here for memory, shapes are being created before backendBegin()
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 }
@@ -59,44 +81,63 @@ void registerClicks() {
 	for (int i = 0; i < buttonCount; i++) {
 		allButtons[i].clicked = false;
 	}
-	//check for button input
-	if (!clickDown()) {
-		return;
-	}
 	//mouse pos
 	double mouseX, mouseY;
 	glfwGetCursorPos(window, &mouseX, &mouseY);
-	
 	for (int i = 0; i < buttonCount; i++) {
 		//button
 		button currentButton = allButtons[i];
-		glm::vec3 buttonPosition = currentButton.position;
-		glm::vec2 buttonScale = currentButton.scale;
+		vec3 buttonPosition = currentButton.position;
+		vec2 buttonScale = currentButton.scale;
+		buttonScale.y *= 2;
 		//vertex coords
-		int maxX, maxY;
-		int minX, minY;
-		int aspectMultiplier = aspectDivider(display_x, display_y);
-		maxX = (aspectMultiplier * buttonPosition.x) + (aspectMultiplier * buttonScale.x);
-		maxY = (aspectMultiplier * buttonPosition.y) + (aspectMultiplier * buttonScale.y);
-		minX = (aspectMultiplier * buttonPosition.x) - (aspectMultiplier * buttonScale.x);
-		minY = (aspectMultiplier * buttonPosition.y) - (aspectMultiplier * buttonScale.y);
-		mouseY = display_y - mouseY;
+		float maxX=0, maxY=0;
+		float minX=0, minY=0;
+	
+		float middleScreen[2] = { (float)display_x / 2, (float)display_y / 2 };
+		float scaleJump[2] = { (float)display_x / 10, (float)display_y / (float)aspect_y };
+		minX = middleScreen[0] - (scaleJump[0] * buttonScale.x);
+		maxX = middleScreen[0] + (scaleJump[0] * buttonScale.x);
+		minY = middleScreen[1] - (scaleJump[1] * (buttonScale.y / 2));
+		maxY = middleScreen[1] + (scaleJump[1] * (buttonScale.y / 2));
+
+		float positionDivided[2] = { (float)display_x / 10, (float)display_y / (float)aspect_y };
+		minX += positionDivided[0] * buttonPosition.x;
+		maxX += positionDivided[0] * buttonPosition.x;
+
+		double yDivided = (double)display_y / aspect_y;
+		minY -= (float)yDivided * buttonPosition.y;
+		maxY -= (float)yDivided * buttonPosition.y;
+
 		//check for click
+		allButtons[i].mouseOver = false;
 		if (mouseX >= minX && mouseX <= maxX) {
 			if (mouseY >= minY && mouseY <= maxY) {
-				allButtons[i].clicked = true;
+				if (clickDown()) {
+					allButtons[i].clicked = true;
+				}
+				if (currentButton.interactive) {
+					allButtons[i].mouseOver = true;
+				}
 			}
 		}
 	}
-	lastClick = true;
+	if (clickDown()) {
+		lastClick = true;
+	}
 }
 
 void buttonsBegin() {
 	int buttonCount = allButtons.size();
+	vec2 twoMultiplier = vec2(2.0f, 2.0f);
+	vec2 buttonRescale = vec2(1.0f / (float)aspect_x, 1.0f / (float)aspect_y);
+	//position
 	for (int i = 0; i < buttonCount; i++) {
 		button currentButton = allButtons[i];
-		glm::vec3 position = currentButton.position;
-		glm::vec2 scale = currentButton.scale;
+		vec3 position = currentButton.position / vec3((float)aspect_x, 
+			(float)aspect_y, 1.0f);
+		position = position * vec3(twoMultiplier, 1.0f);
+		vec2 scale = currentButton.scale * buttonRescale * twoMultiplier;
 		float vertices[] = {
 			// positions then colors then texture coords
 			 position.x + scale.x, position.y + scale.y, position.z, 

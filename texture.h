@@ -1,6 +1,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+using namespace std;
+
 class texture {
 public:
 	unsigned int textureId;
@@ -15,7 +17,7 @@ texture loadTexture(const char * filePath) {
 	newTexture.data = stbi_load(filePath, &newTexture.width,
 		&newTexture.height, &newTexture.channels, STBI_rgb_alpha);
 	if (!newTexture.data) 
-		std::cout << "File cannot be found: " << filePath << std::endl;
+		cout << "File cannot be found: " << filePath << endl;
 	return newTexture;
 }
 
