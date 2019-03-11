@@ -5,9 +5,8 @@ class button {
 public:
 	vec3 position = vec3(0.0f, 0.0f, 0.0f);
 	vec2 scale = vec2(1.0f, 1.0f);
-	float rotation = 0.0f;
 
-	bool clicked = false;
+	bool clickUp, clickDown;
 	bool interactive = true;
 	bool mouseOver = false;
 
@@ -34,13 +33,30 @@ unsigned int buttonTextureShader;
 
 void renderButtons() {
 	int buttonCount = allButtons.size();
+	vec2 rescale = vec2(2.0f, 2.0f);
+	vec2 aspectRatio = vec2(aspect_x, aspect_y);
 	for (int i = 0; i < buttonCount; i++) {
 		button currentButton = allButtons[i];
+		vec2 scale = currentButton.scale * rescale;
+		vec3 position = currentButton.position;
+		scale = scale / aspectRatio;
 		//make button bigger if mouse is over it
 		glMatrixMode(GL_MODELVIEW);
-		if (currentButton.mouseOver) {
-			
+		glLoadIdentity();
+		if (currentButton.mouseOver && currentButton.interactive) {
+			position *= vec3(0.95f, 0.95f, 1.0f);
+			scale *= vec2(1.05f, 1.05f);
 		}
+		if (currentButton.clickDown && currentButton.interactive) {
+			scale *= vec2(0.95f, 0.95f);
+			position *= vec3(1.05f, 1.05f, 1.0f);
+		}
+		//rescale the matrix and send position info to shader
+		glScalef(scale.x, scale.y, 1.0f);
+		int shaderButtonPosition = glGetUniformLocation(buttonTextureShader, "buttonPos");
+		glUniform3f(shaderButtonPosition, position.x,
+			position.y, position.z);
+		//update position, scale and rotation info ready for the shader to use
 		float modelviewMatrix[16];
 		glGetFloatv(GL_MODELVIEW_MATRIX, modelviewMatrix);
 		int matrixLocation = glGetUniformLocation(buttonTextureShader, "modelviewMatrix");
@@ -60,12 +76,6 @@ void renderButtons() {
 
 bool clickedDown = false;
 bool lastClick = false;
-bool clickDown() {
-	if(clickedDown && !lastClick){
-		return true;
-	}
-	return false;
-}
 
 void registerClicks() {
 	int mouseState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
@@ -74,17 +84,17 @@ void registerClicks() {
 	}
 	else {
 		clickedDown = false;
-		lastClick = false;
 	}
 	//reset
 	int buttonCount = allButtons.size();
 	for (int i = 0; i < buttonCount; i++) {
-		allButtons[i].clicked = false;
+		allButtons[i].clickUp = false;
 	}
 	//mouse pos
 	double mouseX, mouseY;
 	glfwGetCursorPos(window, &mouseX, &mouseY);
 	for (int i = 0; i < buttonCount; i++) {
+		allButtons[i].clickDown = false;
 		//button
 		button currentButton = allButtons[i];
 		vec3 buttonPosition = currentButton.position;
@@ -113,8 +123,11 @@ void registerClicks() {
 		allButtons[i].mouseOver = false;
 		if (mouseX >= minX && mouseX <= maxX) {
 			if (mouseY >= minY && mouseY <= maxY) {
-				if (clickDown()) {
-					allButtons[i].clicked = true;
+				if (clickedDown) {
+					allButtons[i].clickDown = true;
+				}
+				if (lastClick && !clickedDown) {
+					allButtons[i].clickUp = true;
 				}
 				if (currentButton.interactive) {
 					allButtons[i].mouseOver = true;
@@ -122,9 +135,7 @@ void registerClicks() {
 			}
 		}
 	}
-	if (clickDown()) {
-		lastClick = true;
-	}
+	lastClick = clickedDown;
 }
 
 void buttonsBegin() {
@@ -140,13 +151,13 @@ void buttonsBegin() {
 		vec2 scale = currentButton.scale * buttonRescale * twoMultiplier;
 		float vertices[] = {
 			// positions then colors then texture coords
-			 position.x + scale.x, position.y + scale.y, position.z, 
+			 1.0f, 1.0f, 0.0f, 
 			 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 
-			 position.x + scale.x, position.y - scale.y, position.z, 
+			 1.0f, -1.0f, 0.0f, 
 			 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-			 position.x - scale.x, position.y - scale.y, position.z, 
+			 -1.0f, -1.0f, 0.0f, 
 			 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-			 position.x - scale.x, position.y + scale.y, position.z, 
+			 -1.0f, 1.0f, 0.0f, 
 			 1.0f, 1.0f, 0.0f, 0.0f, 1.0f
 		};
 		unsigned int indices[] = {

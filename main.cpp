@@ -6,10 +6,8 @@ int main(){
 	if (!openglBegin(window, false, 1280, 720)) {
 		return -1;
 	}
-
 	frontendBegin();
 	backendBegin();
-
 	while (!glfwWindowShouldClose(window)){
 		glClear(GL_COLOR_BUFFER_BIT);
 

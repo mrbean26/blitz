@@ -6,8 +6,10 @@ const char * textureVertSource = {
 	"layout(location = 2) in vec2 aTexCoord;\n"
 	"out vec2 TexCoord;\n"
 	"uniform mat4 modelviewMatrix;\n"
+	"uniform vec3 buttonPos;\n"
 	"void main(){\n"
-	"	gl_Position = vec4(aPos, 1.0) * modelviewMatrix;\n"
+	"   vec3 changedPos = vec3(aPos.x+buttonPos.x, aPos.y+buttonPos.y, aPos.z+buttonPos.z);\n"
+	"	gl_Position = vec4(changedPos, 1.0) * modelviewMatrix;\n"
 	"	TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
 	"}\0"
 };
@@ -28,9 +30,11 @@ int createShader(const char * shaderSource, GLenum shaderType) {
 	glShaderSource(newShader, 1, &shaderSource, NULL);
 	glCompileShader(newShader);
 	int compileResult;//
+	char infoLog[512];
 	glGetShaderiv(newShader, GL_COMPILE_STATUS, &compileResult);
 	if (!compileResult) {
-		cout << "Shader compilation error." << endl;
+		glGetShaderInfoLog(newShader, 512, NULL, infoLog);
+		cout << "Shader compilation error: " << infoLog << endl;
 		return 0;
 	}
 	return newShader;
