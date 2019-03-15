@@ -1,6 +1,6 @@
 using namespace std;
 
-const char * textureVertSource = {
+const char * textureVertSource = { //rendering the texture onto quads (and repositioning them)
 	"#version 330 core\n"
 	"layout(location = 0) in vec3 aPos;\n"
 	"layout(location = 2) in vec2 aTexCoord;\n"
@@ -19,17 +19,17 @@ const char * textureFragSource = {
 	"out vec4 FragColor;\n"
 	"uniform vec4 textureColour = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n"
 	"in vec2 TexCoord;\n"
-	"uniform sampler2D texture1;\n"
+	"uniform sampler2D texture0;\n" //this corresponds to the texture unit (0-31) assigned by using glActiveTexture()
 	"void main(){\n"
-	"	FragColor = texture(texture1, TexCoord) * textureColour;\n"
+	"	FragColor = texture(texture0, TexCoord) * textureColour;\n"
 	"}\0"
 };
 
-int createShader(const char * shaderSource, GLenum shaderType) {
+int createShader(const char * shaderSource, GLenum shaderType) { 
 	int newShader = glCreateShader(shaderType);
 	glShaderSource(newShader, 1, &shaderSource, NULL);
 	glCompileShader(newShader);
-	int compileResult;//
+	int compileResult;
 	char infoLog[512];
 	glGetShaderiv(newShader, GL_COMPILE_STATUS, &compileResult);
 	if (!compileResult) {
@@ -40,7 +40,7 @@ int createShader(const char * shaderSource, GLenum shaderType) {
 	return newShader;
 }
 
-int createProgram(std::vector<int> shaders) {
+int createProgram(std::vector<int> shaders) { //attach shaders
 	int newProgram = glCreateProgram();
 	int shaderCount = shaders.size();
 	for (int i = 0; i < shaderCount; i++) {

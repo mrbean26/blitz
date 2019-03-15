@@ -1,9 +1,9 @@
 #define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include <stb_image.h> //image library
 
 using namespace std;
 
-class texture {
+class texture { //holds all data
 public:
 	unsigned int textureId;
 	int width, height;
@@ -11,7 +11,7 @@ public:
 	unsigned char * data;
 };
 
-texture loadTexture(const char * filePath) {
+texture loadTexture(const char * filePath) { //load from file
 	texture newTexture;
 	glGenTextures(1, &newTexture.textureId);
 	newTexture.data = stbi_load(filePath, &newTexture.width,
@@ -21,7 +21,7 @@ texture loadTexture(const char * filePath) {
 	return newTexture;
 }
 
-void enableTexture(texture usedTexture) {
+void enableTexture(texture usedTexture) { //bind the image to current texture unit
 	glBindTexture(GL_TEXTURE_2D, usedTexture.textureId);
 	// set texture filtering parameters
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

@@ -30,7 +30,7 @@ int aspectDivider(int x, int y) {
 }
 
 bool openglBegin(GLFWwindow* &used_window, bool fullscreen,
-	int width, int height) {
+	int width, int height) { //create window and return an aspect ratio
 	if (!glfwInit()) {
 		return false;
 	}
@@ -90,12 +90,12 @@ void resizeWindow(GLFWwindow* &used_window,
 
 double deltaTime = 0.0;
 double lastTime = 0.0;
-double getFrames() {
+double getFrames() { //get time between frames and return fps
 	double currentTime = glfwGetTime();
 	deltaTime = currentTime - lastTime;
 	lastTime = currentTime;
 	return 1.0 / deltaTime;
-}
+} //WHEN USING THIS, USE frames AS AN OUTPUT, NOT THIS FUNCTION
 
 void displayMainloop() {
 	frames = getFrames();

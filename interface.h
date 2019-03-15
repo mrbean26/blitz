@@ -3,10 +3,13 @@ using namespace std;
 
 class button {
 public:
+	string name = "New Button";
+
 	vec3 position = vec3(0.0f, 0.0f, 0.0f);
 	vec2 scale = vec2(1.0f, 1.0f);
 
 	bool clickUp, clickDown;
+
 	bool interactive = true;
 	bool mouseOver = false;
 
@@ -17,11 +20,13 @@ public:
 
 	vec3 colour = vec3(1.0f, 1.0f, 1.0f);
 	float alpha = 1.0f;
+
+	bool active = true;
 };
 
 std::vector<button> allButtons;
 
-int createButton() {
+int createButton() { //return position of newbutton in array
 	button newButton;
 	int buttonCount = allButtons.size();
 	allButtons.resize(buttonCount + 1);
@@ -37,6 +42,9 @@ void renderButtons() {
 	vec2 aspectRatio = vec2(aspect_x, aspect_y);
 	for (int i = 0; i < buttonCount; i++) {
 		button currentButton = allButtons[i];
+		if (!currentButton.active) {
+			continue;
+		}
 		vec2 scale = currentButton.scale * rescale;
 		vec3 position = currentButton.position;
 		scale = scale / aspectRatio;
@@ -66,11 +74,16 @@ void renderButtons() {
 		vec3 color = currentButton.colour;
 		glUniform4f(colourLocation, color.x, color.y, color.z, currentButton.alpha);
 		//draw
-		enableTexture(currentButton.texture); 
 		glUseProgram(buttonTextureShader);
+		glActiveTexture(GL_TEXTURE0 + i);
+		enableTexture(currentButton.texture);
+
+		//set texture for shader
+		int shaderTextureLocation = glGetUniformLocation(buttonTextureShader, "texture0");
+		glUniform1i(shaderTextureLocation, i);
+
 		glBindVertexArray(currentButton.vertexArray);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); //if an error is being shown here for memory, shapes are being created before backendBegin()
-		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 }
 
@@ -94,31 +107,33 @@ void registerClicks() {
 	double mouseX, mouseY;
 	glfwGetCursorPos(window, &mouseX, &mouseY);
 	for (int i = 0; i < buttonCount; i++) {
+		if (!allButtons[i].active) {
+			continue;
+		}
 		allButtons[i].clickDown = false;
 		//button
 		button currentButton = allButtons[i];
 		vec3 buttonPosition = currentButton.position;
 		vec2 buttonScale = currentButton.scale;
-		buttonScale.y *= 2;
 		//vertex coords
-		float maxX=0, maxY=0;
-		float minX=0, minY=0;
-	
-		float middleScreen[2] = { (float)display_x / 2, (float)display_y / 2 };
-		float scaleJump[2] = { (float)display_x / 10, (float)display_y / (float)aspect_y };
-		minX = middleScreen[0] - (scaleJump[0] * buttonScale.x);
-		maxX = middleScreen[0] + (scaleJump[0] * buttonScale.x);
-		minY = middleScreen[1] - (scaleJump[1] * (buttonScale.y / 2));
-		maxY = middleScreen[1] + (scaleJump[1] * (buttonScale.y / 2));
-
-		float positionDivided[2] = { (float)display_x / 10, (float)display_y / (float)aspect_y };
-		minX += positionDivided[0] * buttonPosition.x;
-		maxX += positionDivided[0] * buttonPosition.x;
-
-		double yDivided = (double)display_y / aspect_y;
-		minY -= (float)yDivided * buttonPosition.y;
-		maxY -= (float)yDivided * buttonPosition.y;
-
+		int minX=0, maxX=0;
+		int minY=0, maxY=0;
+		//variables required to calculate minimum and maximum mouse positions for buttons to interact
+		double xDivided = display_x / 10;
+		double yDivided = display_y / aspect_y;
+		vec2 midScreen = vec2(display_x / 2, display_y / 2);
+		vec2 positionMultiplied = vec2(buttonPosition.x*buttonScale.x,
+			buttonPosition.y*buttonScale.y);
+		positionMultiplied = vec2(positionMultiplied.x*xDivided, positionMultiplied.y*yDivided);
+		vec2 midButton = vec2(midScreen.x + positionMultiplied.x, midScreen.y + positionMultiplied.y);
+		//x axis
+		float rescaleX = xDivided * buttonScale.x;
+		minX = midButton.x - rescaleX;
+		maxX = midButton.x + rescaleX;
+		//y axis - get axis from scale then pos
+		float midY = midScreen.y - (yDivided * (buttonPosition.y * buttonScale.y));
+		minY = midY - (yDivided * buttonScale.y);
+		maxY = midY + (yDivided * buttonScale.y);
 		//check for click
 		allButtons[i].mouseOver = false;
 		if (mouseX >= minX && mouseX <= maxX) {
@@ -129,16 +144,14 @@ void registerClicks() {
 				if (lastClick && !clickedDown) {
 					allButtons[i].clickUp = true;
 				}
-				if (currentButton.interactive) {
-					allButtons[i].mouseOver = true;
-				}
+				allButtons[i].mouseOver = true;
 			}
 		}
 	}
 	lastClick = clickedDown;
 }
 
-void buttonsBegin() {
+void buttonsBegin() { //attach vertex data to button VAO, VBO & EBO
 	int buttonCount = allButtons.size();
 	vec2 twoMultiplier = vec2(2.0f, 2.0f);
 	vec2 buttonRescale = vec2(1.0f / (float)aspect_x, 1.0f / (float)aspect_y);
