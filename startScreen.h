@@ -43,6 +43,7 @@ public:
 		vector<string> saveLinesOne = readLines("assets/saves/saveOne.save");
 		vec2 createScale = vec2(0.8375f, 0.215f);
 		vec2 playScale = vec2(0.63f, 0.27f);
+		//check if savefiles are used - if true, change texture to "play" and enable delete button
 		if (saveLinesOne[0] == "NOT USED" && playOneTexture != 0) {
 			allButtons[playOneButton].texture = 
 				loadTexture("assets/images/createTitle.png");

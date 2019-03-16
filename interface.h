@@ -1,6 +1,14 @@
 using namespace glm;
 using namespace std;
 
+#include <map>
+#include <glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+//buttons
 class button {
 public:
 	string name = "New Button";
@@ -119,8 +127,8 @@ void registerClicks() {
 		int minX=0, maxX=0;
 		int minY=0, maxY=0;
 		//variables required to calculate minimum and maximum mouse positions for buttons to interact
-		double xDivided = display_x / 10;
-		double yDivided = display_y / aspect_y;
+		float xDivided = (float)display_x / 10.0f;
+		float yDivided = (float)display_y / (float)aspect_y;
 		vec2 midScreen = vec2(display_x / 2, display_y / 2);
 		vec2 positionMultiplied = vec2(buttonPosition.x*buttonScale.x,
 			buttonPosition.y*buttonScale.y);
@@ -132,7 +140,7 @@ void registerClicks() {
 		maxX = midButton.x + rescaleX;
 		//y axis - get axis from scale then pos
 		float midY = midScreen.y - (yDivided * (buttonPosition.y * buttonScale.y));
-		minY = midY - (yDivided * buttonScale.y);
+		minY = midY - ((yDivided * buttonScale.y));
 		maxY = midY + (yDivided * buttonScale.y);
 		//check for click
 		allButtons[i].mouseOver = false;
@@ -202,11 +210,187 @@ void buttonsBegin() { //attach vertex data to button VAO, VBO & EBO
 	buttonTextureShader = createProgram({ vertexShader, fragmentShader });
 }
 
+//texts
+unsigned int textShader;
+GLuint textVAO, textVBO;
+
+struct Character {
+	GLuint TextureID;   // ID handle of the glyph texture
+	ivec2 Size;    // Size of glyph
+	ivec2 Bearing;  // Offset from baseline to left/top of glyph
+	GLuint Advance;    // Horizontal offset to advance to next glyph
+};
+
+class text {
+public:
+	string name = "New Text";
+	string displayedText = "New Text";
+
+	vec2 position = vec2((float)display_x/2.0f,
+		(float)display_y/2.0f);
+	float size = 1.0f;
+	int fontSize = 11;
+
+	const char * fontPath;
+	map<GLchar, Character> fontCharacters;
+	vec3 colour = vec3(1.0f, 1.0f, 1.0f);
+	float alpha = 1.0f;
+
+	bool active = true;
+};
+
+vector<text> allTexts;
+
+int createText() {
+	text newText;
+	int size = allTexts.size();
+	allTexts.resize(size + 1);
+	allTexts[size] = newText;
+	return size;
+}
+
+void textsBegin() {
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	int vertShader = createShader(textVertSource, GL_VERTEX_SHADER);
+	int fragShader = createShader(textFragSource, GL_FRAGMENT_SHADER);
+	textShader = createProgram({ vertShader, fragShader });
+	//shader details
+	mat4 projectionMatrix = ortho(0.0f, static_cast<GLfloat>(display_x),
+		0.0f, static_cast<GLfloat>(display_y));
+	int projectionLocation = glGetUniformLocation(textShader, "projection");
+	glUseProgram(textShader);
+	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, value_ptr(projectionMatrix));
+	//begin freetype
+	FT_Library ftLibrary;
+	if (FT_Init_FreeType(&ftLibrary)) {
+		cout << "Couldn't Init Freetype" << endl;
+		return;
+	}
+	//load fonts
+	int textCount = allTexts.size();
+	for (int i = 0; i < textCount; i++) {
+		text currentText = allTexts[i];
+		FT_Face newFont;
+		if (FT_New_Face(ftLibrary, currentText.fontPath, 0, &newFont)) {
+			cout << "Couldn't load font: " << currentText.fontPath << endl;
+			continue;
+		}
+		FT_Set_Pixel_Sizes(newFont, 0, currentText.fontSize);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		for (GLubyte c = 0; c < 128; c++) { //load first 128 of ASCII
+			if (FT_Load_Char(newFont, c, FT_LOAD_RENDER)){
+				cout << "Couldn't Load Character" << c << endl;
+				continue;
+			}
+			// Generate texture
+			GLuint texture;
+			glGenTextures(1, &texture);
+			glBindTexture(GL_TEXTURE_2D, texture);
+			glTexImage2D(
+				GL_TEXTURE_2D, 0, GL_RED,
+				newFont->glyph->bitmap.width,
+				newFont->glyph->bitmap.rows,
+				0, GL_RED, GL_UNSIGNED_BYTE,
+				newFont->glyph->bitmap.buffer
+			);
+			// Set texture options
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			// Now store character for later use
+			Character character = {
+				texture,
+				glm::ivec2(newFont->glyph->bitmap.width, newFont->glyph->bitmap.rows),
+				glm::ivec2(newFont->glyph->bitmap_left, newFont->glyph->bitmap_top),
+				newFont->glyph->advance.x
+			};
+			allTexts[i].fontCharacters.insert(std::pair<GLchar, Character>(c, character));
+		}
+		FT_Done_Face(newFont);
+	}
+	glBindTexture(GL_TEXTURE_2D, 0);
+	FT_Done_FreeType(ftLibrary);
+	//ready vbo & vao
+	glGenVertexArrays(1, &textVAO);
+	glGenBuffers(1, &textVBO);
+	glBindVertexArray(textVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+}
+
+void renderText(string displayedText, vec2 position, 
+	float size, vec3 colour, map<GLchar, Character> Characters) {
+	glActiveTexture(GL_TEXTURE0);
+	int textureLocation = glGetUniformLocation(textShader, "text");
+	glUniform1i(textureLocation, 0);
+	glUseProgram(textShader);
+	glUniform3f(glGetUniformLocation(textShader, "textColor"), colour.x, colour.y, colour.z);
+	
+	glBindVertexArray(textVAO);
+
+	// Iterate through all characters
+	std::string::const_iterator c;
+	for (c = displayedText.begin(); c != displayedText.end(); c++)
+	{
+		Character ch = Characters[*c];
+
+		GLfloat xpos = position.x + ch.Bearing.x * size;
+		GLfloat ypos = position.y - (ch.Size.y - ch.Bearing.y) * size;
+
+		GLfloat w = ch.Size.x * size;
+		GLfloat h = ch.Size.y * size;
+		// Update VBO for each character
+		GLfloat vertices[6][4] = {
+			{ xpos,     ypos + h,   0.0, 0.0 },
+			{ xpos,     ypos,       0.0, 1.0 },
+			{ xpos + w, ypos,       1.0, 1.0 },
+
+			{ xpos,     ypos + h,   0.0, 0.0 },
+			{ xpos + w, ypos,       1.0, 1.0 },
+			{ xpos + w, ypos + h,   1.0, 0.0 }
+		};
+		// Render glyph texture over quad
+		glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+		// Update content of VBO memory
+		glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // Be sure to use glBufferSubData and not glBufferData
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		// Render quad
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+		position.x += (ch.Advance >> 6) * size; // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+	}
+	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void renderTexts() {
+	int size = allTexts.size();
+	for (int i = 0; i < size; i++) {
+		text currentText = allTexts[i];
+		if (!currentText.active) {
+			continue;
+		}
+		renderText(currentText.displayedText, currentText.position,
+			currentText.size, currentText.colour, currentText.fontCharacters);
+	}
+}
+
+//main internewFont
 void interfaceBegin() {
 	buttonsBegin();
+	textsBegin();
 }
 
 void interfaceMainloop() {
 	renderButtons();
 	registerClicks();
+	renderTexts();
 }
