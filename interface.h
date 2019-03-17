@@ -21,6 +21,9 @@ public:
 	bool interactive = true;
 	bool mouseOver = false;
 
+	float minX;
+	float minY, maxY;
+
 	texture texture;
 
 	unsigned int vertexArray;
@@ -142,6 +145,10 @@ void registerClicks() {
 		float midY = midScreen.y - (yDivided * (buttonPosition.y * buttonScale.y));
 		minY = midY - ((yDivided * buttonScale.y));
 		maxY = midY + (yDivided * buttonScale.y);
+		//add to class
+		allButtons[i].minX = minX;
+		allButtons[i].minY = minY;
+		allButtons[i].maxY = maxY;
 		//check for click
 		allButtons[i].mouseOver = false;
 		if (mouseX >= minX && mouseX <= maxX) {
@@ -226,8 +233,7 @@ public:
 	string name = "New Text";
 	string displayedText = "New Text";
 
-	vec2 position = vec2((float)display_x/2.0f,
-		(float)display_y/2.0f);
+	vec2 position = vec2(1.2f, 0.0f); //center of screen
 	float size = 1.0f;
 	int fontSize = 11;
 
@@ -324,13 +330,14 @@ void textsBegin() {
 	glBindVertexArray(0);
 }
 
-void renderText(string displayedText, vec2 position, 
+void renderText(string displayedText, vec2 position, float alpha,
 	float size, vec3 colour, map<GLchar, Character> Characters) {
 	glActiveTexture(GL_TEXTURE0);
 	int textureLocation = glGetUniformLocation(textShader, "text");
 	glUniform1i(textureLocation, 0);
 	glUseProgram(textShader);
-	glUniform3f(glGetUniformLocation(textShader, "textColor"), colour.x, colour.y, colour.z);
+	int colourLocation = glGetUniformLocation(textShader, "textColor");
+	glUniform4f(colourLocation, colour.x, colour.y, colour.z, alpha);
 	
 	glBindVertexArray(textVAO);
 
@@ -378,7 +385,7 @@ void renderTexts() {
 		if (!currentText.active) {
 			continue;
 		}
-		renderText(currentText.displayedText, currentText.position,
+		renderText(currentText.displayedText, currentText.position, currentText.alpha,
 			currentText.size, currentText.colour, currentText.fontCharacters);
 	}
 }

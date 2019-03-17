@@ -19,6 +19,7 @@ vector<string> readLines(const char * fileName) { //all lines into vector
 
 void writeLines(const char * fileName, vector<string> fileLines) { //all lines from vector into file
 	ofstream currentFile;
+	currentFile.open(fileName);
 	if (!currentFile) {
 		cout << "File could not be opened: " << fileName << endl;
 		return;
