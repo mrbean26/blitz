@@ -23,5 +23,3 @@ void backendMainloop() {
 void backendBegin() {
 	interfaceBegin();
 }
-
-

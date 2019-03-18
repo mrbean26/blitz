@@ -171,6 +171,9 @@ public:
 		if (ascii == 512512) {
 			return "MWheel";
 		}
+		if (ascii == 162) {
+			return "\\";
+		}
 		char unread = char(ascii);
 		string unreadString = string(1, unread);
 		return unreadString;
@@ -178,14 +181,13 @@ public:
 	void changeInputs() {
 		vector<int> keyTextsInts = { forwardKey, leftKey, backKey, rightKey, aimKey, 
 			shootKey, interactKey, sprintKey, crouchKey, jumpKey };
-		if (!checkKey) {
-			for (int i = forwardButton; i <= jumpButton; i++) {
-				if (allButtons[i].clickUp && !checkKey) {
-					checkKey = true;
-					lastKey = -1;
-					location = i - forwardButton;
-					textChange = keyTextsInts[i - forwardButton];
-				}
+		for (int i = forwardButton; i <= jumpButton; i++) {
+			//check for key
+			if (allButtons[i].clickUp && !checkKey) {
+				checkKey = true;
+				lastKey = -1;
+				location = i - forwardButton;
+				textChange = keyTextsInts[i - forwardButton];
 			}
 		}
 		if (checkKey) {
@@ -201,10 +203,12 @@ public:
 						continue;
 					}
 					if (to_string(lastKey) == previousLines[i]) {
-						allTexts[textChange].displayedText = asciiToString(stoi(inputLines[location]));
+						allTexts[textChange].displayedText = asciiToString(stoi(previousLines[location]));
+						//error
 						goto reset;
 					}
 				}
+				//if it runs here, change went well
 				//write to file here
 				previousLines[location] = to_string(lastKey);
 				writeLines("assets/saves/inputs.save", previousLines);
@@ -240,12 +244,13 @@ public:
 		playOneButton = createButton();
 		playTwoButton = createButton();
 		//delete buttons
+		texture trashCan = loadTexture("assets/images/trashCan.png");
 		deleteOneButton = createButton();
-		allButtons[deleteOneButton].texture = loadTexture("assets/images/trashCan.png");
+		allButtons[deleteOneButton].texture = trashCan;
 		allButtons[deleteOneButton].scale = vec2(0.165f, 0.27f);
 		allButtons[deleteOneButton].position = vec3(2.0f, 0.95f, 0.0f);
 		deleteTwoButton = createButton();
-		allButtons[deleteTwoButton].texture = loadTexture("assets/images/trashCan.png");
+		allButtons[deleteTwoButton].texture = trashCan;
 		allButtons[deleteTwoButton].scale = vec2(0.165f, 0.278f);
 		allButtons[deleteTwoButton].position = vec3(2.0f, -2.95f, 0.0f);
 		//INPUT MANAGER
@@ -374,13 +379,16 @@ public:
 		}
 		changeInputs();
 		//world delete
+		vector<string> deletedWorldSave = { "NOT USED" };
 		if (allButtons[deleteOneButton].clickUp) {
+			bool previous = false;
 			if (allButtons[deleteOneButton].colour != vec3(1.0f, 1.0f, 0.0f)) {
 				allButtons[deleteOneButton].colour = vec3(1.0f, 1.0f, 0.0f);
+				previous = true;
 			}
-			if (allButtons[deleteOneButton].colour.z == 0.0f) {
+			if (allButtons[deleteOneButton].colour.z == 0.0f && !previous) {
 				//delete here
-
+				writeLines("assets/saves/saveOne.save", deletedWorldSave);
 			}
 		}
 		if (deleteOneTime >= 1.5f) {
@@ -388,15 +396,17 @@ public:
 			deleteOneTime = 0.0f;
 		}
 		if (allButtons[deleteOneButton].colour == vec3(1.0f, 1.0f, 0.0f)) {
-			deleteOneTime += deltaTime;
+			deleteOneTime += (float)deltaTime;
 		}
 		if (allButtons[deleteTwoButton].clickUp) {
+			bool previous = false;
 			if (allButtons[deleteTwoButton].colour != vec3(1.0f, 1.0f, 0.0f)) {
 				allButtons[deleteTwoButton].colour = vec3(1.0f, 1.0f, 0.0f);
+				previous = true;
 			}
-			if (allButtons[deleteTwoButton].colour.z == 0.0f) {
+			if (allButtons[deleteTwoButton].colour.z == 0.0f && !previous) {
 				//delete here
-
+				writeLines("assets/saves/saveTwo.save", deletedWorldSave);
 			}
 		}
 		if (deleteTwoTime >= 1.5f) {
@@ -404,7 +414,7 @@ public:
 			deleteTwoTime = 0.0f;
 		}
 		if (allButtons[deleteTwoButton].colour == vec3(1.0f, 1.0f, 0.0f)) {
-			deleteTwoTime += deltaTime;
+			deleteTwoTime += (float)deltaTime;
 		}
 	}
 };

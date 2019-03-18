@@ -1,5 +1,7 @@
 //use of the engine to create the game
 
+#include "worldGeneration.h"
+
 #include "startScreen.h"
 startScreen mainStart;
 
