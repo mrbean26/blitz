@@ -416,5 +416,15 @@ public:
 		if (allButtons[deleteTwoButton].colour == vec3(1.0f, 1.0f, 0.0f)) {
 			deleteTwoTime += (float)deltaTime;
 		}
+		if (allButtons[playOneButton].clickUp) {
+			if (playOneTexture == 0) {
+				createSave("assets/saves/saveOne.save", DEFAULT_SAVE);
+			}
+		}
+		if (allButtons[playTwoButton].clickUp) {
+			if (playTwoTexture == 0) {
+				createSave("assets/saves/saveTwo.save", DEFAULT_SAVE);
+			}
+		}
 	}
 };

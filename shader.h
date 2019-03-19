@@ -49,6 +49,11 @@ const char * textFragSource = {
 	"}\0"
 };
 
+const char * triangleVertSource = {
+	"#version 330 core\n"
+	"layout (location = 0) in vec3 aPos"
+};
+
 int createShader(const char * shaderSource, GLenum shaderType) { 
 	int newShader = glCreateShader(shaderType);
 	glShaderSource(newShader, 1, &shaderSource, NULL);
