@@ -1,5 +1,8 @@
 #include <cstdlib>
 
+using namespace glm;
+using namespace std;
+
 #define DEFAULT_SAVE 0
 
 int randomInt(int min, int max) {
@@ -94,14 +97,23 @@ public:
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(0);
 	}
+	void renderTriangle(vec3 position, vec3 scale, vec3 rotation){
+		glUseProgram(0);
+		glLoadIdentity();
+		glTranslatef(position.x, position.y, position.z);
+		glScalef(scale.x, scale.y, scale.z);
+		glRotatef(rotation.z, 0.0f, 0.0f, 1.0f);
+		glRotatef(rotation.x, 1.0f, 0.0f, 0.0f);
+		glRotatef(rotation.y, 0.0f, 1.0f, 0.0f);
+		glBindVertexArray(vertexArray);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindVertexArray(0);
+	}
 	//called from other files
 	void begin() {
 		startTriangle();
 	}
 	void mainloop() {
-		glUseProgram(0);
-		glLoadIdentity();
-		glBindVertexArray(vertexArray);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		
 	}
 };
