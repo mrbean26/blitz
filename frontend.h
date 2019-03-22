@@ -6,13 +6,13 @@ worldGeneration mainWorldGeneration;
 #include "startScreen.h"
 startScreen mainStart;
 
-void frontendBegin() {
+void frontendBegin() { //called before the first frame
 	int emptyButton = createButton(); //first button does not show if this is not used
 	mainStart.begin();
 	mainWorldGeneration.begin();
 }
 
-void frontendMainloop() {
+void frontendMainloop() { //called every frame
 	mainStart.mainloop();
 	mainWorldGeneration.mainloop();
 }

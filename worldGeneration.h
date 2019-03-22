@@ -18,7 +18,7 @@ int newLinePos(vector<string> &usedVector) {
 	return lineCount - 1;
 }
 
-void createSave(const char * filePath, int saveType) {
+void createSave(const char * filePath, int saveType) { //write to filePath save
 	vector<string> saveLines = { "IN USE" };
 	lineCount = 1; //including IN USE line
 	if (saveType == DEFAULT_SAVE) {

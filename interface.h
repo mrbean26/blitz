@@ -22,7 +22,7 @@ public:
 	bool mouseOver = false;
 
 	float minX;
-	float minY, maxY;
+	float minY, maxY; // click coords
 
 	texture texture;
 
@@ -30,7 +30,7 @@ public:
 	unsigned int vertexBuffer, elementBuffer;
 
 	vec3 colour = vec3(1.0f, 1.0f, 1.0f);
-	float alpha = 1.0f;
+	float alpha = 1.0f; //transparency
 
 	bool active = true;
 };
@@ -47,7 +47,7 @@ int createButton() { //return position of newbutton in array
 
 unsigned int buttonTextureShader;
 
-void renderButtons() {
+void renderButtons() { //scale matrix and pass position to shader
 	int buttonCount = allButtons.size();
 	vec2 rescale = vec2(2.0f, 2.0f);
 	vec2 aspectRatio = vec2(aspect_x, aspect_y);
@@ -151,7 +151,7 @@ void registerClicks() {
 		allButtons[i].maxY = maxY;
 		//check for click
 		allButtons[i].mouseOver = false;
-		if (mouseX >= minX && mouseX <= maxX) {
+		if (mouseX >= minX && mouseX <= maxX) { // check for mouse coords
 			if (mouseY >= minY && mouseY <= maxY) {
 				if (clickedDown) {
 					allButtons[i].clickDown = true;
@@ -317,7 +317,7 @@ void textsBegin() {
 		FT_Done_Face(newFont);
 	}
 	glBindTexture(GL_TEXTURE_2D, 0);
-	FT_Done_FreeType(ftLibrary);
+	FT_Done_FreeType(ftLibrary); //finished with freetype
 	//ready vbo & vao
 	glGenVertexArrays(1, &textVAO);
 	glGenBuffers(1, &textVBO);
@@ -378,7 +378,7 @@ void renderText(string displayedText, vec2 position, float alpha,
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void renderTexts() {
+void renderTexts() { // for all items in vector
 	int size = allTexts.size();
 	for (int i = 0; i < size; i++) {
 		text currentText = allTexts[i];
@@ -391,12 +391,12 @@ void renderTexts() {
 }
 
 //main internewFont
-void interfaceBegin() {
+void interfaceBegin() { // called before all frames
 	buttonsBegin();
 	textsBegin();
 }
 
-void interfaceMainloop() {
+void interfaceMainloop() { //called every frame
 	renderButtons();
 	registerClicks();
 	renderTexts();

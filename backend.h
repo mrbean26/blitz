@@ -15,11 +15,11 @@ GLFWwindow * window;
 #include "interface.h"
 #include "saveFiles.h"
 
-void backendMainloop() {
+void backendMainloop() { //called every frame
 	interfaceMainloop();
 	displayMainloop();
 }
 
-void backendBegin() {
+void backendBegin() { //called before first frame
 	interfaceBegin();
 }

@@ -8,17 +8,17 @@ void keyInput(GLFWwindow * window, int key,
 void mouseInput(GLFWwindow * window, int button, 
 		int action, int mods) {
 	if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-		if (action == GLFW_PRESS) {
-			lastKey = 256256;
+		if (action == GLFW_PRESS) { //right click
+			lastKey = 256256; // unused ints so it doesn't conflict
 		}
 	}
 	if (button == GLFW_MOUSE_BUTTON_LEFT) {
-		if (action == GLFW_PRESS) {
+		if (action == GLFW_PRESS) { // left click
 			lastKey = 128128;
 		}
 	}
 	if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
-		if (action == GLFW_PRESS) {
+		if (action == GLFW_PRESS) { // middle click
 			lastKey = 512512;
 		}
 	}
@@ -62,7 +62,7 @@ public:
 	bool checkKey = false;
 	int textChange = -1;
 	int location = -1;
-	string asciiToString(int ascii){
+	string asciiToString(int ascii){ // for text on top of buttons
 		if (ascii >= 'a' && ascii <= 'z') {
 			char returned = char(ascii);
 			return to_string(returned);
@@ -178,7 +178,7 @@ public:
 		string unreadString = string(1, unread);
 		return unreadString;
 	}
-	void changeInputs() {
+	void changeInputs() { //button press
 		vector<int> keyTextsInts = { forwardKey, leftKey, backKey, rightKey, aimKey, 
 			shootKey, interactKey, sprintKey, crouchKey, jumpKey };
 		for (int i = forwardButton; i <= jumpButton; i++) {
@@ -221,7 +221,7 @@ public:
 			}
 		}
 	}
-	void begin() {
+	void begin() { //before all frames
 		//title
 		titleImage = createButton();
 		allButtons[titleImage].texture = loadTexture("assets/images/blitzTitle.png");
@@ -322,7 +322,7 @@ public:
 			allTexts[i].displayedText = asciiToString(stoi(inputLines[i-forwardKey]));
 		}
 	}
-	void mainloop() {
+	void mainloop() { // every frame
 		vector<string> saveLinesOne = readLines("assets/saves/saveOne.save");
 		vec2 createScale = vec2(0.8375f, 0.215f);
 		vec2 playScale = vec2(0.63f, 0.27f);

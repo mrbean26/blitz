@@ -25,7 +25,7 @@ const char * textureFragSource = {
 	"}\0"
 };
 
-const char * textVertSource = {
+const char * textVertSource = { // for text rendering, ortho projection
 	"#version 330 core\n"
 	"layout(location = 0) in vec4 vertex;\n"
 	"out vec2 TexCoords;\n"
@@ -37,7 +37,7 @@ const char * textVertSource = {
 	"}\0"
 };
 
-const char * textFragSource = {
+const char * textFragSource = { //for text color
 	"#version 330 core\n"
 	"in vec2 TexCoords;\n"
 	"out vec4 color;\n"
@@ -49,12 +49,7 @@ const char * textFragSource = {
 	"}\0"
 };
 
-const char * triangleVertSource = {
-	"#version 330 core\n"
-	"layout (location = 0) in vec3 aPos"
-};
-
-int createShader(const char * shaderSource, GLenum shaderType) { 
+int createShader(const char * shaderSource, GLenum shaderType) {  //attach shader source to program int
 	int newShader = glCreateShader(shaderType);
 	glShaderSource(newShader, 1, &shaderSource, NULL);
 	glCompileShader(newShader);

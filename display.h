@@ -41,13 +41,13 @@ bool openglBegin(GLFWwindow* &used_window, bool fullscreen,
 	//used variables
 	int used_x;
 	int used_y;
-	if (fullscreen) {
+	if (fullscreen) { //disregard x and y in parameters
 		used_window = glfwCreateWindow(monitor_x, monitor_y, "Blitz",
 			primary_monitor, NULL);
 		used_x = monitor_x;
 		used_y = monitor_y;
 	}
-	if (!fullscreen) {
+	if (!fullscreen) { //use x and y in parameters
 		used_window = glfwCreateWindow(width, height,
 			"Blitz", NULL, NULL);
 		used_x = width;
@@ -66,10 +66,9 @@ bool openglBegin(GLFWwindow* &used_window, bool fullscreen,
 	double divider = aspect_x / 10.0;
 	aspect_x = aspect_x / divider;
 	aspect_y = aspect_y / divider;
-	//glOrtho(0.0, aspect_x, 0.0, aspect_y, -1.0, 1.0);
 	glfwSetWindowSizeLimits(used_window, used_x, used_y,
 		used_x, used_y);
-	glEnable(GL_BLEND);
+	glEnable(GL_BLEND); //used for png textures
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	return true;
 }
