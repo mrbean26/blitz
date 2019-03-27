@@ -1,7 +1,8 @@
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h> //image library
+#pragma once
+#ifndef TEXTURE_H
+#define TEXTURE_H
 
-using namespace std;
+#include <stb_image.h> //image library
 
 class texture { //holds all data
 public:
@@ -11,22 +12,8 @@ public:
 	unsigned char * data;
 };
 
-texture loadTexture(const char * filePath) { //load from file
-	texture newTexture;
-	glGenTextures(1, &newTexture.textureId);
-	newTexture.data = stbi_load(filePath, &newTexture.width,
-		&newTexture.height, &newTexture.channels, STBI_rgb_alpha);
-	if (!newTexture.data) 
-		cout << "File cannot be found: " << filePath << endl;
-	return newTexture;
-}
+texture loadTexture(const char * filePath); // load texture from file and return a relevant texture class
 
-void enableTexture(texture usedTexture) { //bind the image to current texture unit
-	glBindTexture(GL_TEXTURE_2D, usedTexture.textureId);
-	// set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, usedTexture.width,
-		usedTexture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, usedTexture.data);
-	glGenerateMipmap(GL_TEXTURE_2D);
-}
+void enableTexture(texture usedTexture); // ready for drawing shapes
+
+#endif

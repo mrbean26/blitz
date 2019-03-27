@@ -1,32 +1,22 @@
-using namespace std;
+#pragma once
 
+#ifndef SAVEFILES_H
+#define SAVEFILES_H
+
+using namespace std;
+#include <iostream>
 #include <vector>
 #include <fstream>
 #include <string>
 
-vector<string> readLines(const char * fileName) { //all lines into vector
-	vector<string> allLines;
-	ifstream newFile(fileName);
-	string currentLine;
-	if (!newFile) {
-		cout << "File could not be opened: " << fileName << endl;
-	}
-	while (getline(newFile, currentLine)) {
-		allLines.push_back(currentLine);
-	}
-	return allLines;
-}
+vector<string> readLines(const char * fileName); // read lines from a file into a vector
 
-void writeLines(const char * fileName, vector<string> fileLines) { //all lines from vector into file
-	ofstream currentFile;
-	currentFile.open(fileName);
-	if (!currentFile) {
-		cout << "File could not be opened: " << fileName << endl;
-		return;
-	}
-	int vectorSize = fileLines.size();
-	for (int i = 0; i < vectorSize; i++) {
-		currentFile << fileLines[i] << endl;
-	}
-	currentFile.close();
-}
+void writeLines(const char * fileName, vector<string> fileLines); // write all lines from a vector to a file
+
+string removeString(string currentString,
+	string toRemove); // remove substring from string
+
+string removePosition(string currentString,
+	int start, int size); //remove string in a positon
+
+#endif

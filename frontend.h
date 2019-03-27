@@ -1,18 +1,17 @@
+#pragma once
 //use of the engine to create the game
 
+#ifndef FRONTEND_H
+#define FRONTEND_H
+
 #include "worldGeneration.h"
-worldGeneration mainWorldGeneration;
+extern worldGeneration mainWorldGeneration;
 
 #include "startScreen.h"
-startScreen mainStart;
+extern startScreen mainStart;
 
-void frontendBegin() { //called before the first frame
-	int emptyButton = createButton(); //first button does not show if this is not used
-	mainStart.begin();
-	mainWorldGeneration.begin();
-}
+void frontendBegin(); // called before first frame
 
-void frontendMainloop() { //called every frame
-	mainStart.mainloop();
-	mainWorldGeneration.mainloop();
-}
+void frontendMainloop(); // called every frame
+
+#endif

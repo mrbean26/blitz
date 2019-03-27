@@ -1,9 +1,12 @@
 #include "backend.h"
 #include "frontend.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 int main(){
 	stbi_set_flip_vertically_on_load(true);
-	if (!openglBegin(window, false, 1280, 720)) {
+	if (!openglBegin(window, false, 960, 540)) {
 		return -1;
 	}
 	frontendBegin();

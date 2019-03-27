@@ -1,3 +1,7 @@
+#pragma once
+#ifndef BACKEND_H
+#define BACKEND_H
+
 //game engine 
 
 #include <cmath>
@@ -8,18 +12,15 @@
 
 #include "display.h"
 
-GLFWwindow * window;
+extern GLFWwindow * window;
 
 #include "shader.h"
 #include "texture.h"
 #include "interface.h"
 #include "saveFiles.h"
 
-void backendMainloop() { //called every frame
-	interfaceMainloop();
-	displayMainloop();
-}
+void backendMainloop(); // run every frame
 
-void backendBegin() { //called before first frame
-	interfaceBegin();
-}
+void backendBegin(); // run before first frame
+
+#endif
