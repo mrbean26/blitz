@@ -1,12 +1,13 @@
 using namespace std;
 #include <vector>
+#include <iostream>
 
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
 
 #include <glew.h>
 
-
+#include "shader.h"
 #include "saveFiles.h"
 #include "worldGeneration.h"
 
@@ -97,7 +98,7 @@ void worldGeneration::startTriangle(){
 }
 
 void worldGeneration::renderTriangle(vector<vec3> allPoints){
-	glUseProgram(0);
+	glUseProgram(terrainShader);
 	glBindVertexArray(vertexArray);
 	glLoadIdentity();
 	//update buffer data
@@ -113,13 +114,37 @@ void worldGeneration::renderTriangle(vector<vec3> allPoints){
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
+void worldGeneration::startShader(){
+	int vertShader = createShader(terrainVertSource, GL_VERTEX_SHADER);
+	int fragShader = createShader(terrainFragSource, GL_FRAGMENT_SHADER);
+	terrainShader = createProgram({ vertShader, fragShader });
+}
+
 void worldGeneration::renderTerrain(vector<string> allLines, int currentArea){
 	if (currentArea == PLANET_WORLD) {
+		vec2 earthSize = getVec2File(worldLinesPath, "planetEarthSize");
+		// generate flat terrain
+		for (int x = 0; x < earthSize.x; x++) {
+			for (int y = 0; y < earthSize.y; y++) {
+				int matrixLocation = glGetUniformLocation(terrainShader, "matrix"); // rotate modelview matrix before passing to shader
+				float model[16];
+				glGetFloatv(GL_MODELVIEW_MATRIX, model);
+				glUniformMatrix4fv(matrixLocation, 1, GL_FALSE, model);
 
+				int colourLocation = glGetUniformLocation(terrainShader, "inColour");
+				glUniform3f(colourLocation, 0.0f, 1.0f, 0.0f);
+
+				int alphaLocation = glGetUniformLocation(terrainShader, "alpha");
+				glUniform1f(alphaLocation, 1.0f); // currently not working
+				
+				
+			}
+		}
 	}
 }
 
 void worldGeneration::begin(){
+	startShader();
 	startTriangle();
 	allWorldLines = readLines(worldLinesPath);
 }

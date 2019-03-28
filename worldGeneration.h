@@ -36,6 +36,9 @@ public:
 	void startTriangle(); //reserve data to vao & vbo
 	void renderTriangle(vector<vec3> allPoints); 
 
+	unsigned int terrainShader;
+	void startShader();
+
 	vector<string> allWorldLines;
 	const char * worldLinesPath;
 	void renderTerrain(vector<string> allLines, int currentArea); // this may take some time

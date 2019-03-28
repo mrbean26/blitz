@@ -3,6 +3,9 @@
 #ifndef SAVEFILES_H
 #define SAVEFILES_H
 
+#include <glm/gtc/matrix_transform.hpp>
+using namespace glm;
+
 using namespace std;
 #include <iostream>
 #include <vector>
@@ -18,5 +21,7 @@ string removeString(string currentString,
 
 string removePosition(string currentString,
 	int start, int size); //remove string in a positon
+
+vec2 getVec2File(const char * fileName, string vec2Name);
 
 #endif

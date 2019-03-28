@@ -9,12 +9,13 @@ using namespace std;
 #include <glfw3.h>
 
 extern const char * textureVertSource;
-
 extern const char * textureFragSource;
 
 extern const char * textVertSource;
-
 extern const char * textFragSource;
+
+extern const char * terrainVertSource;
+extern const char * terrainFragSource;
 
 int createShader(const char * shaderSource, GLenum shaderType); // create shader and assign source to it
 

@@ -243,7 +243,7 @@ void textsBegin(){
 				texture,
 				glm::ivec2(newFont->glyph->bitmap.width, newFont->glyph->bitmap.rows),
 				glm::ivec2(newFont->glyph->bitmap_left, newFont->glyph->bitmap_top),
-				newFont->glyph->advance.x
+				(GLuint) newFont->glyph->advance.x
 			};
 			allTexts[i].fontCharacters.insert(std::pair<GLchar, Character>(c, character));
 		}

@@ -55,6 +55,25 @@ const char * textFragSource = {
 	"}\0"
 };
 
+const char * terrainVertSource = {
+	"#version 330 core\n"
+	"layout(location = 0) in vec4 vertex;\n"
+	"uniform mat4 matrix;\n"
+	"void main(){\n"
+	"    gl_Position = matrix * vertex;\n"
+	"}\0"
+};
+
+const char * terrainFragSource = {
+	"#version 330 core\n"
+	"uniform vec3 inColour = vec3(1.0f, 1.0f, 1.0f);\n"
+	"uniform float alpha = 1.0f;\n"
+	"out vec4 colour;\n"
+	"void main(){\n"
+	"    colour = vec4(inColour, alpha);\n"
+	"}\0"
+};
+
 int createShader(const char * shaderSource, GLenum shaderType){
 	int newShader = glCreateShader(shaderType);
 	glShaderSource(newShader, 1, &shaderSource, NULL);
