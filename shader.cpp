@@ -19,7 +19,6 @@ const char * textureVertSource = {
 	"	TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
 	"}\0"
 };
-
 const char * textureFragSource = {
 	"#version 330 core\n"
 	"out vec4 FragColor;\n"
@@ -36,13 +35,11 @@ const char * textVertSource = {
 	"layout(location = 0) in vec4 vertex;\n"
 	"out vec2 TexCoords;\n"
 	"uniform mat4 projection;\n"
-	"void main()\n"
-	"{\n"
+	"void main(){\n"
 	"	gl_Position = projection * vec4(vertex.xy, 0.0, 1.0);\n"
 	"	TexCoords = vertex.zw;\n"
 	"}\0"
 };
-
 const char * textFragSource = {
 	"#version 330 core\n"
 	"in vec2 TexCoords;\n"
@@ -57,13 +54,14 @@ const char * textFragSource = {
 
 const char * terrainVertSource = {
 	"#version 330 core\n"
-	"layout(location = 0) in vec4 vertex;\n"
-	"uniform mat4 matrix;\n"
+	"layout(location = 0) in vec3 vertex;\n"
+	"uniform mat4 model;\n"
+	"uniform mat4 view;\n"
+	"uniform mat4 projection;\n"
 	"void main(){\n"
-	"    gl_Position = matrix * vertex;\n"
+	"    gl_Position =  projection * view * model * vec4(vertex, 1.0f);\n"
 	"}\0"
 };
-
 const char * terrainFragSource = {
 	"#version 330 core\n"
 	"uniform vec3 inColour = vec3(1.0f, 1.0f, 1.0f);\n"

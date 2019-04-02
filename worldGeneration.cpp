@@ -3,10 +3,12 @@ using namespace std;
 #include <iostream>
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 using namespace glm;
 
 #include <glew.h>
 
+#include "display.h"
 #include "shader.h"
 #include "saveFiles.h"
 #include "worldGeneration.h"
@@ -120,26 +122,73 @@ void worldGeneration::startShader(){
 	terrainShader = createProgram({ vertShader, fragShader });
 }
 
-void worldGeneration::renderTerrain(vector<string> allLines, int currentArea){
-	if (currentArea == PLANET_WORLD) {
-		vec2 earthSize = getVec2File(worldLinesPath, "planetEarthSize");
-		// generate flat terrain
-		for (int x = 0; x < earthSize.x; x++) {
-			for (int y = 0; y < earthSize.y; y++) {
-				int matrixLocation = glGetUniformLocation(terrainShader, "matrix"); // rotate modelview matrix before passing to shader
-				float model[16];
-				glGetFloatv(GL_MODELVIEW_MATRIX, model);
-				glUniformMatrix4fv(matrixLocation, 1, GL_FALSE, model);
-
-				int colourLocation = glGetUniformLocation(terrainShader, "inColour");
-				glUniform3f(colourLocation, 0.0f, 1.0f, 0.0f);
-
-				int alphaLocation = glGetUniformLocation(terrainShader, "alpha");
-				glUniform1f(alphaLocation, 1.0f); // currently not working
+vector<triangle> flatTerrainTriangles;
+void worldGeneration::beginFlatTerrain(int area){
+	vec3 colour;
+	vec2 areaScale;
+	if (area == PLANET_WORLD) {
+		colour = vec3(0.35f, 0.78f, 0.31f);
+		areaScale = getVec2File(worldLinesPath, "planetEarthSize");
+	}
+	float triangleSize = 2.0f;
+	for (int x = 0; x < areaScale.x / triangleSize; x++) {
+		for (int y = 0; y < areaScale.y / triangleSize; y++) {
+			// draw triangle
+			// multipliers
+			float xMultiplied = x * triangleSize;
+			float yMultiplied = y * triangleSize;
+			// points
+			vec3 pointOne = vec3(xMultiplied, 0.0f, -yMultiplied);
+			vec3 pointTwo = vec3(xMultiplied + triangleSize, 0.0f, -yMultiplied);
+			vec3 pointThree = vec3(xMultiplied, 0.0f, -(yMultiplied + triangleSize));
+			vec3 pointFour = vec3(xMultiplied + triangleSize, 0.0f, -(yMultiplied + triangleSize));
+			vector<vec3> whichPoint = { pointOne, pointFour };
+			// assign triangles to vector
+			for (int t = 0; t < 2; t++) {
+				// triangle colour
+				float colourDifferenceX = ((float)randomInt(-127, 127) / 255.0f) * 0.2f;
+				float colourDifferenceY = ((float)randomInt(-127, 127) / 255.0f) * 0.2f;
+				float colourDifferenceZ = ((float)randomInt(-127, 127) / 255.0f) * 0.2f;
+				vec3 colourDifference = vec3(colourDifferenceX, colourDifferenceY, colourDifferenceZ);
+				vec3 triangleColour = colour + colourDifference;
 				
-				
+				triangle newTriangle;
+				newTriangle.allPoints = { whichPoint[t], pointTwo, pointThree };
+				newTriangle.colour = triangleColour;
+
+				int vectorSize = flatTerrainTriangles.size();
+				flatTerrainTriangles.resize(vectorSize + 1);
+				flatTerrainTriangles[vectorSize] = newTriangle;
 			}
 		}
+	}
+}
+
+void worldGeneration::renderFlatTerrain(){
+	int alphaLocation = glGetUniformLocation(terrainShader, "alpha");
+	int colourLocation = glGetUniformLocation(terrainShader, "inColour");
+	int modelLocation = glGetUniformLocation(terrainShader, "model");
+	int viewLocation = glGetUniformLocation(terrainShader, "view");
+	int projectionLocation = glGetUniformLocation(terrainShader, "projection");
+	glUniformMatrix4fv(modelLocation, 1, GL_FALSE, value_ptr(modelMatrix()));
+	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, value_ptr(viewMatrix()));
+	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, value_ptr(projectionMatrix()));
+	
+	int vectorSize = flatTerrainTriangles.size();
+	for (int i = 0; i < vectorSize; i++) {
+		triangle currentTriangle = flatTerrainTriangles[i];
+		// to shader
+		glUniform1f(alphaLocation, currentTriangle.alpha);
+		vec3 colour = currentTriangle.colour;
+		glUniform3f(colourLocation, colour.x, colour.y, colour.z);
+		// render
+		renderTriangle(currentTriangle.allPoints);
+	}
+}
+
+void worldGeneration::renderTerrain(int currentArea){
+	if (currentArea == PLANET_WORLD) {
+		renderFlatTerrain();
 	}
 }
 
@@ -147,11 +196,12 @@ void worldGeneration::begin(){
 	startShader();
 	startTriangle();
 	allWorldLines = readLines(worldLinesPath);
+	beginFlatTerrain(PLANET_WORLD);
 }
 
 void worldGeneration::mainloop(){
 	if (!active) {
 		return;
 	}
-	renderTerrain(allWorldLines, PLANET_WORLD);
+	renderTerrain(PLANET_WORLD);
 }

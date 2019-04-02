@@ -187,7 +187,7 @@ void startScreen::changeInputs(){
 			previousLines[location] = to_string(lastKey);
 			writeLines("assets/saves/inputs.save", previousLines);
 			//reset
-		reset:
+			reset:
 			checkKey = false;
 			textChange = -1;
 			lastKey = -1;

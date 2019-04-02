@@ -23,6 +23,15 @@ int newLinePos(vector<string> &usedVector); // resize a vector of strings and re
 
 void createSave(const char * filePath, int saveType); // a lot of code
 
+class triangle {
+public:
+	vector<vec3> allPoints;
+	vec3 colour = vec3(1.0f, 1.0f, 1.0f);
+	float alpha = 1.0f;
+	bool active = true;
+};
+extern vector<triangle> flatTerrainTriangles;
+
 class worldGeneration {
 public:
 	bool active = false;
@@ -41,7 +50,12 @@ public:
 
 	vector<string> allWorldLines;
 	const char * worldLinesPath;
-	void renderTerrain(vector<string> allLines, int currentArea); // this may take some time
+
+	void beginFlatTerrain(int area);
+
+	void renderFlatTerrain();
+	void renderTerrain(int currentArea); // this may take some time
+
 	//called from other files
 	void begin(); // called before the first frame
 	void mainloop(); // called every frame

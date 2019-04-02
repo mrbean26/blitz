@@ -5,6 +5,9 @@
 #include <glew.h>
 #include <glfw3.h>
 
+#include <glm/gtc/matrix_transform.hpp>
+using namespace glm;
+
 extern double aspect_x, aspect_y;
 
 extern int display_x, display_y;
@@ -23,5 +26,15 @@ extern double deltaTime, lastTime;
 double getFrames(); //get fps of window, to get fps frontend, use double 'frames'
 
 void displayMainloop(); // run every frame
+
+extern float nearPlane;
+extern float farPlane;
+
+extern vec3 cameraPosition;
+extern vec3 cameraRotation;
+
+mat4 projectionMatrix();
+mat4 modelMatrix();
+mat4 viewMatrix();
 
 #endif

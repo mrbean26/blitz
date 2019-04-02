@@ -57,13 +57,14 @@ void renderButtons(){
 		vec3 color = currentButton.colour;
 		glUniform4f(colourLocation, color.x, color.y, color.z, currentButton.alpha);
 		//draw
-		glUseProgram(buttonTextureShader);
 		glActiveTexture(GL_TEXTURE0 + i);
 		enableTexture(currentButton.texture);
 
 		//set texture for shader
 		int shaderTextureLocation = glGetUniformLocation(buttonTextureShader, "texture0");
 		glUniform1i(shaderTextureLocation, i);
+
+		glUseProgram(buttonTextureShader);
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); //if an error is being shown here for memory, shapes are being created before backendBegin()
 	}
@@ -265,10 +266,11 @@ void textsBegin(){
 
 void renderText(string displayedText, vec2 position, float alpha, float size, vec3 colour, 
 	map<GLchar, Character> Characters){
+	glDisable(GL_DEPTH_TEST);
+	glUseProgram(textShader);
 	glActiveTexture(GL_TEXTURE0);
 	int textureLocation = glGetUniformLocation(textShader, "text");
 	glUniform1i(textureLocation, 0);
-	glUseProgram(textShader);
 	int colourLocation = glGetUniformLocation(textShader, "textColor");
 	glUniform4f(colourLocation, colour.x, colour.y, colour.z, alpha);
 
@@ -309,6 +311,7 @@ void renderText(string displayedText, vec2 position, float alpha, float size, ve
 	}
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
+	glEnable(GL_DEPTH_TEST);
 }
 
 void renderTexts(){

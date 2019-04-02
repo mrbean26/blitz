@@ -2,6 +2,11 @@
 
 #include <math.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
+using namespace glm;
+
 double aspect_x, aspect_y;
 
 int display_x, display_y;
@@ -71,6 +76,9 @@ bool openglBegin(GLFWwindow *& used_window, bool fullscreen,
 	//glOrtho(0.0, aspect_x, 0.0, aspect_y, -1.0, 1.0);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_DEPTH_TEST);
+	//flip textures to correct way round
+	stbi_set_flip_vertically_on_load(true);
 	return true;
 }
 
@@ -97,4 +105,31 @@ double getFrames(){
 
 void displayMainloop(){
 	frames = getFrames();
+}
+
+float nearPlane = 0.1f;
+float farPlane = 100.0f;
+
+vec3 cameraPosition = vec3(0.0f, 0.0f, 10.0f);
+vec3 cameraRotation;
+
+mat4 projectionMatrix() {
+	mat4 newMatrix = mat4(1.0f);
+	newMatrix = perspective(radians(45.0f), (float) display_x / (float) display_y,
+		nearPlane, farPlane);
+	return newMatrix;
+}
+
+mat4 modelMatrix() {
+	mat4 newMatrix = mat4(1.0f);
+	return newMatrix;
+}
+
+mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
+	mat4 newMatrix = mat4(1.0f);
+	newMatrix = translate(newMatrix, -cameraPosition);
+	newMatrix = rotate(newMatrix, radians(cameraRotation.z), vec3(0.0f, 0.0f, 1.0f));
+	newMatrix = rotate(newMatrix, radians(cameraRotation.x), vec3(1.0f, 0.0f, 0.0f));
+	newMatrix = rotate(newMatrix, radians(cameraRotation.y), vec3(0.0f, 1.0f, 0.0f));
+	return newMatrix;
 }

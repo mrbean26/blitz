@@ -1,18 +1,14 @@
 #include "backend.h"
 #include "frontend.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-
 int main(){
-	stbi_set_flip_vertically_on_load(true);
-	if (!openglBegin(window, false, 960, 540)) {
+	if (!openglBegin(window, true, 640, 360)) {
 		return -1;
 	}
 	frontendBegin();
 	backendBegin();
 	while (!glfwWindowShouldClose(window)){
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		backendMainloop();
 		frontendMainloop();
