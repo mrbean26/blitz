@@ -32,7 +32,7 @@ def drawCircle(posX, posY, radiusX, pointCount, color):
             drawPoint(drawPosX - 160, 360-(posZ+10), 'black')
         drawPoint(drawPosX, drawPosY, color)
 
-circleRadiuses = [24, 18, 12, 6]
+circleRadiuses = [90, 80, 70, 60, 50, 40, 30, 20, 10]
 
 gradient = 1
 
