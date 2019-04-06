@@ -19,7 +19,7 @@ def drawPoint(x, y, color):
 
 yMultiply = 0.0
 
-def drawCircle(posX, posY, radiusX, pointCount, color):
+def drawCircle(posX, posY, radiusX, pointCount, color): # divide pointCount by a number and round it to make different resolution mountains
     k = 2.0 * math.pi / pointCount
     allPointsX = []
     allPointsY = []
