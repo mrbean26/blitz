@@ -110,8 +110,8 @@ void displayMainloop(){
 float nearPlane = 0.1f;
 float farPlane = 100.0f;
 
-vec3 cameraPosition = vec3(0.0f, 0.0f, 10.0f);
-vec3 cameraRotation;
+vec3 cameraPosition = vec3(25.0f, 25.0f, 90.0f);
+vec3 cameraRotation = vec3(90.0f, 0.0f, 0.0f);
 
 mat4 projectionMatrix() {
 	mat4 newMatrix = mat4(1.0f);

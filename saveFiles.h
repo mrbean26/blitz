@@ -16,12 +16,16 @@ vector<string> readLines(const char * fileName); // read lines from a file into 
 
 void writeLines(const char * fileName, vector<string> fileLines); // write all lines from a vector to a file
 
+bool contains(string mainString, string substring);
+
 string removeString(string currentString,
 	string toRemove); // remove substring from string
 
 string removePosition(string currentString,
 	int start, int size); //remove string in a positon
 
-vec2 getVec2File(const char * fileName, string vec2Name);
+vec2 getVec2File(const char * fileName, string vec2Name, int pos = -1);
+
+float getFloatFile(const char * fileName, string floatName, int pos = -1);
 
 #endif

@@ -30,17 +30,11 @@ public:
 	float alpha = 1.0f;
 	bool active = true;
 };
-extern vector<triangle> flatTerrainTriangles;
 
 class worldGeneration {
 public:
 	bool active = false;
 	bool startedBegin = false;
-	float triangleVertices[9] = {
-		-1.0f, -1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f,
-		-1.0f, 1.0f, 0.0f
-	};
 	GLuint vertexArray, vertexBuffer;
 	void startTriangle(); //reserve data to vao & vbo
 	void renderTriangle(vector<vec3> allPoints); 
@@ -52,8 +46,11 @@ public:
 	const char * worldLinesPath;
 
 	void beginFlatTerrain(int area);
-
 	void renderFlatTerrain();
+
+	void beginMountains(int area);
+	void renderMountains();
+
 	void renderTerrain(int currentArea); // this may take some time
 
 	//called from other files
