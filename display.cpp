@@ -1,10 +1,14 @@
 #include "display.h"
+#include "worldGeneration.h"
 
 #include <math.h>
+#include <vector>
+#include <iostream>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+using namespace std;
 using namespace glm;
 
 double aspect_x, aspect_y;
@@ -13,6 +17,8 @@ int display_x, display_y;
 
 double frames, frameTime;
 
+vector<vec2> faceCirclePoints;
+vector<vec2> sideCirclePoints;
 int aspectDivider(int x, int y){
 	int max = x;
 	if (y > x) {
@@ -77,6 +83,8 @@ bool openglBegin(GLFWwindow *& used_window, bool fullscreen,
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
+	//create circles for cam rot
+	faceCirclePoints = circleCoords(vec2(0.0f, 0.0f), 1.0f, 360, 1.0f);
 	//flip textures to correct way round
 	stbi_set_flip_vertically_on_load(true);
 	return true;
@@ -110,8 +118,8 @@ void displayMainloop(){
 float nearPlane = 0.1f;
 float farPlane = 100.0f;
 
-vec3 cameraPosition = vec3(25.0f, 25.0f, 90.0f);
-vec3 cameraRotation = vec3(90.0f, 0.0f, 0.0f);
+vec3 cameraPosition = vec3(25.0f, 60.0f, -25.0f);
+vec3 cameraRotation = vec3(0.0f, 0.0f, 0.0f);
 
 mat4 projectionMatrix() {
 	mat4 newMatrix = mat4(1.0f);
@@ -127,9 +135,21 @@ mat4 modelMatrix() {
 
 mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	mat4 newMatrix = mat4(1.0f);
-	newMatrix = translate(newMatrix, -cameraPosition);
-	newMatrix = rotate(newMatrix, radians(cameraRotation.z), vec3(0.0f, 0.0f, 1.0f));
-	newMatrix = rotate(newMatrix, radians(cameraRotation.x), vec3(1.0f, 0.0f, 0.0f));
-	newMatrix = rotate(newMatrix, radians(cameraRotation.y), vec3(0.0f, 1.0f, 0.0f));
+	// points
+	vec3 xRot = vec3(0.0f, 0.0f, 0.0f);
+	xRot.z = faceCirclePoints[std::round(cameraRotation.x)].x;
+	xRot.y = faceCirclePoints[std::round(cameraRotation.x)].y;
+
+	vec3 yRot = vec3(0.0f, 0.0f, 0.1f);
+	yRot.x = faceCirclePoints[std::round(cameraRotation.y)].x;
+	yRot.y = faceCirclePoints[std::round(cameraRotation.y)].y;
+
+	vec3 zRot = vec3(0.0f, 0.0f, 0.0f);
+	zRot.x = faceCirclePoints[std::round(cameraRotation.z)].x;
+	zRot.z = faceCirclePoints[std::round(cameraRotation.z)].y;
+	//combine
+	vec3 cameraFront = xRot;
+	// currently not possible to rotate more than one axis
+	newMatrix = lookAt(cameraPosition, cameraPosition + cameraFront, vec3(0.0f, 1.0f, 0.0f));
 	return newMatrix;
 }

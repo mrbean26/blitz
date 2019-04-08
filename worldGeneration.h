@@ -18,6 +18,8 @@ using namespace glm;
 
 int randomInt(int min, int max); // quick maths
 
+vector<vec2> circleCoords(vec2 position, float radius, int pointCount, float scale);
+
 extern int lineCount;
 int newLinePos(vector<string> &usedVector); // resize a vector of strings and return the position to be edited
 
@@ -33,11 +35,13 @@ public:
 
 class worldGeneration {
 public:
+	int currentArea = PLANET_WORLD;
+
 	bool active = false;
 	bool startedBegin = false;
-	GLuint vertexArray, vertexBuffer;
+
+	GLuint terrainVAO, terrainVBO;
 	void startTriangle(); //reserve data to vao & vbo
-	void renderTriangle(vector<vec3> allPoints); 
 
 	unsigned int terrainShader;
 	void startShader();
@@ -45,13 +49,11 @@ public:
 	vector<string> allWorldLines;
 	const char * worldLinesPath;
 
-	void beginFlatTerrain(int area);
-	void renderFlatTerrain();
+	void beginFlatTerrain();
+	void beginMountains();
+	void beginTerrrain();
 
-	void beginMountains(int area);
-	void renderMountains();
-
-	void renderTerrain(int currentArea); // this may take some time
+	void renderTerrain(); // this may take some time
 
 	//called from other files
 	void begin(); // called before the first frame

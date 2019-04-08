@@ -3,7 +3,7 @@
 #include "interface.h"
 
 #include "worldGeneration.h"
-worldGeneration mainWorldGeneration;
+worldGeneration earthWorldGeneration;
 #include "startScreen.h"
 startScreen mainStart;
 
@@ -14,9 +14,9 @@ void frontendBegin(){
 
 void frontendMainloop(){
 	mainStart.mainloop();
-	if (!mainWorldGeneration.startedBegin && mainWorldGeneration.active) {
-		mainWorldGeneration.begin();
-		mainWorldGeneration.startedBegin = true;
+	if (!earthWorldGeneration.startedBegin && earthWorldGeneration.active) {
+		earthWorldGeneration.begin();
+		earthWorldGeneration.startedBegin = true;
 	}
-	mainWorldGeneration.mainloop();
+	earthWorldGeneration.mainloop();
 }

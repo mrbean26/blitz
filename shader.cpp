@@ -55,20 +55,23 @@ const char * textFragSource = {
 const char * terrainVertSource = {
 	"#version 330 core\n"
 	"layout(location = 0) in vec3 vertex;\n"
+	"layout(location = 1) in vec3 inColour;\n"
 	"uniform mat4 model;\n"
 	"uniform mat4 view;\n"
 	"uniform mat4 projection;\n"
+	"out vec3 aColour;\n"
 	"void main(){\n"
+	"    aColour = inColour;\n"
 	"    gl_Position =  projection * view * model * vec4(vertex, 1.0f);\n"
 	"}\0"
 };
 const char * terrainFragSource = {
 	"#version 330 core\n"
-	"uniform vec3 inColour = vec3(1.0f, 1.0f, 1.0f);\n"
+	"in vec3 aColour;\n"
 	"uniform float alpha = 1.0f;\n"
 	"out vec4 colour;\n"
 	"void main(){\n"
-	"    colour = vec4(inColour, alpha);\n"
+	"    colour = vec4(aColour, alpha);\n"
 	"}\0"
 };
 

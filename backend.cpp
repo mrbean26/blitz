@@ -1,7 +1,5 @@
 #include "backend.h"
 
-//#include <glfw3.h>
-
 GLFWwindow * window;
 
 void backendMainloop() {

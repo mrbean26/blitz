@@ -75,7 +75,6 @@ void createSave(const char * filePath, int saveType) {
 			//mountain scale
 			float mountainScaleX = (randomInt(0, earthScaleX) * 0.1f);
 			float mountainScaleZ = (randomInt(1, 100)*0.1f);
-			mountainScaleZ *= 3.0f;
 			//mountain position
 			float mountainPositionX = (randomInt(0, earthScaleX * 10) * 0.1f);
 			float mountainPositionY = (randomInt(0, earthScaleY * 10) * 0.1f);
@@ -113,29 +112,14 @@ void createSave(const char * filePath, int saveType) {
 }
 
 void worldGeneration::startTriangle() {
-	glGenVertexArrays(1, &vertexArray);
-	glGenBuffers(1, &vertexBuffer);
-	glBindVertexArray(vertexArray);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glGenVertexArrays(1, &terrainVAO);
+	glGenBuffers(1, &terrainVBO);
+	glBindVertexArray(terrainVAO);
+	glBindBuffer(GL_ARRAY_BUFFER_ARB, terrainVBO);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-}
-
-void worldGeneration::renderTriangle(vector<vec3> allPoints) {
-	glUseProgram(terrainShader);
-	glBindVertexArray(vertexArray);
-	glLoadIdentity();
-	//update buffer data
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-	float vertices[9] = {
-		allPoints[0].x, allPoints[0].y, allPoints[0].z,
-		allPoints[1].x, allPoints[1].y, allPoints[1].z,
-		allPoints[2].x, allPoints[2].y, allPoints[2].z
-	};
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices),
-		vertices, GL_STATIC_DRAW);
-	//draw
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 }
 
 void worldGeneration::startShader() {
@@ -145,10 +129,10 @@ void worldGeneration::startShader() {
 }
 
 vector<triangle> flatTerrainTriangles;
-void worldGeneration::beginFlatTerrain(int area) {
+void worldGeneration::beginFlatTerrain() {
 	vec3 colour;
 	vec2 areaScale;
-	if (area == PLANET_WORLD) {
+	if (currentArea == PLANET_WORLD) {
 		colour = vec3(0.35f, 0.78f, 0.31f);
 		areaScale = getVec2File(worldLinesPath, "planetEarthSize");
 	}
@@ -184,36 +168,15 @@ void worldGeneration::beginFlatTerrain(int area) {
 			}
 		}
 	}
-}
-
-void worldGeneration::renderFlatTerrain() {
-	int alphaLocation = glGetUniformLocation(terrainShader, "alpha");
-	int colourLocation = glGetUniformLocation(terrainShader, "inColour");
-	int modelLocation = glGetUniformLocation(terrainShader, "model");
-	int viewLocation = glGetUniformLocation(terrainShader, "view");
-	int projectionLocation = glGetUniformLocation(terrainShader, "projection");
-	glUniformMatrix4fv(modelLocation, 1, GL_FALSE, value_ptr(modelMatrix()));
-	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, value_ptr(viewMatrix()));
-	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, value_ptr(projectionMatrix()));
-
-	int vectorSize = flatTerrainTriangles.size();
-	for (int i = 0; i < vectorSize; i++) {
-		triangle currentTriangle = flatTerrainTriangles[i];
-		// to shader
-		glUniform1f(alphaLocation, currentTriangle.alpha);
-		vec3 colour = currentTriangle.colour;
-		glUniform3f(colourLocation, colour.x, colour.y, colour.z);
-		// render
-		renderTriangle(currentTriangle.allPoints);
-	}
+	beginMountains();
 }
 
 vector<triangle> mountainTriangles;
-void worldGeneration::beginMountains(int area) {
+void worldGeneration::beginMountains() {
 	vec3 colour;
 	string mountainName;
 	int lineCount = allWorldLines.size();
-	if (area == PLANET_WORLD) {
+	if (currentArea == PLANET_WORLD) {
 		colour = vec3(0.35f, 0.78f, 0.31f);
 		mountainName = "earthMountain";
 	}
@@ -277,6 +240,10 @@ void worldGeneration::beginMountains(int area) {
 				// triangle y positions
 				float centralYPos = (radiuses[0] - radius + (10 * gra)) / radiuses[0];
 				float innerYPos = (radiuses[0] - nextRadius + (10 * gra)) / radiuses[0];
+				if (gra < 0.0f) {
+					centralYPos = -centralYPos;
+					innerYPos = -innerYPos;
+				}
 				if (centralYPos > 1.0f) {
 					centralYPos = 1.0f;
 				}
@@ -288,6 +255,9 @@ void worldGeneration::beginMountains(int area) {
 				}
 				if (innerYPos < -1.0f) {
 					innerYPos = -1.0f;
+				}
+				if (radius == radiuses[0]) {
+					centralYPos = 0.0f;
 				}
 				// line to make circle points into a ring
 				vec3 pointOne = vec3(currentCircle[pointIndex].x, centralYPos * sca.y, -currentCircle[pointIndex].y);
@@ -335,34 +305,56 @@ void worldGeneration::beginMountains(int area) {
 		}
 		index++;
 	}
-	// check if triangles are over mountains, if they are, fucking delete them
-	
+	beginTerrrain();
 }
 
-void worldGeneration::renderMountains() {
-	int alphaLocation = glGetUniformLocation(terrainShader, "alpha");
-	int colourLocation = glGetUniformLocation(terrainShader, "inColour");
-	int modelLocation = glGetUniformLocation(terrainShader, "model");
-	int viewLocation = glGetUniformLocation(terrainShader, "view");
-	int projectionLocation = glGetUniformLocation(terrainShader, "projection");
-	glUniformMatrix4fv(modelLocation, 1, GL_FALSE, value_ptr(modelMatrix()));
-	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, value_ptr(viewMatrix()));
-	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, value_ptr(projectionMatrix()));
+int total = 0;
+void worldGeneration::beginTerrrain(){
+	vector<float> allVertices;
+	// get triangles into float vector
+	vector<vector<triangle>> bothVectors = { flatTerrainTriangles, mountainTriangles };
+	for (int o = 0; o < 2; o++) {
+		vector<triangle> currentVector = bothVectors[o];
+		int triangleCount = currentVector.size();
+		for (int f = 0; f < triangleCount; f++) {
 
-	for (triangle currentTriangle : mountainTriangles) {
-		// to shader
-		glUniform1f(alphaLocation, currentTriangle.alpha);
-		vec3 colour = currentTriangle.colour;
-		glUniform3f(colourLocation, colour.x, colour.y, colour.z);
-		// render
-		renderTriangle(currentTriangle.allPoints);
+			vector<vec3> points = currentVector[f].allPoints;
+			for (vec3 point : points) {
+				for (int v = 0; v < 3; v++) {
+					int floatCount = allVertices.size();
+					allVertices.resize(floatCount + 1);
+					allVertices[floatCount] = point[v];
+
+				}
+				//color
+				vec3 colour = currentVector[f].colour;
+				for (int c = 0; c < 3; c++) {
+					int newFloatCount = allVertices.size();
+					allVertices.resize(newFloatCount + 1);
+					allVertices[newFloatCount] = colour[c];
+				}
+			}
+		}
 	}
+	// vector to array
+	int floatCount = (mountainTriangles.size() * 12) + (flatTerrainTriangles.size() * 12);
+	glBindVertexArray(terrainVAO);
+	glBindBuffer(GL_ARRAY_BUFFER_ARB, terrainVBO);
+	glBufferData(GL_ARRAY_BUFFER_ARB, allVertices.size() * sizeof(float), allVertices.data(), GL_STATIC_DRAW_ARB);
+	total = (mountainTriangles.size() * 3) + (flatTerrainTriangles.size() * 3);
 }
 
-void worldGeneration::renderTerrain(int currentArea) {
+void worldGeneration::renderTerrain() {
 	if (currentArea == PLANET_WORLD) {
-		renderFlatTerrain();
-		renderMountains();
+		int modelLocation = glGetUniformLocation(terrainShader, "model");
+		int projectionLocation = glGetUniformLocation(terrainShader, "projection");
+		int viewLocation = glGetUniformLocation(terrainShader, "view");
+		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, value_ptr(modelMatrix()));
+		glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, value_ptr(projectionMatrix()));
+		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, value_ptr(viewMatrix()));
+		glBindVertexArray(terrainVAO);
+		glUseProgram(terrainShader);
+		glDrawArrays(GL_TRIANGLES, 0, 3 * total);
 	}
 }
 
@@ -370,13 +362,12 @@ void worldGeneration::begin() {
 	startShader();
 	startTriangle();
 	allWorldLines = readLines(worldLinesPath);
-	beginFlatTerrain(PLANET_WORLD);
-	beginMountains(PLANET_WORLD);
+	beginFlatTerrain();
 }
 
 void worldGeneration::mainloop() {
 	if (!active) {
 		return;
 	}
-	renderTerrain(PLANET_WORLD);
+	renderTerrain();
 }

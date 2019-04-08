@@ -115,7 +115,7 @@ string startScreen::asciiToString(int ascii){
 		return "Enter";
 	}
 	if (ascii == 259) {
-		return "Backspace";
+		return "Back";
 	}
 	if (ascii == 261) {
 		return "Del";
@@ -402,9 +402,9 @@ void startScreen::mainloop(){
 		if (playOneTexture == 1) {
 			allButtons.clear();
 			allTexts.clear();
-			mainWorldGeneration.worldLinesPath = "assets/saves/saveOne.save";
+			earthWorldGeneration.worldLinesPath = "assets/saves/saveOne.save";
 			active = false;
-			mainWorldGeneration.active = true;
+			earthWorldGeneration.active = true;
 			return;
 		}
 	}
@@ -415,9 +415,9 @@ void startScreen::mainloop(){
 		if (playTwoTexture == 1) {
 			allButtons.clear();
 			allTexts.clear();
-			mainWorldGeneration.worldLinesPath = "assets/saves/saveTwo.save";
+			earthWorldGeneration.worldLinesPath = "assets/saves/saveTwo.save";
 			active = false;
-			mainWorldGeneration.active = true;
+			earthWorldGeneration.active = true;
 			return;
 		}
 	}
