@@ -36,7 +36,7 @@ def drawCircle(posX, posY, radiusX, pointCount, color): # divide pointCount by a
         #drawPoint(drawPosX, drawPosY, color)
     return [allPointsX, allPointsY]
 
-circleRadiuses = [90, 80, 70, 60, 50, 40, 30, 20, 10]
+circleRadiuses = [100, 70, 40]
 
 gradient = 1
 
@@ -47,7 +47,7 @@ for radius in circleRadiuses:
     currentPointCount = round(radius / 4) * 2
     currentCircle = drawCircle(320, 180, radius, currentPointCount, 'black')
 
-    nextRadius = radius-10
+    nextRadius = radius-30
     if nextRadius <= 0:
         break
     nextPointCount = round(nextRadius/4)*2

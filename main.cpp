@@ -1,10 +1,32 @@
 #include "backend.h"
 #include "frontend.h"
 
+void keyCallback(GLFWwindow*window, int key, int scancode, int action, int mods) {
+	if (key == GLFW_KEY_W) {
+		cameraPosition.x += deltaTime * 8;
+	}
+	if (key == GLFW_KEY_S){
+		cameraPosition.x -= deltaTime * 8;
+	}
+	if (key == GLFW_KEY_A) {
+		cameraPosition.z -= deltaTime * 8;
+	}
+	if (key == GLFW_KEY_D) {
+		cameraPosition.z += deltaTime * 8;
+	}
+	if (key == GLFW_KEY_DOWN) {
+		cameraPosition.y -= deltaTime * 8;
+	}
+	if (key == GLFW_KEY_UP) {
+		cameraPosition.y += deltaTime * 8;
+	}
+}
+
 int main(){
-	if (!openglBegin(window, false, 1600, 900)) {
+	if (!openglBegin(window, true, 1600, 900)) {
 		return -1;
 	}
+	glfwSetKeyCallback(window, keyCallback);
 	frontendBegin();
 	backendBegin();
 	while (!glfwWindowShouldClose(window)){
@@ -12,7 +34,7 @@ int main(){
 		
 		backendMainloop();
 		frontendMainloop();
-		cameraRotation.x += deltaTime * 5;
+		
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}

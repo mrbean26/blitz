@@ -16,7 +16,7 @@ using namespace glm;
 #define DEFAULT_SAVE 0
 #define PLANET_WORLD 0
 
-int randomInt(int min, int max); // quick maths
+int randomInt(int min, int max, float multiplier = 1.0f); // quick maths
 
 vector<vec2> circleCoords(vec2 position, float radius, int pointCount, float scale);
 
@@ -36,6 +36,8 @@ public:
 class worldGeneration {
 public:
 	int currentArea = PLANET_WORLD;
+	vec2 currentAreaScale;
+	vec2 getAreaScale();
 
 	bool active = false;
 	bool startedBegin = false;
@@ -51,6 +53,8 @@ public:
 
 	void beginFlatTerrain();
 	void beginMountains();
+	void removeUselessTriangle(float radius, vec2 position, float circleMultiplier);
+
 	void beginTerrrain();
 
 	void renderTerrain(); // this may take some time
