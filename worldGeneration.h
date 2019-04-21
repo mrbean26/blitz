@@ -53,7 +53,7 @@ public:
 
 	void beginFlatTerrain();
 	void beginMountains();
-	void removeUselessTriangle(float radius, vec2 position, float circleMultiplier);
+	void removeUselessTriangle(int radius, vec2 position, float circleMultiplier);
 
 	void beginTerrrain();
 

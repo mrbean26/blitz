@@ -20,10 +20,16 @@ void keyCallback(GLFWwindow*window, int key, int scancode, int action, int mods)
 	if (key == GLFW_KEY_UP) {
 		cameraPosition.y += deltaTime * 8;
 	}
+	if (key == GLFW_KEY_RIGHT) {
+		cameraRotation.x += deltaTime * 60;
+	}
+	if (key == GLFW_KEY_LEFT) {
+		cameraRotation.x -= deltaTime * 60;
+	}
 }
 
 int main(){
-	if (!openglBegin(window, true, 1600, 900)) {
+	if (!openglBegin(window, false, 640, 360)) {
 		return -1;
 	}
 	glfwSetKeyCallback(window, keyCallback);

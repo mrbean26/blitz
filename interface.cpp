@@ -32,8 +32,7 @@ void renderButtons(){
 		vec3 position = currentButton.position;
 		scale = scale / aspectRatio;
 		//make button bigger if mouse is over it
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
+		mat4 scaleMat = mat4(1.0f);
 		if (currentButton.mouseOver && currentButton.interactive) {
 			position *= vec3(0.95f, 0.95f, 1.0f);
 			scale *= vec2(1.05f, 1.05f);
@@ -43,15 +42,13 @@ void renderButtons(){
 			position *= vec3(1.05f, 1.05f, 1.0f);
 		}
 		//rescale the matrix and send position info to shader
-		glScalef(scale.x, scale.y, 1.0f);
+		scaleMat = glm::scale(scaleMat, vec3(scale, 1.0f));
 		int shaderButtonPosition = glGetUniformLocation(buttonTextureShader, "buttonPos");
 		glUniform3f(shaderButtonPosition, position.x,
 			position.y, position.z);
 		//update position, scale and rotation info ready for the shader to use
-		float modelviewMatrix[16];
-		glGetFloatv(GL_MODELVIEW_MATRIX, modelviewMatrix);
 		int matrixLocation = glGetUniformLocation(buttonTextureShader, "modelviewMatrix");
-		glUniformMatrix4fv(matrixLocation, 1, GL_FALSE, modelviewMatrix);
+		glUniformMatrix4fv(matrixLocation, 1, GL_FALSE, value_ptr(scaleMat));
 		//texture color
 		int colourLocation = glGetUniformLocation(buttonTextureShader, "textureColour");
 		vec3 color = currentButton.colour;
@@ -171,8 +168,8 @@ void buttonsBegin(){
 	glEnableVertexAttribArray(2);
 	//create shader
 	int vertexShader, fragmentShader;
-	vertexShader = createShader(textureVertSource, GL_VERTEX_SHADER);
-	fragmentShader = createShader(textureFragSource, GL_FRAGMENT_SHADER);
+	vertexShader = createShader("assets/shaders/textureVert.txt", GL_VERTEX_SHADER);
+	fragmentShader = createShader("assets/shaders/textureFrag.txt", GL_FRAGMENT_SHADER);
 	buttonTextureShader = createProgram({ vertexShader, fragmentShader });
 }
 
@@ -192,8 +189,8 @@ int createText(){
 void textsBegin(){
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	int vertShader = createShader(textVertSource, GL_VERTEX_SHADER);
-	int fragShader = createShader(textFragSource, GL_FRAGMENT_SHADER);
+	int vertShader = createShader("assets/shaders/textVert.txt", GL_VERTEX_SHADER);
+	int fragShader = createShader("assets/shaders/textFrag.txt", GL_FRAGMENT_SHADER);
 	textShader = createProgram({ vertShader, fragShader });
 	//shader details
 	mat4 projectionMatrix = ortho(0.0f, static_cast<GLfloat>(display_x),

@@ -1,4 +1,5 @@
 #include "shader.h"
+#include "saveFiles.h"
 
 #include <glew.h>
 #include <glfw3.h>
@@ -6,76 +7,15 @@
 #include <iostream>
 #include <vector>
 
-const char * textureVertSource = {
-	"#version 330 core\n"
-	"layout(location = 0) in vec3 aPos;\n"
-	"layout(location = 2) in vec2 aTexCoord;\n"
-	"out vec2 TexCoord;\n"
-	"uniform mat4 modelviewMatrix;\n"
-	"uniform vec3 buttonPos;\n"
-	"void main(){\n"
-	"   vec3 changedPos = vec3(aPos.x+buttonPos.x, aPos.y+buttonPos.y, aPos.z+buttonPos.z);\n"
-	"	gl_Position = vec4(changedPos, 1.0) * modelviewMatrix;\n"
-	"	TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
-	"}\0"
-};
-const char * textureFragSource = {
-	"#version 330 core\n"
-	"out vec4 FragColor;\n"
-	"uniform vec4 textureColour = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n"
-	"in vec2 TexCoord;\n"
-	"uniform sampler2D texture0;\n" //this corresponds to the texture unit (0-31) assigned by using glActiveTexture()
-	"void main(){\n"
-	"	FragColor = texture(texture0, TexCoord) * textureColour;\n"
-	"}\0"
-};
-
-const char * textVertSource = {
-	"#version 330 core\n"
-	"layout(location = 0) in vec4 vertex;\n"
-	"out vec2 TexCoords;\n"
-	"uniform mat4 projection;\n"
-	"void main(){\n"
-	"	gl_Position = projection * vec4(vertex.xy, 0.0, 1.0);\n"
-	"	TexCoords = vertex.zw;\n"
-	"}\0"
-};
-const char * textFragSource = {
-	"#version 330 core\n"
-	"in vec2 TexCoords;\n"
-	"out vec4 color;\n"
-	"uniform sampler2D text;\n"
-	"uniform vec4 textColor;\n"
-	"void main(){\n"
-	"	vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, TexCoords).r);\n"
-	"	color = vec4(textColor) * sampled;\n"
-	"}\0"
-};
-
-const char * terrainVertSource = {
-	"#version 330 core\n"
-	"layout(location = 0) in vec3 vertex;\n"
-	"layout(location = 1) in vec3 inColour;\n"
-	"uniform mat4 model;\n"
-	"uniform mat4 view;\n"
-	"uniform mat4 projection;\n"
-	"out vec3 aColour;\n"
-	"void main(){\n"
-	"    aColour = inColour;\n"
-	"    gl_Position =  projection * view * model * vec4(vertex, 1.0f);\n"
-	"}\0"
-};
-const char * terrainFragSource = {
-	"#version 330 core\n"
-	"in vec3 aColour;\n"
-	"uniform float alpha = 1.0f;\n"
-	"out vec4 colour;\n"
-	"void main(){\n"
-	"    colour = vec4(aColour, alpha);\n"
-	"}\0"
-};
-
-int createShader(const char * shaderSource, GLenum shaderType){
+int createShader(const char * filePath, GLenum shaderType){
+	// get lines from file
+	string allLines;
+	vector<string> shaderLines = readLines(filePath);
+	for (string line : shaderLines) {
+		allLines = allLines + line + "\n";
+	}
+	const char * shaderSource = allLines.data();
+	// compile
 	int newShader = glCreateShader(shaderType);
 	glShaderSource(newShader, 1, &shaderSource, NULL);
 	glCompileShader(newShader);

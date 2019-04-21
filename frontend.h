@@ -10,6 +10,9 @@ extern worldGeneration earthWorldGeneration;
 #include "startScreen.h"
 extern startScreen mainStart;
 
+#include "player.h"
+extern player mainPlayer;
+
 void frontendBegin(); // called before first frame
 
 void frontendMainloop(); // called every frame

@@ -18,6 +18,16 @@ using namespace glm;
 #include "saveFiles.h"
 #include "worldGeneration.h"
 
+bool insideCircle(vec2 circlePos, float radius, vec2 pointPos) {
+	float xSquared = pow(pointPos.x - circlePos.x, 2);
+	float ySquared = pow(pointPos.y - circlePos.y, 2);
+	float radiusSquared = pow(radius, 2);
+	if (xSquared + ySquared <= radiusSquared) {
+		return true;
+	}
+	return false;
+}
+
 int randomInt(int min, int max, float multiplier) {
 	srand((int) ceil(glfwGetTime()*multiplier));
 	int random = rand() % (max-min) + min;
@@ -84,8 +94,12 @@ void createSave(const char * filePath, int saveType) {
 		int earthScaleX = randomInt(35, 65);
 		int earthScaleY = 100 - earthScaleX;
 		saveLines[newLinePos(saveLines)] = "planetEarthSize " + to_string(earthScaleX) + " " + to_string(earthScaleY);
+		// lists to check if inside each other
+		vector<vec2> mountainPositions;
+		vector<float> mountainXScales;
+		int failedMountainCreations = 0;
 		//mountains
-		int earthMountainCount = randomInt(1, 10);
+		int earthMountainCount = randomInt(1, 8, 100.0f);;
 		for (int i = 0; i < earthMountainCount; i++) {
 			// scale multipliers
 			float scaXMultiplier = (float)(i + 1) * 10;
@@ -103,6 +117,23 @@ void createSave(const char * filePath, int saveType) {
 			float gradientMultiplier = (float)(i + 1) * 50;
 			//gradient/steepness
 			float mountainGradient = (randomInt(0, 20, gradientMultiplier) * 0.1f);
+			// check if it inside any other mountains
+			bool inside = false;
+			vec2 mtnPos = vec2(mountainPositionX, mountainPositionY);
+			vector<vec2> currentCircleCoords = circleCoords(mtnPos, mountainScaleX, 360, 1.0f);
+			int vecSize = mountainPositions.size();
+			for (int p = 0; p < vecSize; p++) {
+				vec2 currentPos = mountainPositions[p];
+				float currentRad = mountainXScales[p];
+				for (vec2 point : currentCircleCoords) {
+					if (insideCircle(currentPos, currentRad, point)) {
+						inside = true;
+					}
+				}
+			}
+			if (inside) {
+				continue;
+			}
 			//write to file
 			saveLines[newLinePos(saveLines)] = "earthMountainPosition " +
 				to_string(mountainPositionX) + " " + to_string(mountainPositionY);
@@ -110,9 +141,15 @@ void createSave(const char * filePath, int saveType) {
 				to_string(mountainScaleX) + " " + to_string(mountainScaleZ);
 			saveLines[newLinePos(saveLines)] = "earthMountainGradient " +
 				to_string(mountainGradient);
+			// assign to vectors
+			int vectorSize = mountainPositions.size();
+			mountainPositions.resize(vecSize + 1);
+			mountainXScales.resize(vecSize + 1);
+			mountainXScales[vectorSize] = mountainScaleX;
+			mountainPositions[vectorSize] = mtnPos;
 		}
 		//craters
-		int earthCraterCount = 15 - earthMountainCount;
+		int earthCraterCount = 10 - earthMountainCount;
 		for (int i = 0; i < earthCraterCount; i++) {
 			// scale multipliers
 			float scaXMultiplier = (float)(i + earthMountainCount) * 10;
@@ -130,6 +167,23 @@ void createSave(const char * filePath, int saveType) {
 			float gradientMultiplier = (float)(i + earthMountainCount) * 50;
 			//gradient/steepness
 			float craterGradient = -(randomInt(0, 20, gradientMultiplier) * 0.1f);
+			// check if it inside any other mountains
+			bool inside = false;
+			vec2 mtnPos = vec2(craterPositionX, craterPositionY);
+			vector<vec2> currentCircleCoords = circleCoords(mtnPos, craterScaleX, 360, 1.0f);
+			int vecSize = mountainPositions.size();
+			for (int p = 0; p < vecSize; p++) {
+				vec2 currentPos = mountainPositions[p];
+				float currentRad = mountainXScales[p];
+				for (vec2 point : currentCircleCoords) {
+					if (insideCircle(currentPos, currentRad, point)) {
+						inside = true;
+					}
+				}
+			}
+			if (inside) {
+				continue;
+			}
 			//save
 			saveLines[newLinePos(saveLines)] = "earthMountainPosition " +
 				to_string(craterPositionX) + " " + to_string(craterPositionY);
@@ -137,6 +191,12 @@ void createSave(const char * filePath, int saveType) {
 				to_string(craterScaleX) + " " + to_string(craterScaleZ);
 			saveLines[newLinePos(saveLines)] = "earthMountainGradient " +
 				to_string(craterGradient);
+			// assign to vectors
+			int vectorSize = mountainPositions.size();
+			mountainPositions.resize(vecSize + 1);
+			mountainXScales.resize(vecSize + 1);
+			mountainXScales[vectorSize] = craterScaleX;
+			mountainPositions[vectorSize] = mtnPos;
 		}
 	}
 	writeLines(filePath, saveLines);
@@ -154,8 +214,8 @@ void worldGeneration::startTriangle() {
 }
 
 void worldGeneration::startShader() {
-	int vertShader = createShader(terrainVertSource, GL_VERTEX_SHADER);
-	int fragShader = createShader(terrainFragSource, GL_FRAGMENT_SHADER);
+	int vertShader = createShader("assets/shaders/terrainVert.txt", GL_VERTEX_SHADER);
+	int fragShader = createShader("assets/shaders/terrainFrag.txt", GL_FRAGMENT_SHADER);
 	terrainShader = createProgram({ vertShader, fragShader });
 }
 
@@ -247,7 +307,7 @@ void worldGeneration::beginMountains() {
 	// start triangles
 	int index = 0;
 	// variables
-	float radiusDifference = 30.0f;
+	int radiusDifference = 30;
 	// start triangles
 	for (vec2 pos : mountainPositions) {
 		vec2 sca = mountainScales[index];
@@ -258,10 +318,10 @@ void worldGeneration::beginMountains() {
 		for (float r = 0.2f; r < sca.x; r += loopDifference) { // the lowest needs to be 10
 			int size = radiuses.size();
 			radiuses.resize(size + 1);
-			radiuses[size] = std::round(r*100.0f);
+			radiuses[size] = (int)std::round(r*100.0f);
 		}
 		// reverse radiuses so 1st is highest
-		reverse(radiuses.begin(), radiuses.end());
+		reverse(radiuses.begin(), radiuses.end()); 
 		// remove triangles over craters / under mountains
 		if (radiuses.size() > 1) {
 			removeUselessTriangle(radiuses[1], pos, defaultScale);
@@ -374,17 +434,7 @@ void worldGeneration::beginMountains() {
 	beginTerrrain();
 }
 
-bool insideCircle(vec2 circlePos, float radius, vec2 pointPos) {
-	float xSquared = pow(pointPos.x - circlePos.x, 2);
-	float ySquared = pow(pointPos.y - circlePos.y, 2);
-	float radiusSquared = pow(radius, 2);
-	if (xSquared + ySquared <= radiusSquared) {
-		return true;
-	}
-	return false;
-}
-
-void worldGeneration::removeUselessTriangle(float radius, vec2 position, float circleMultiplier){
+void worldGeneration::removeUselessTriangle(int radius, vec2 position, float circleMultiplier){
 	// collect triangles over craters / under mountains
 	float newRadius = radius * circleMultiplier;
 	int triangleIndex = 0;
@@ -461,6 +511,7 @@ vec2 worldGeneration::getAreaScale() {
 	if (currentArea == PLANET_WORLD) {
 		return getVec2File(worldLinesPath, "planetEarthSize");
 	}
+	return vec2(0.0f, 0.0f);
 }
 
 void worldGeneration::begin() {

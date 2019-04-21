@@ -6,10 +6,13 @@
 worldGeneration earthWorldGeneration;
 #include "startScreen.h"
 startScreen mainStart;
+#include "player.h"
+player mainPlayer;
 
 void frontendBegin(){
 	int emptyButton = createButton(); //first button does not show if this is not used
 	mainStart.begin();
+	mainPlayer.begin();
 }
 
 void frontendMainloop(){
@@ -19,4 +22,5 @@ void frontendMainloop(){
 		earthWorldGeneration.startedBegin = true;
 	}
 	earthWorldGeneration.mainloop();
+	mainPlayer.mainloop();
 }

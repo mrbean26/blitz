@@ -50,6 +50,11 @@ bool openglBegin(GLFWwindow *& used_window, bool fullscreen,
 	//stop resize
 	glewExperimental = GL_TRUE;
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+	// shader for mac
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 	//used variables
 	int used_x;
 	int used_y;
