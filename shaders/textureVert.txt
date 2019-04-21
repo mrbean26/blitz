@@ -1,0 +1,11 @@
+#version 330 core
+layout(location = 0) in vec3 aPos;
+layout(location = 2) in vec2 aTexCoord;
+out vec2 TexCoord;
+uniform mat4 modelviewMatrix;
+uniform vec3 buttonPos;
+void main(){
+    vec3 changedPos = vec3(aPos.x+buttonPos.x, aPos.y+buttonPos.y, aPos.z+buttonPos.z);
+    gl_Position = vec4(changedPos, 1.0) * modelviewMatrix;
+    TexCoord = vec2(aTexCoord.x, aTexCoord.y);
+}
