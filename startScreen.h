@@ -4,6 +4,8 @@
 #ifndef START_SCREEN
 #define START_SCREEN
 
+#include <iostream>
+
 extern int lastKey;
 void keyInput(GLFWwindow * window, int key,
 	int scancode, int action, int mods); // detect if a key is clicked

@@ -4,6 +4,10 @@
 #include <glew.h>
 #include <glfw3.h>
 
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+using namespace glm;
+
 #include <iostream>
 #include <vector>
 
@@ -38,4 +42,9 @@ int createProgram(vector<int> shaders){
 	}
 	glLinkProgram(newProgram);
 	return newProgram;
+}
+
+void setMat4(int shader, const char * matrixName, mat4 usedMatrix) {
+	int location = glGetUniformLocation(shader, matrixName);
+	glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(usedMatrix));
 }

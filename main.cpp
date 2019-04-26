@@ -26,6 +26,12 @@ void keyCallback(GLFWwindow*window, int key, int scancode, int action, int mods)
 	if (key == GLFW_KEY_LEFT) {
 		cameraRotation.x -= deltaTime * 60;
 	}
+	if (key == GLFW_KEY_P) {
+		cameraRotation.y += deltaTime * 60;
+	}
+	if (key == GLFW_KEY_O) {
+		cameraRotation.y -= deltaTime * 60;
+	}
 }
 
 int main(){
@@ -40,7 +46,7 @@ int main(){
 		
 		backendMainloop();
 		frontendMainloop();
-		
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}

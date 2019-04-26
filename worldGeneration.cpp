@@ -498,11 +498,11 @@ void worldGeneration::renderTerrain() {
 		int modelLocation = glGetUniformLocation(terrainShader, "model");
 		int projectionLocation = glGetUniformLocation(terrainShader, "projection");
 		int viewLocation = glGetUniformLocation(terrainShader, "view");
+		glUseProgram(terrainShader);
 		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, value_ptr(modelMatrix()));
 		glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, value_ptr(projectionMatrix()));
 		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, value_ptr(viewMatrix()));
 		glBindVertexArray(terrainVAO);
-		glUseProgram(terrainShader);
 		glDrawArrays(GL_TRIANGLES, 0, 3 * total);
 	}
 }

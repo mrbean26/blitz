@@ -8,8 +8,13 @@ using namespace std;
 #include <glew.h>
 #include <glfw3.h>
 
+#include <glm/gtc/matrix_transform.hpp>
+using namespace glm;
+
 int createShader(const char * filePath, GLenum shaderType); // create shader and assign source to it
 
 int createProgram(vector<int> shaders); // combine shaders into a program
+
+void setMat4(int shader, const char* matrixName, mat4 usedMatrix);
 
 #endif 

@@ -18,6 +18,8 @@ using namespace glm;
 
 int randomInt(int min, int max, float multiplier = 1.0f); // quick maths
 
+vec3 colourDifference(float multiplier);
+
 vector<vec2> circleCoords(vec2 position, float radius, int pointCount, float scale);
 
 extern int lineCount;

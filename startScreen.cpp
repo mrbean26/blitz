@@ -405,6 +405,7 @@ void startScreen::mainloop(){
 			earthWorldGeneration.worldLinesPath = "assets/saves/saveOne.save";
 			active = false;
 			earthWorldGeneration.active = true;
+			mainPlayer.active = true;
 			return;
 		}
 	}
@@ -418,6 +419,7 @@ void startScreen::mainloop(){
 			earthWorldGeneration.worldLinesPath = "assets/saves/saveTwo.save";
 			active = false;
 			earthWorldGeneration.active = true;
+			mainPlayer.active = true;
 			return;
 		}
 	}

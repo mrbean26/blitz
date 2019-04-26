@@ -34,7 +34,7 @@ extern vec3 cameraPosition;
 extern vec3 cameraRotation;
 
 mat4 projectionMatrix();
-mat4 modelMatrix();
+mat4 modelMatrix(vec3 position = vec3(0.0f, 0.0f, 0.0f), vec3 rotation = vec3(0.0f, 0.0f, 0.0f), vec3 scale = vec3(1.0f, 1.0f, 1.0f));
 mat4 viewMatrix();
 
 #endif
