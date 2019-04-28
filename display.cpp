@@ -123,8 +123,8 @@ void displayMainloop(){
 float nearPlane = 0.1f;
 float farPlane = 100.0f;
 
-vec3 cameraPosition = vec3(25.0f, 35.0f, -25.0f);
-vec3 cameraRotation = vec3(-90.0f, 0.0f, 0.0f);
+vec3 cameraPosition = vec3(0.0f, 0.0f, 25.0f);
+vec3 cameraRotation = vec3(0.0f, 0.0f, 0.0f);
 
 mat4 projectionMatrix() {
 	mat4 newMatrix = mat4(1.0f);
@@ -133,14 +133,21 @@ mat4 projectionMatrix() {
 	return newMatrix;
 }
 
-mat4 modelMatrix(vec3 position, vec3 rotation, vec3 scale) {
+mat4 modelMatrix(vec3 position, vec3 rotation, vec3 scale, bool child) {
 	mat4 newMatrix = mat4(1.0f);
-	
-	newMatrix = translate(newMatrix, position);
-	newMatrix = glm::scale(newMatrix, scale);
+	if (!child) {
+		newMatrix = translate(newMatrix, position);
+		newMatrix = glm::scale(newMatrix, scale);
+		newMatrix = rotate(newMatrix, radians(rotation.x), vec3(1.0f, 0.0f, 0.0f));
+		newMatrix = rotate(newMatrix, radians(rotation.y), vec3(0.0f, 1.0f, 0.0f));
+		newMatrix = rotate(newMatrix, radians(rotation.z), vec3(0.0f, 0.0f, 1.0f));
+		return newMatrix;
+	}
 	newMatrix = rotate(newMatrix, radians(rotation.x), vec3(1.0f, 0.0f, 0.0f));
 	newMatrix = rotate(newMatrix, radians(rotation.y), vec3(0.0f, 1.0f, 0.0f));
 	newMatrix = rotate(newMatrix, radians(rotation.z), vec3(0.0f, 0.0f, 1.0f));
+	newMatrix = translate(newMatrix, position);
+	newMatrix = glm::scale(newMatrix, scale);
 	return newMatrix;
 }
 

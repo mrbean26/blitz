@@ -48,17 +48,18 @@ void player::renderPlayer(){
 	vector<vec3> scales = { headScale, torsoScale, armScale, legScale, armScaleTwo, legScaleTwo };
 
 	vector<vec3> playerTransformations = { playerPosition, playerRotation, playerScale };
+	vector<bool> children = { true, false, true, true, true, true };
 
 	vector<GLuint> vaos = { headVAO, torsoVAO, armVAO, legVAO, armVAO, legVAO };
 	vector<int> vertCounts = { 48, 36, 60, 60, 60, 60 };
 
 	glUseProgram(playerShader);
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 6; i++) {
 		vec3 combinedPosition = playerPosition + positions[i];
 		vec3 combinedRotation = playerRotation + rotations[i];
 		vec3 combinedScale = playerScale * scales[i];
 
-		setMat4(playerShader, "model", modelMatrix(combinedPosition, combinedRotation, combinedScale));
+		setMat4(playerShader, "model", modelMatrix(combinedPosition, combinedRotation, combinedScale, children[i]));
 		setMat4(playerShader, "view", viewMatrix());
 		setMat4(playerShader, "projection", projectionMatrix());
 
@@ -128,19 +129,19 @@ void player::startHead(){
 		1.0f, -0.25f, 0.0f, headColours[11].x, headColours[11].y, headColours[11].z,
 
 		// bottom section of head
-		0.0f, -0.75f, 0.0f, headColours[12].x, headColours[12].y, headColours[12].z,
+		0.0f, -0.25f, 0.0f, headColours[12].x, headColours[12].y, headColours[12].z,
 		1.0f, -0.25f, 0.0f, headColours[12].x, headColours[12].y, headColours[12].z,
 		0.0f, -0.25f, 1.0f, headColours[12].x, headColours[12].y, headColours[12].z,
 
-		0.0f, -0.75f, 0.0f, headColours[13].x, headColours[13].y, headColours[13].z,
+		0.0f, -0.25f, 0.0f, headColours[13].x, headColours[13].y, headColours[13].z,
 		1.0f, -0.25f, 0.0f, headColours[13].x, headColours[13].y, headColours[13].z,
 		0.0f, -0.25f, -1.0f, headColours[13].x, headColours[13].y, headColours[13].z,
 
-		0.0f, -0.75f, 0.0f, headColours[14].x, headColours[14].y, headColours[14].z,
+		0.0f, -0.25f, 0.0f, headColours[14].x, headColours[14].y, headColours[14].z,
 		-1.0f, -0.25f, 0.0f, headColours[14].x, headColours[14].y, headColours[14].z,
 		0.0f, -0.25f, 1.0f, headColours[14].x, headColours[14].y, headColours[14].z,
 
-		0.0f, -0.75f, 0.0f, headColours[15].x, headColours[15].y, headColours[15].z,
+		0.0f, -0.25f, 0.0f, headColours[15].x, headColours[15].y, headColours[15].z,
 		-1.0f, -0.25f, 0.0f, headColours[15].x, headColours[15].y, headColours[15].z,
 		0.0f, -0.25f, -1.0f, headColours[15].x, headColours[15].y, headColours[15].z,
 	};

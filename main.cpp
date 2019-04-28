@@ -35,7 +35,7 @@ void keyCallback(GLFWwindow*window, int key, int scancode, int action, int mods)
 }
 
 int main(){
-	if (!openglBegin(window, false, 640, 360)) {
+	if (!openglBegin(window, false, 1280, 720)) {
 		return -1;
 	}
 	glfwSetKeyCallback(window, keyCallback);
@@ -46,7 +46,7 @@ int main(){
 		
 		backendMainloop();
 		frontendMainloop();
-
+		
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
