@@ -1,5 +1,7 @@
 #include "display.h"
 #include "worldGeneration.h"
+#include "interface.h"
+#include "frontend.h"
 
 #include <math.h>
 #include <vector>
@@ -123,8 +125,8 @@ void displayMainloop(){
 float nearPlane = 0.1f;
 float farPlane = 100.0f;
 
-vec3 cameraPosition = vec3(0.0f, 0.0f, 25.0f);
-vec3 cameraRotation = vec3(0.0f, 0.0f, 0.0f);
+vec3 cameraPosition = vec3(0.0f, 4.5f, 10.0f);
+vec3 cameraRotation = vec3(-15.0f, -90.0f, 0.0f);
 
 mat4 projectionMatrix() {
 	mat4 newMatrix = mat4(1.0f);
@@ -133,7 +135,7 @@ mat4 projectionMatrix() {
 	return newMatrix;
 }
 
-mat4 modelMatrix(vec3 position, vec3 rotation, vec3 scale, bool child) {
+mat4 modelMatrix(vec3 position, vec3 rotation, vec3 scale, bool child, vec3 parentPosition) {
 	mat4 newMatrix = mat4(1.0f);
 	if (!child) {
 		newMatrix = translate(newMatrix, position);
@@ -143,50 +145,71 @@ mat4 modelMatrix(vec3 position, vec3 rotation, vec3 scale, bool child) {
 		newMatrix = rotate(newMatrix, radians(rotation.z), vec3(0.0f, 0.0f, 1.0f));
 		return newMatrix;
 	}
+	newMatrix = translate(newMatrix, parentPosition);
 	newMatrix = rotate(newMatrix, radians(rotation.x), vec3(1.0f, 0.0f, 0.0f));
 	newMatrix = rotate(newMatrix, radians(rotation.y), vec3(0.0f, 1.0f, 0.0f));
 	newMatrix = rotate(newMatrix, radians(rotation.z), vec3(0.0f, 0.0f, 1.0f));
+	
 	newMatrix = translate(newMatrix, position);
 	newMatrix = glm::scale(newMatrix, scale);
 	return newMatrix;
 }
 
+bool playerView = false;
+float playerYaw = 0.0f;
+float playerPitch = 0.0f;
+
 mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	mat4 newMatrix = mat4(1.0f);
-	// clamp 0-360
-	vec3 rotation = cameraRotation;
-	for (int point = 0; point < 3; point++) {
-		float currentValue = rotation[point];
-		bool negative = false;
-		if (currentValue < 0) {
-			currentValue = currentValue * -1.0f;
-			negative = true;
+	// third person camera
+	float distanceFromCharacter = 10.0f;
+	float distanceAboveCharacter = 0.5f;
+	
+	newMatrix = translate(newMatrix, -vec3(0.0f, distanceAboveCharacter, distanceFromCharacter)); // slightly above head & behind character slightly
+	newMatrix = rotate(newMatrix, -radians(playerPitch), vec3(1.0f, 0.0f, 0.0f)); // x rot
+	newMatrix = rotate(newMatrix, -radians(playerYaw), vec3(0.0f, 1.0f, 0.0f)); // y rot
+	
+	newMatrix = translate(newMatrix, -vec3(0.0f, mainPlayer.headLookAtY, 0.0f)); // translate to head
+	newMatrix = rotate(newMatrix, -radians(mainPlayer.playerRotation.y), vec3(0.0f, 1.0f, 0.0f)); // with character rotation
+	newMatrix = translate(newMatrix, -mainPlayer.playerPosition); // with player position
+	// not 3rd person
+	if (!playerView) {
+		// clamp 0-360
+		vec3 rotation = cameraRotation;
+		for (int point = 0; point < 3; point++) {
+			float currentValue = rotation[point];
+			bool negative = false;
+			if (currentValue < 0) {
+				currentValue = currentValue * -1.0f;
+				negative = true;
+			}
+			// for over 360
+			float lowestFullTurn = floor(currentValue / 360.0f);
+			lowestFullTurn = lowestFullTurn * 360.0f;
+			currentValue = currentValue - lowestFullTurn;
+			if (negative) {
+				currentValue = 360 - currentValue;
+			}
+			// assign
+			rotation[point] = currentValue;
 		}
-		// for over 360
-		float lowestFullTurn = floor(currentValue / 360.0f);
-		lowestFullTurn = lowestFullTurn * 360.0f;
-		currentValue = currentValue - lowestFullTurn;
-		if (negative) {
-			currentValue = 360 - currentValue;
+		// make not integers
+		for (int point = 0; point < 3; point++) {
+			float currentValue = rotation[point];
+			if (floor(currentValue) == currentValue) {
+				currentValue = currentValue + 0.05f;
+			}
+			// assign
+			rotation[point] = currentValue;
 		}
-		// assign
-		rotation[point] = currentValue;
+		// front
+		vec3 cameraFront;
+		cameraFront.x = cos(radians(rotation.x)) * cos(radians(rotation.y));
+		cameraFront.y = sin(radians(rotation.x));
+		cameraFront.z = cos(radians(rotation.x)) * sin(radians(rotation.y));
+		// currently not possible to rotate more than one axis
+		newMatrix = lookAt(cameraPosition, cameraPosition + cameraFront, vec3(0.0f, 1.0f, 0.0f));
 	}
-	// make not integers
-	for (int point = 0; point < 3; point++) {
-		float currentValue = rotation[point];
-		if (floor(currentValue) == currentValue) {
-			currentValue = currentValue + 0.05f;
-		}
-		// assign
-		rotation[point] = currentValue;
-	}
-	// front
-	vec3 cameraFront;
-	cameraFront.x = cos(radians(rotation.x)) * cos(radians(rotation.y));
-	cameraFront.y = sin(radians(rotation.x));
-	cameraFront.z = cos(radians(rotation.x)) * sin(radians(rotation.y));
-	// currently not possible to rotate more than one axis
-	newMatrix = lookAt(cameraPosition, cameraPosition + cameraFront, vec3(0.0f, 1.0f, 0.0f));
+	
 	return newMatrix;
 }

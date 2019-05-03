@@ -3,6 +3,8 @@
 #include "display.h"
 #include "worldGeneration.h"
 
+#include "backend.h"
+
 #include <glm/gtc/type_ptr.hpp>
 using namespace glm;
 
@@ -23,12 +25,15 @@ vector<vec3> colourVector(int size, vec3 colour) {
 GLuint playerShader;
 void player::begin(){
 	startCharacterVertices();
+	playerView = true;
 }
 
 void player::mainloop(){
 	if (!active) {
 		return;
 	}
+	headLookAtY = playerPosition.y;
+	headLookAtY = headLookAtY + 1.25f;
 	renderPlayer();
 	movement();
 	cameraMovement();
@@ -39,7 +44,10 @@ void player::movement(){
 }
 
 void player::cameraMovement(){
-
+	vec2 mouseDiffer = mouseDifferences();
+	playerYaw -= mouseDiffer.x*sensitivity;
+	playerPitch += mouseDiffer.y*sensitivity;
+	playerPitch = clamp(playerPitch, -80.0f, 80.0f);
 }
 
 void player::renderPlayer(){
@@ -48,18 +56,16 @@ void player::renderPlayer(){
 	vector<vec3> scales = { headScale, torsoScale, armScale, legScale, armScaleTwo, legScaleTwo };
 
 	vector<vec3> playerTransformations = { playerPosition, playerRotation, playerScale };
-	vector<bool> children = { true, false, true, true, true, true };
 
 	vector<GLuint> vaos = { headVAO, torsoVAO, armVAO, legVAO, armVAO, legVAO };
 	vector<int> vertCounts = { 48, 36, 60, 60, 60, 60 };
 
 	glUseProgram(playerShader);
 	for (int i = 0; i < 6; i++) {
-		vec3 combinedPosition = playerPosition + positions[i];
 		vec3 combinedRotation = playerRotation + rotations[i];
 		vec3 combinedScale = playerScale * scales[i];
 
-		setMat4(playerShader, "model", modelMatrix(combinedPosition, combinedRotation, combinedScale, children[i]));
+		setMat4(playerShader, "model", modelMatrix(positions[i], combinedRotation, combinedScale, true, playerPosition));
 		setMat4(playerShader, "view", viewMatrix());
 		setMat4(playerShader, "projection", projectionMatrix());
 

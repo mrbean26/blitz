@@ -5,6 +5,8 @@
 #include <glew.h>
 #include <glfw3.h>
 
+#include "player.h"
+
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
 
@@ -34,8 +36,10 @@ extern vec3 cameraPosition;
 extern vec3 cameraRotation;
 
 mat4 projectionMatrix();
-mat4 modelMatrix(vec3 position = vec3(0.0f, 0.0f, 0.0f), vec3 rotation = vec3(0.0f, 0.0f, 0.0f), vec3 scale = vec3(1.0f, 1.0f, 1.0f),
-	bool child = false);
+mat4 modelMatrix(vec3 position = vec3(0.0f), vec3 rotation = vec3(0.0f), vec3 scale = vec3(1.0f), bool child = false, vec3 parentPosition = vec3(0.0f));
+
+extern bool playerView;
+extern float playerYaw, playerPitch;
 mat4 viewMatrix();
 
 #endif

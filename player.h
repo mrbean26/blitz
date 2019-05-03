@@ -19,9 +19,14 @@ public:
 	void mainloop();
 
 	vec3 playerPosition, playerRotation, playerScale = vec3(1.0f, 1.0f, 1.0f);
+
+	float headLookAtY = 0.0f;
 private:
 	void movement();
+
 	void cameraMovement();
+	float sensitivity = 0.3f;
+
 	void renderPlayer();
 
 	void startCharacterVertices();

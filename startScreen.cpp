@@ -406,6 +406,7 @@ void startScreen::mainloop(){
 			active = false;
 			earthWorldGeneration.active = true;
 			mainPlayer.active = true;
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			return;
 		}
 	}
@@ -420,6 +421,7 @@ void startScreen::mainloop(){
 			active = false;
 			earthWorldGeneration.active = true;
 			mainPlayer.active = true;
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			return;
 		}
 	}

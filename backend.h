@@ -23,4 +23,5 @@ void backendMainloop(); // run every frame
 
 void backendBegin(); // run before first frame
 
+vec2 mouseDifferences();
 #endif
