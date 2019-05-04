@@ -23,24 +23,52 @@ vector<vec3> colourVector(int size, vec3 colour) {
 }
 
 GLuint playerShader;
+vector<string> inputLines;
 void player::begin(){
 	startCharacterVertices();
 	playerView = true;
+	inputLines = readLines("assets/saves/inputs.save");
 }
 
 void player::mainloop(){
 	if (!active) {
 		return;
 	}
-	headLookAtY = playerPosition.y;
-	headLookAtY = headLookAtY + 1.25f;
 	renderPlayer();
 	movement();
 	cameraMovement();
 }
 
 void player::movement(){
+	int forwardKey = stoi(inputLines[0]);
+	int leftKey = stoi(inputLines[1]);
+	int backKey = stoi(inputLines[2]);
+	int rightKey = stoi(inputLines[3]);
+	
+	int sprintKey = stoi(inputLines[7]);
 
+	movingMultiplier = 0.0f;
+	if (checkKey(backKey) && !checkKey(forwardKey)) {
+		movingMultiplier = 25.0f;
+	}
+	if (checkKey(forwardKey) && !checkKey(backKey)) {
+		if (!checkKey(sprintKey)) {
+			movingMultiplier = 30.0f;
+		}
+		if (checkKey(sprintKey)) {
+			movingMultiplier = 50.0f;
+		}
+	}
+	float spinMultiplier = 140.0f;
+	if (checkKey(rightKey)) { 
+		playerRotation.y -= deltaTime * spinMultiplier;
+		playerYaw += deltaTime * spinMultiplier;
+	}
+	if (checkKey(leftKey)) {
+		playerRotation.y += deltaTime * spinMultiplier;
+		playerYaw -= deltaTime * spinMultiplier;
+	}
+	runAnimation(movingMultiplier);
 }
 
 void player::cameraMovement(){
@@ -48,6 +76,8 @@ void player::cameraMovement(){
 	playerYaw -= mouseDiffer.x*sensitivity;
 	playerPitch += mouseDiffer.y*sensitivity;
 	playerPitch = clamp(playerPitch, -80.0f, 80.0f);
+	headLookAtY = playerPosition.y;
+	headLookAtY = headLookAtY + 1.25f;
 }
 
 void player::renderPlayer(){
@@ -55,17 +85,20 @@ void player::renderPlayer(){
 	vector<vec3> rotations = { headRotation, torsoRotation, armRotation, legRotation, armRotationTwo, legRotationTwo };
 	vector<vec3> scales = { headScale, torsoScale, armScale, legScale, armScaleTwo, legScaleTwo };
 
-	vector<vec3> playerTransformations = { playerPosition, playerRotation, playerScale };
-
 	vector<GLuint> vaos = { headVAO, torsoVAO, armVAO, legVAO, armVAO, legVAO };
 	vector<int> vertCounts = { 48, 36, 60, 60, 60, 60 };
 
+	vec3 legParentPos = playerPosition - vec3(0.0f, 0.775f, 0.0f);
+	vec3 armParentPos = playerPosition + vec3(0.0f, 0.5f, 0.0f);
+	vector<vec3> parentPositions = { playerPosition, playerPosition, armParentPos, legParentPos, armParentPos, legParentPos };
+	
 	glUseProgram(playerShader);
 	for (int i = 0; i < 6; i++) {
-		vec3 combinedRotation = playerRotation + rotations[i];
+		
 		vec3 combinedScale = playerScale * scales[i];
 
-		setMat4(playerShader, "model", modelMatrix(positions[i], combinedRotation, combinedScale, true, playerPosition));
+		setMat4(playerShader, "model", modelMatrix(positions[i], rotations[i], combinedScale, 
+			true, parentPositions[i], playerRotation));
 		setMat4(playerShader, "view", viewMatrix());
 		setMat4(playerShader, "projection", projectionMatrix());
 
@@ -362,6 +395,79 @@ void player::startLeg() {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
+}
+
+void player::runAnimation(float multiplier){
+	if (multiplier == 0.0f) {
+		int upDown = 0;
+		if (armRotation.x > 0) {
+			upDown = 1;
+			armRotation.x -= deltaTime * 3 * 40.0f;
+			armRotationTwo.x += deltaTime * 3 * 40.0f;
+			legRotation.x += deltaTime * 3 * 40.0f;
+			legRotationTwo.x -= deltaTime * 3 * 40.0f;
+		}
+		if (armRotation.x < 0) {
+			upDown = -1;
+			armRotation.x += deltaTime * 3 * 40.0f;
+			armRotationTwo.x -= deltaTime * 3 * 40.0f;
+			legRotation.x -= deltaTime * 3 * 40.0f;
+			legRotationTwo.x += deltaTime * 3 * 40.0f;
+		}
+		if (upDown == -1) {
+			if (armRotation.x > 0) {
+				armRotation.x = 0.0f;
+				armRotationTwo.x = 0.0f;
+				legRotation.x = 0.0f;
+				legRotationTwo.x = 0.0f;
+			}
+		}
+		if (upDown == 1) {
+			if (armRotation.x < 0) {
+				armRotation.x = 0.0f;
+				armRotationTwo.x = 0.0f;
+				legRotation.x = 0.0f;
+				legRotationTwo.x = 0.0f;
+			}
+		}
+		return;
+	}
+	if (!finishedFirst) {
+		armRotation.x += deltaTime * 3 * multiplier;
+		armRotationTwo.x -= deltaTime * 3 * multiplier;
+		legRotation.x -= deltaTime * 2.5f * multiplier;
+		legRotationTwo.x += deltaTime * 2.5f * multiplier;
+		
+		if (armRotation.x >= 30.0f) {
+			finishedFirst = true;
+		}
+	}
+	if (!finishedSecond && finishedFirst) {
+		armRotation.x -= deltaTime * 3 * multiplier;
+		armRotationTwo.x += deltaTime * 3 * multiplier;
+		legRotation.x += deltaTime * 2.5f * multiplier;
+		legRotationTwo.x -= deltaTime * 2.5f * multiplier;
+
+		if (armRotation.x <= -30.0f) {
+			finishedSecond = true;
+		}
+	}
+	if (finishedFirst && finishedSecond) {
+		armRotation.x += deltaTime * 3 * multiplier;
+		armRotationTwo.x -= deltaTime * 3 * multiplier;
+		legRotation.x -= deltaTime * 2.5f * multiplier;
+		legRotationTwo.x += deltaTime * 2.5f * multiplier;
+
+		if (armRotation.x >= 0) {
+			armRotation.x = 0.0f;
+			armRotationTwo.x = 0.0f;
+			legRotation.x = 0.0f;
+			legRotationTwo.x = 0.0f;
+
+			finishedFirst = false;
+			finishedSecond = false;
+		}
+	}
 }
 
 void player::startTorso() {

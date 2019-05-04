@@ -97,4 +97,7 @@ void interfaceBegin(); // all begin
 
 void interfaceMainloop(); // run every frame
 
+// key inputs
+bool checkKey(int key);
+
 #endif

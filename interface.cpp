@@ -333,3 +333,11 @@ void interfaceMainloop(){
 	registerClicks();
 	renderTexts();
 }
+
+bool checkKey(int key){
+	int keyState = glfwGetKey(window, key);
+	if (keyState == GLFW_PRESS) {
+		return true;
+	}
+	return false;
+}

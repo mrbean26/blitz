@@ -37,8 +37,8 @@ private:
 
 	void startArm(); // includes hand
 	GLuint armVAO, armVBO;
-	vec3 armPosition=vec3(-0.7f, 0.0f, 0.0f), armRotation, armScale = vec3(0.4f, 0.4f, 0.4f);
-	vec3 armPositionTwo=vec3(0.7f, 0.0f, 0.0f), armRotationTwo, armScaleTwo = vec3(0.4f, 0.4f, 0.4f);
+	vec3 armPosition=vec3(-0.7f, -0.55f, 0.0f), armRotation, armScale = vec3(0.4f, 0.4f, 0.4f);
+	vec3 armPositionTwo=vec3(0.7f, -0.55f, 0.0f), armRotationTwo, armScaleTwo = vec3(0.4f, 0.4f, 0.4f);
 
 	void startTorso();
 	GLuint torsoVAO, torsoVBO;
@@ -46,8 +46,15 @@ private:
 
 	void startLeg(); // includes foot
 	GLuint legVAO, legVBO;
-	vec3 legPosition = vec3(-0.25f, -1.55f, 0.0f), legRotation, legScale = vec3(0.3f, 0.3f, 0.3f);
-	vec3 legPositionTwo = vec3(0.25f, -1.55f, 0.0f), legRotationTwo, legScaleTwo = vec3(0.3f, 0.3f, 0.3f);
+	vec3 legPosition = vec3(-0.25f, -0.775f, 0.0f), legRotation, legScale = vec3(0.3f, 0.3f, 0.3f);
+	vec3 legPositionTwo = vec3(0.25f, -0.775f, 0.0f), legRotationTwo, legScaleTwo = vec3(0.3f, 0.3f, 0.3f);
+
+	// animations
+
+	bool walking = false, running = false;
+	bool finishedFirst = false, finishedSecond = false;
+	float movingMultiplier = 0.0f; // speed at which to move limbs in runAnimation()
+	void runAnimation(float multiplier);
 };
 
 #endif
