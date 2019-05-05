@@ -16,7 +16,7 @@ using namespace glm;
 #define DEFAULT_SAVE 0
 #define PLANET_WORLD 0
 
-int randomInt(int min, int max, float multiplier = 1.0f); // quick maths
+int randomInt(int min, int max); // quick maths
 
 vec3 colourDifference(float multiplier);
 

@@ -173,8 +173,8 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	newMatrix = rotate(newMatrix, -radians(playerYaw), vec3(0.0f, 1.0f, 0.0f)); // y rot
 	
 	newMatrix = translate(newMatrix, -vec3(0.0f, mainPlayer.headLookAtY, 0.0f)); // translate to head
-	newMatrix = rotate(newMatrix, -radians(mainPlayer.playerRotation.y), vec3(0.0f, 1.0f, 0.0f)); // with character rotation
-	newMatrix = translate(newMatrix, -mainPlayer.playerPosition); // with player position
+	newMatrix = rotate(newMatrix, -radians(mainPlayer.rotation.y), vec3(0.0f, 1.0f, 0.0f)); // with character rotation
+	newMatrix = translate(newMatrix, -vec3(mainPlayer.position.x, 0.0f, mainPlayer.position.z)); // with player position
 	// not 3rd person
 	if (!playerView) {
 		// clamp 0-360

@@ -18,14 +18,18 @@ public:
 	void begin();
 	void mainloop();
 
-	vec3 playerPosition, playerRotation, playerScale = vec3(1.0f, 1.0f, 1.0f);
+	vec3 position, rotation, scale = vec3(1.0f, 1.0f, 1.0f);
+	vec3 velocity = vec3(0.0f);
 
 	float headLookAtY = 0.0f;
 private:
 	void movement();
+	bool jumping = false;
+	float jumpVelocity;
 
 	void cameraMovement();
 	float sensitivity = 0.3f;
+	
 
 	void renderPlayer();
 

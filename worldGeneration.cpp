@@ -22,14 +22,21 @@ bool insideCircle(vec2 circlePos, float radius, vec2 pointPos) {
 	float xSquared = pow(pointPos.x - circlePos.x, 2);
 	float ySquared = pow(pointPos.y - circlePos.y, 2);
 	float radiusSquared = pow(radius, 2);
-	if (xSquared + ySquared <= radiusSquared) {
+	if (xSquared + ySquared < radiusSquared-10) {
 		return true;
 	}
 	return false;
 }
 
-int randomInt(int min, int max, float multiplier) {
-	srand((int) ceil(glfwGetTime()*multiplier));
+int randomSeedCount = 5;
+int randomSeed() {
+	double timeSquared = pow(randomSeedCount, 4);
+	randomSeedCount++;
+	return round(timeSquared) * (10 * (cos(glfwGetTime())) * (tan(glfwGetTime()*2)));
+}
+
+int randomInt(int min, int max) {
+	srand(randomSeed());
 	int random = rand() % (max-min) + min;
 	return random;
 }
@@ -96,44 +103,21 @@ void createSave(const char * filePath, int saveType) {
 		saveLines[newLinePos(saveLines)] = "planetEarthSize " + to_string(earthScaleX) + " " + to_string(earthScaleY);
 		// lists to check if inside each other
 		vector<vec2> mountainPositions;
-		vector<float> mountainXScales;
+		vector<float> mountainXScales, mountainGradients;
 		int failedMountainCreations = 0;
 		//mountains
-		int earthMountainCount = randomInt(1, 8, 100.0f);;
+		int earthMountainCount = randomInt(1, 8);;
 		for (int i = 0; i < earthMountainCount; i++) {
-			// scale multipliers
-			float scaXMultiplier = (float)(i + 1) * 10;
-			float scaYMultiplier = (float)(i + 1) * 20;
 			//mountain scale
-			float mountainScaleX = (randomInt(0, earthScaleX, scaXMultiplier) * 0.1f);
-			float mountainScaleZ = (randomInt(1, 60, scaYMultiplier)*0.1f);
-			//position multipliers
-			float posXMultiplier = (float)(i + 1) * 30;
-			float posYMultiplier = (float)(i + 1) * 40;
+			float mountainScaleX = (randomInt(0, earthScaleX) * 0.1f);
+			float mountainScaleZ = (randomInt(1, 60)*0.1f);
 			//mountain position
-			float mountainPositionX = (randomInt(0, earthScaleX * 10, posXMultiplier) * 0.1f);
-			float mountainPositionY = (randomInt(0, earthScaleY * 10, posYMultiplier) * 0.1f);
-			// gradient multiplier
-			float gradientMultiplier = (float)(i + 1) * 50;
+			float mountainPositionX = (randomInt(0, earthScaleX * 10) * 0.1f);
+			float mountainPositionY = (randomInt(0, earthScaleY * 10) * 0.1f);
 			//gradient/steepness
-			float mountainGradient = (randomInt(0, 20, gradientMultiplier) * 0.1f);
+			float mountainGradient = (randomInt(3, 8) * 0.1f);
 			// check if it inside any other mountains
-			bool inside = false;
-			vec2 mtnPos = vec2(mountainPositionX, mountainPositionY);
-			vector<vec2> currentCircleCoords = circleCoords(mtnPos, mountainScaleX, 360, 1.0f);
-			int vecSize = mountainPositions.size();
-			for (int p = 0; p < vecSize; p++) {
-				vec2 currentPos = mountainPositions[p];
-				float currentRad = mountainXScales[p];
-				for (vec2 point : currentCircleCoords) {
-					if (insideCircle(currentPos, currentRad, point)) {
-						inside = true;
-					}
-				}
-			}
-			if (inside) {
-				continue;
-			}
+			
 			//write to file
 			saveLines[newLinePos(saveLines)] = "earthMountainPosition " +
 				to_string(mountainPositionX) + " " + to_string(mountainPositionY);
@@ -142,48 +126,21 @@ void createSave(const char * filePath, int saveType) {
 			saveLines[newLinePos(saveLines)] = "earthMountainGradient " +
 				to_string(mountainGradient);
 			// assign to vectors
-			int vectorSize = mountainPositions.size();
-			mountainPositions.resize(vecSize + 1);
-			mountainXScales.resize(vecSize + 1);
-			mountainXScales[vectorSize] = mountainScaleX;
-			mountainPositions[vectorSize] = mtnPos;
+			
 		}
 		//craters
 		int earthCraterCount = 10 - earthMountainCount;
 		for (int i = 0; i < earthCraterCount; i++) {
-			// scale multipliers
-			float scaXMultiplier = (float)(i + earthMountainCount) * 10;
-			float scaZMultiplier = (float)(i + earthMountainCount) * 20;
 			//crater scale
-			float craterScaleX = (randomInt(0, earthScaleX, scaXMultiplier) * 0.1f);
-			float craterScaleZ = (randomInt(0, 60, scaZMultiplier) * 0.1f);
-			// crater multipliers
-			float posXMultiplier = (float)(i + earthMountainCount) * 30;
-			float posYMultiplier = (float)(i + earthMountainCount) * 40;
+			float craterScaleX = (randomInt(0, earthScaleX) * 0.1f);
+			float craterScaleZ = (randomInt(0, 60) * 0.1f);
 			//crater position
-			float craterPositionX = (randomInt(0, earthScaleX * 10, posXMultiplier) * 0.1f);
-			float craterPositionY = (randomInt(0, earthScaleY * 10, posYMultiplier) * 0.1f);
-			// gradient multipliers
-			float gradientMultiplier = (float)(i + earthMountainCount) * 50;
+			float craterPositionX = (randomInt(0, earthScaleX * 10) * 0.1f);
+			float craterPositionY = (randomInt(0, earthScaleY * 10) * 0.1f);
 			//gradient/steepness
-			float craterGradient = -(randomInt(0, 20, gradientMultiplier) * 0.1f);
+			float craterGradient = -(randomInt(5, 10) * 0.5f);
 			// check if it inside any other mountains
-			bool inside = false;
-			vec2 mtnPos = vec2(craterPositionX, craterPositionY);
-			vector<vec2> currentCircleCoords = circleCoords(mtnPos, craterScaleX, 360, 1.0f);
-			int vecSize = mountainPositions.size();
-			for (int p = 0; p < vecSize; p++) {
-				vec2 currentPos = mountainPositions[p];
-				float currentRad = mountainXScales[p];
-				for (vec2 point : currentCircleCoords) {
-					if (insideCircle(currentPos, currentRad, point)) {
-						inside = true;
-					}
-				}
-			}
-			if (inside) {
-				continue;
-			}
+
 			//save
 			saveLines[newLinePos(saveLines)] = "earthMountainPosition " +
 				to_string(craterPositionX) + " " + to_string(craterPositionY);
@@ -192,11 +149,7 @@ void createSave(const char * filePath, int saveType) {
 			saveLines[newLinePos(saveLines)] = "earthMountainGradient " +
 				to_string(craterGradient);
 			// assign to vectors
-			int vectorSize = mountainPositions.size();
-			mountainPositions.resize(vecSize + 1);
-			mountainXScales.resize(vecSize + 1);
-			mountainXScales[vectorSize] = craterScaleX;
-			mountainPositions[vectorSize] = mtnPos;
+			
 		}
 	}
 	writeLines(filePath, saveLines);
@@ -223,12 +176,12 @@ vector<triangle> flatTerrainTriangles;
 vector<float> flatXPoints; vector<float> flatZPoints;
 void worldGeneration::beginFlatTerrain() {
 	vec3 colour;
-	vec2 areaScale;
+	vec2 areaScale = vec2(0.0f);
 	if (currentArea == PLANET_WORLD) {
 		colour = vec3(0.35f, 0.78f, 0.31f);
 		areaScale = getVec2File(worldLinesPath, "planetEarthSize");
 	}
-	float triangleSize = 1.2f;
+	float triangleSize = 1.0f;
 	for (int x = 0; x < areaScale.x / triangleSize; x++) {
 		for (int y = 0; y < areaScale.y / triangleSize; y++) {
 			// draw triangle
@@ -323,8 +276,8 @@ void worldGeneration::beginMountains() {
 		// reverse radiuses so 1st is highest
 		reverse(radiuses.begin(), radiuses.end()); 
 		// remove triangles over craters / under mountains
-		if (radiuses.size() > 1) {
-			removeUselessTriangle(radiuses[1], pos, defaultScale);
+		if (radiuses.size() > 0) {
+			removeUselessTriangle(radiuses[0], pos, defaultScale);
 		}
 		// create circles & triangles here
 		for (int radius : radiuses) {

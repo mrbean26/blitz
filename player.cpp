@@ -31,9 +31,7 @@ void player::begin(){
 }
 
 void player::mainloop(){
-	if (!active) {
-		return;
-	}
+	if (!active) { return; }
 	renderPlayer();
 	movement();
 	cameraMovement();
@@ -46,29 +44,60 @@ void player::movement(){
 	int rightKey = stoi(inputLines[3]);
 	
 	int sprintKey = stoi(inputLines[7]);
+	int jumpKey = stoi(inputLines[9]);
+
+	float walkSpeed = 8.0f;
+	float runSpeed = 12.0f;
+	float backwardSpeed = -0.75f;
+
+	float jumpSpeed = 12.0f;
+	float jumpHeight = 8.0f;
 
 	movingMultiplier = 0.0f;
+	velocity = vec3(0.0f);
 	if (checkKey(backKey) && !checkKey(forwardKey)) {
 		movingMultiplier = 25.0f;
+		velocity = vec3(backwardSpeed);
 	}
 	if (checkKey(forwardKey) && !checkKey(backKey)) {
-		if (!checkKey(sprintKey)) {
-			movingMultiplier = 30.0f;
-		}
+		velocity = vec3(walkSpeed);
+		movingMultiplier = 30.0f;
 		if (checkKey(sprintKey)) {
 			movingMultiplier = 50.0f;
+			velocity = vec3(runSpeed);
 		}
 	}
+	if (checkKey(jumpKey) && !jumping) {
+		jumping = true;
+		jumpVelocity = jumpHeight;
+	}
+	if (jumping) {
+		jumpVelocity -= deltaTime * jumpSpeed;
+		if (jumpVelocity < -jumpHeight) {
+			jumpVelocity = 0.0f;
+			jumping = false;
+		}
+	}
+	velocity.y = jumpVelocity;
+	// rotations
+
 	float spinMultiplier = 140.0f;
 	if (checkKey(rightKey)) { 
-		playerRotation.y -= deltaTime * spinMultiplier;
+		rotation.y -= deltaTime * spinMultiplier;
 		playerYaw += deltaTime * spinMultiplier;
 	}
 	if (checkKey(leftKey)) {
-		playerRotation.y += deltaTime * spinMultiplier;
+		rotation.y += deltaTime * spinMultiplier;
 		playerYaw -= deltaTime * spinMultiplier;
 	}
 	runAnimation(movingMultiplier);
+	// physical movement
+
+	float xGap = -sin(radians(rotation.y));
+	float zGap = -cos(radians(rotation.y));
+	vec3 rotationMovement = vec3(xGap, 1.0f, zGap) * vec3(deltaTime);
+	velocity = velocity * rotationMovement;
+	position += velocity;
 }
 
 void player::cameraMovement(){
@@ -76,7 +105,7 @@ void player::cameraMovement(){
 	playerYaw -= mouseDiffer.x*sensitivity;
 	playerPitch += mouseDiffer.y*sensitivity;
 	playerPitch = clamp(playerPitch, -80.0f, 80.0f);
-	headLookAtY = playerPosition.y;
+	headLookAtY = position.y;
 	headLookAtY = headLookAtY + 1.25f;
 }
 
@@ -88,17 +117,17 @@ void player::renderPlayer(){
 	vector<GLuint> vaos = { headVAO, torsoVAO, armVAO, legVAO, armVAO, legVAO };
 	vector<int> vertCounts = { 48, 36, 60, 60, 60, 60 };
 
-	vec3 legParentPos = playerPosition - vec3(0.0f, 0.775f, 0.0f);
-	vec3 armParentPos = playerPosition + vec3(0.0f, 0.5f, 0.0f);
-	vector<vec3> parentPositions = { playerPosition, playerPosition, armParentPos, legParentPos, armParentPos, legParentPos };
+	vec3 legParentPos = position - vec3(0.0f, 0.775f, 0.0f);
+	vec3 armParentPos = position + vec3(0.0f, 0.5f, 0.0f);
+	vector<vec3> parentPositions = { position, position, armParentPos, legParentPos, armParentPos, legParentPos };
 	
 	glUseProgram(playerShader);
 	for (int i = 0; i < 6; i++) {
 		
-		vec3 combinedScale = playerScale * scales[i];
+		vec3 combinedScale = scale * scales[i];
 
 		setMat4(playerShader, "model", modelMatrix(positions[i], rotations[i], combinedScale, 
-			true, parentPositions[i], playerRotation));
+			true, parentPositions[i], rotation));
 		setMat4(playerShader, "view", viewMatrix());
 		setMat4(playerShader, "projection", projectionMatrix());
 
