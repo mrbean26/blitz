@@ -2,7 +2,6 @@
 #include "shader.h"
 #include "display.h"
 #include "worldGeneration.h"
-
 #include "backend.h"
 
 #include <glm/gtc/type_ptr.hpp>
