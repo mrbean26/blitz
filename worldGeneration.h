@@ -18,6 +18,8 @@ using namespace glm;
 
 int randomInt(int min, int max); // quick maths
 
+bool insideCircle(vec2 circlePos, float radius, vec2 pointPos, bool terrain = false);
+
 vec3 colourDifference(float multiplier);
 
 vector<vec2> circleCoords(vec2 position, float radius, int pointCount, float scale);
@@ -45,7 +47,7 @@ public:
 	bool startedBegin = false;
 
 	GLuint terrainVAO, terrainVBO;
-	void startTriangle(); //reserve data to vao & vbo
+	void reserveMemory(); //reserve data to vao & vbo
 
 	unsigned int terrainShader;
 	void startShader();
