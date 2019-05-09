@@ -49,9 +49,9 @@ int randomColourInt(int min, int max) {
 }
 
 vec3 colourDifference(float multiplier) {
-	float colourDifferenceX = ((float) randomColourInt(-127, 127) / 255.0f) * multiplier;
-	float colourDifferenceY = ((float) randomColourInt(-127, 127) / 255.0f) * multiplier;
-	float colourDifferenceZ = ((float) randomColourInt(-127, 127) / 255.0f) * multiplier; // divide by 255 to get rgb for opengl
+	float colourDifferenceX = ((float)randomColourInt(-127, 127) / 255.0f) * multiplier;
+	float colourDifferenceY = ((float)randomColourInt(-127, 127) / 255.0f) * multiplier;
+	float colourDifferenceZ = ((float)randomColourInt(-127, 127) / 255.0f) * multiplier; // divide by 255 to get rgb for opengl
 	return vec3(colourDifferenceX, colourDifferenceY, colourDifferenceZ);
 }
 
@@ -83,12 +83,12 @@ int newLinePos(vector<string> & usedVector) { // used for creating saves
 	int currentSize = usedVector.size();
 	lineCount++;
 	usedVector.resize(lineCount);
-	return lineCount - 1; 
+	return lineCount - 1;
 }
 
 bool insideMountain(vector<vec2> allPositions, vector<float> allScales,
-		vec2 currentPos, float currentScale) {
-	vector<vec2> allPoints = circleCoords(currentPos, (currentScale * 100.0f) * 0.025f, 720, 1.0f);
+	vec2 currentPos, float currentScale) {
+	vector<vec2> allPoints = circleCoords(currentPos, currentScale, 720, 1.0f);
 	for (vec2 point : allPoints) {
 		int posCount = allPositions.size();
 		for (int i = 0; i < posCount; i++) {
@@ -101,7 +101,7 @@ bool insideMountain(vector<vec2> allPositions, vector<float> allScales,
 	return false;
 }
 
-void createSave(const char * filePath, int saveType) {
+void createSave(const char* filePath, int saveType) {
 	vector<string> saveLines = { "IN USE" };
 	lineCount = 1; //including IN USE line
 	if (saveType == DEFAULT_SAVE) {
@@ -140,16 +140,14 @@ void createSave(const char * filePath, int saveType) {
 			float mountainGradient = (randomInt(3, 8) * 0.1f);
 			if (crater) { mountainGradient *= -1.0f; }
 			// check if inside mountain
-			if (crater) {
-				if (insideMountain(craterPositions, craterScales, pos, mountainScaleX)) {
-					i = i - 1;
-					failedCraterAttempts++;
-					if (failedCraterAttempts > 19) {
-						i = i + 1;
-						failedCraterAttempts = 0;
-					}
-					continue;
+			if (insideMountain(craterPositions, craterScales, pos, mountainScaleX)) {
+				i = i - 1;
+				failedCraterAttempts++;
+				if (failedCraterAttempts > 19) {
+					i = i + 1;
+					failedCraterAttempts = 0;
 				}
+				continue;
 			}
 			//write to file
 			saveLines[newLinePos(saveLines)] = "earthMountainPosition " +
@@ -234,6 +232,9 @@ void worldGeneration::beginFlatTerrain() {
 	beginMountains();
 }
 
+vector<vec2> currentAllMountainPositions;
+vector<vec3> currentAllMountainScales;
+
 vector<vec2> negativeMountainCoords, positiveMountainCoords;
 void worldGeneration::beginMountains() {
 	vec3 colour;
@@ -266,6 +267,12 @@ void worldGeneration::beginMountains() {
 			mountainGradients[currentVectorSize] = mountainGradient;
 		}
 	}
+	// assign to global
+	currentAllMountainPositions = mountainPositions;
+	currentAllMountainScales.resize(currentAllMountainPositions.size());
+	for (int i = 0; i < mountainPositions.size(); i++) {
+		currentAllMountainScales[i] = vec3(mountainScales[i], mountainGradients[i]);
+	}
 	// mountain stats
 	float defaultScale = 0.025f;
 	// start triangles
@@ -273,12 +280,14 @@ void worldGeneration::beginMountains() {
 	// variables
 	int radiusDifference = 30;
 	// start triangles
-	int aaa = 0;
 	for (vec2 pos : mountainPositions) {
 		index++;
-		if (index == 0) { continue; } // this stops those mini islands over first crater
 		vec2 sca = mountainScales[index];
 		float gra = mountainGradients[index];
+		bool mtn = false;
+		if (gra > 0) {
+			mtn = true;
+		}
 		// create circle radiuses
 		vector<int> radiuses;
 		float loopDifference = radiusDifference / 100.0f;
@@ -291,7 +300,7 @@ void worldGeneration::beginMountains() {
 		reverse(radiuses.begin(), radiuses.end());
 		// remove triangles over craters / under mountains
 		if (radiuses.size() > 0) {
-			removeUselessTriangle(radiuses[0], pos, defaultScale);
+			removeUselessTriangle(radiuses[0], pos, defaultScale, mtn);
 		}
 		// create circles & triangles here
 		for (int radius : radiuses) {
@@ -394,9 +403,11 @@ void worldGeneration::beginMountains() {
 	beginTerrrain();
 }
 
-void worldGeneration::removeUselessTriangle(int radius, vec2 position, float circleMultiplier) {
+void worldGeneration::removeUselessTriangle(int radius, vec2 position, float circleMultiplier, bool mountain) {
 	// collect triangles over craters / under mountains
 	float newRadius = radius * circleMultiplier;
+	if (!mountain) { newRadius += 0.3f; }
+	if (mountain) { newRadius -= 0.3f; } // this doesnt properly matter as it only affects render
 	int triangleIndex = 0;
 	for (triangle t : flatTerrainTriangles) {
 		vector<vec3> allPoints = t.allPoints;
@@ -459,7 +470,7 @@ void worldGeneration::renderTerrain() {
 		setMat4(terrainShader, "model", modelMatrix());
 		setMat4(terrainShader, "projection", projectionMatrix());
 		setMat4(terrainShader, "view", viewMatrix());
-	
+
 		glBindVertexArray(terrainVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3 * total);
 	}
@@ -473,7 +484,7 @@ vec2 worldGeneration::getAreaScale() {
 }
 
 void worldGeneration::begin() {
-	currentAreaScale = getAreaScale(); 
+	currentAreaScale = getAreaScale();
 	allWorldLines = readLines(worldLinesPath);
 	startShader();
 	reserveMemory();

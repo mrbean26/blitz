@@ -30,13 +30,15 @@ public:
 	vec3 position = vec3(0.0f, 0.0f, 0.0f);
 	vec2 scale = vec2(1.0f, 1.0f);
 
-	bool clickUp, clickDown;
+	bool clickUp = false;
+	bool clickDown = false;
 
 	bool interactive = true;
 	bool mouseOver = false;
 
-	int minX;
-	int minY, maxY;
+	int minX = 0;
+	int minY = 0;
+	int maxY = 0;
 
 	texture texture;
 

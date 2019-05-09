@@ -34,6 +34,7 @@ void player::mainloop(){
 	renderPlayer();
 	movement();
 	cameraMovement();
+	collisions();
 }
 
 void player::movement(){
@@ -71,7 +72,7 @@ void player::movement(){
 		jumpVelocity = jumpHeight;
 	}
 	if (jumping) {
-		jumpVelocity -= deltaTime * jumpSpeed;
+		jumpVelocity -= (float) deltaTime * jumpSpeed;
 		if (jumpVelocity < -jumpHeight) {
 			jumpVelocity = 0.0f;
 			jumping = false;
@@ -82,21 +83,68 @@ void player::movement(){
 
 	float spinMultiplier = 140.0f;
 	if (checkKey(rightKey)) { 
-		rotation.y -= deltaTime * spinMultiplier;
-		playerYaw += deltaTime * spinMultiplier;
+		rotation.y -= (float) deltaTime * spinMultiplier;
+		playerYaw += (float) deltaTime * spinMultiplier;
 	}
 	if (checkKey(leftKey)) {
-		rotation.y += deltaTime * spinMultiplier;
-		playerYaw -= deltaTime * spinMultiplier;
+		rotation.y += (float) deltaTime * spinMultiplier;
+		playerYaw -= (float) deltaTime * spinMultiplier;
 	}
 	runAnimation(movingMultiplier);
 	// physical movement
 
 	float xGap = -sin(radians(rotation.y));
 	float zGap = -cos(radians(rotation.y));
-	vec3 rotationMovement = vec3(xGap, 1.0f, zGap) * vec3(deltaTime);
+	vec3 rotationMovement = vec3(xGap, 1.0f, zGap) * vec3((float) deltaTime);
 	velocity = velocity * rotationMovement;
 	position += velocity;
+}
+
+float distanceIntoCircle(float radius, vec2 circlePos, vec2 playerPos) {
+	// squared values
+	float radSquared = pow(radius, 2);
+	float xSquared = pow(playerPos.x - circlePos.x, 2);
+	float ySquared = pow(playerPos.y - circlePos.y, 2);
+	// return distance
+	return xSquared + ySquared;
+}
+
+void player::collisions(){
+	// mountains and craters
+	bool inMountain = false;
+	int mCount = currentAllMountainPositions.size();
+	float highestPoint = -999.0f;
+	for (int i = 0; i < mCount; i++) {
+		vec2 currentMPos = currentAllMountainPositions[i]; currentMPos.y *= -1.0f;
+		float currentRad = (currentAllMountainScales[i].x * 100.0f) * 0.025f;
+		vec2 floorPoint = vec2(position.x, position.z);
+		bool crater = false;
+		
+		vec3 mountainThree = vec3(currentMPos.x, 0.0f, currentMPos.y);
+		vec3 playerThree = vec3(position.x, 0.0f, position.z);
+		if (currentAllMountainScales[i].z < 0) { crater = true; }
+
+		float distance = glm::distance(mountainThree, playerThree);
+		distance = currentRad - distance;
+
+		if (distance > 0) {
+			inMountain = true;
+	
+			distance = distance + (10 * currentAllMountainScales[i].z);
+			distance = distance / currentRad;
+			distance = clamp(distance, -1.0f, 1.0f);
+			float pointY = distance*currentAllMountainScales[i].y;
+			if (crater) { pointY = -pointY; }
+
+			pointY += 2.3f / 2.0f; // feet on floor
+			if (pointY > highestPoint) { highestPoint = pointY; } // assign
+		}
+
+	}
+	position.y = highestPoint;
+	// flat terrain collisions
+	float legPos = position.y - 2.3f;
+	if (legPos < 0 && !inMountain) { position.y += -legPos; }
 }
 
 void player::cameraMovement(){
@@ -430,17 +478,17 @@ void player::runAnimation(float multiplier){
 		int upDown = 0;
 		if (armRotation.x > 0) {
 			upDown = 1;
-			armRotation.x -= deltaTime * 3 * 40.0f;
-			armRotationTwo.x += deltaTime * 3 * 40.0f;
-			legRotation.x += deltaTime * 3 * 40.0f;
-			legRotationTwo.x -= deltaTime * 3 * 40.0f;
+			armRotation.x -= (float)deltaTime * 3 * 40.0f;
+			armRotationTwo.x += (float) deltaTime * 3 * 40.0f;
+			legRotation.x += (float) deltaTime * 3 * 40.0f;
+			legRotationTwo.x -= (float) deltaTime * 3 * 40.0f;
 		}
 		if (armRotation.x < 0) {
 			upDown = -1;
-			armRotation.x += deltaTime * 3 * 40.0f;
-			armRotationTwo.x -= deltaTime * 3 * 40.0f;
-			legRotation.x -= deltaTime * 3 * 40.0f;
-			legRotationTwo.x += deltaTime * 3 * 40.0f;
+			armRotation.x += (float) deltaTime * 3 * 40.0f;
+			armRotationTwo.x -= (float) deltaTime * 3 * 40.0f;
+			legRotation.x -= (float) deltaTime * 3 * 40.0f;
+			legRotationTwo.x += (float) deltaTime * 3 * 40.0f;
 		}
 		if (upDown == -1) {
 			if (armRotation.x > 0) {
@@ -461,30 +509,30 @@ void player::runAnimation(float multiplier){
 		return;
 	}
 	if (!finishedFirst) {
-		armRotation.x += deltaTime * 3 * multiplier;
-		armRotationTwo.x -= deltaTime * 3 * multiplier;
-		legRotation.x -= deltaTime * 2.5f * multiplier;
-		legRotationTwo.x += deltaTime * 2.5f * multiplier;
+		armRotation.x += (float) deltaTime * 3 * multiplier;
+		armRotationTwo.x -= (float) deltaTime * 3 * multiplier;
+		legRotation.x -= (float) deltaTime * 2.5f * multiplier;
+		legRotationTwo.x += (float) deltaTime * 2.5f * multiplier;
 		
 		if (armRotation.x >= 30.0f) {
 			finishedFirst = true;
 		}
 	}
 	if (!finishedSecond && finishedFirst) {
-		armRotation.x -= deltaTime * 3 * multiplier;
-		armRotationTwo.x += deltaTime * 3 * multiplier;
-		legRotation.x += deltaTime * 2.5f * multiplier;
-		legRotationTwo.x -= deltaTime * 2.5f * multiplier;
+		armRotation.x -= (float) deltaTime * 3 * multiplier;
+		armRotationTwo.x += (float) deltaTime * 3 * multiplier;
+		legRotation.x += (float) deltaTime * 2.5f * multiplier;
+		legRotationTwo.x -= (float) deltaTime * 2.5f * multiplier;
 
 		if (armRotation.x <= -30.0f) {
 			finishedSecond = true;
 		}
 	}
 	if (finishedFirst && finishedSecond) {
-		armRotation.x += deltaTime * 3 * multiplier;
-		armRotationTwo.x -= deltaTime * 3 * multiplier;
-		legRotation.x -= deltaTime * 2.5f * multiplier;
-		legRotationTwo.x += deltaTime * 2.5f * multiplier;
+		armRotation.x += (float) deltaTime * 3 * multiplier;
+		armRotationTwo.x -= (float) deltaTime * 3 * multiplier;
+		legRotation.x -= (float) deltaTime * 2.5f * multiplier;
+		legRotationTwo.x += (float) deltaTime * 2.5f * multiplier;
 
 		if (armRotation.x >= 0) {
 			armRotation.x = 0.0f;

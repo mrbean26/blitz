@@ -247,8 +247,8 @@ void startScreen::begin(){
 	jumpButton = createButton();
 	for (int i = forwardButton; i <= jumpButton; i++) {
 		allButtons[i] = defaultInputButton;
-		float xPosition;
-		float yPosition;
+		float xPosition = 0.0f;
+		float yPosition = 0.0f;
 		if (i < shootButton) {
 			xPosition = 5.5f;
 			yPosition = -13.5f + (((float)i - forwardButton)*3.5f);
@@ -302,6 +302,9 @@ void startScreen::mainloop(){
 	if (!active) {
 		return;
 	}
+	// randomise saves
+	randomSeedCount++;
+	// button data
 	vector<string> saveLinesOne = readLines("assets/saves/saveOne.save");
 	vec2 createScale = vec2(0.8375f, 0.215f);
 	vec2 playScale = vec2(0.63f, 0.27f);
