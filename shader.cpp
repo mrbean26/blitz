@@ -48,3 +48,8 @@ void setMat4(int shader, const char * matrixName, mat4 usedMatrix) {
 	int location = glGetUniformLocation(shader, matrixName);
 	glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(usedMatrix));
 }
+
+void setShaderInt(int shader, const char* intName, int usedInt) {
+	int location = glGetUniformLocation(shader, intName);
+	glUniform1i(location, usedInt);
+}

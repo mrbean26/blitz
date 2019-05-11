@@ -129,7 +129,6 @@ void player::collisions(){
 
 		if (distance > 0) {
 			inMountain = true;
-	
 			distance = distance + (10 * currentAllMountainScales[i].z);
 			distance = distance / currentRad;
 			distance = clamp(distance, -1.0f, 1.0f);
@@ -145,6 +144,9 @@ void player::collisions(){
 	// flat terrain collisions
 	float legPos = position.y - 2.3f;
 	if (legPos < 0 && !inMountain) { position.y += -legPos; }
+	// distance outside of area scale
+	position.x = clamp(position.x, 0.0f, currentPlanetScale.x);
+	position.z = clamp(position.z, -currentPlanetScale.y, 0.0f);
 }
 
 void player::cameraMovement(){

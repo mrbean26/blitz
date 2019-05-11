@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cmath>
 #include <algorithm>
+#include <stb_image.h>
 using namespace std;
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -16,6 +17,7 @@ using namespace glm;
 #include "shader.h"
 #include "saveFiles.h"
 #include "worldGeneration.h"
+#include "frontend.h"
 
 bool insideCircle(vec2 circlePos, float radius, vec2 pointPos, bool terrain) {
 	float xSquared = pow(pointPos.x - circlePos.x, 2);
@@ -167,6 +169,122 @@ void createSave(const char* filePath, int saveType) {
 	writeLines(filePath, saveLines);
 }
 
+GLuint loadCubemapTexture(vector<string> faces){
+	GLuint textureId;
+	glGenTextures(1, &textureId);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+
+	int width, height, nrComponents;
+	for (unsigned int i = 0; i < faces.size(); i++){
+		unsigned char * data = stbi_load(faces[i].c_str(), &width, &height, &nrComponents, 0);
+		if (data){
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, 
+				width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			stbi_image_free(data);
+		}
+		else
+		{
+			cout << "Cubemap texture failed to load at path: " << faces[i] << endl;
+			stbi_image_free(data);
+		}
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	return textureId;
+}
+
+unsigned int skyboxVAO, skyboxVBO, skyboxTexture, skyboxShader;
+void startSkybox(){
+	float skyboxVertices[] = {
+		// positions          
+		-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		-1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f
+	};
+	// reserve memory
+	glGenVertexArrays(1, &skyboxVAO);
+	glGenBuffers(1, &skyboxVBO);
+	glBindVertexArray(skyboxVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	// texture
+	vector<string> faces = {
+		"assets/images/skybox/right.jpg",
+		"assets/images/skybox/left.jpg",
+		"assets/images/skybox/bottom.jpg",
+		"assets/images/skybox/top.jpg",
+		"assets/images/skybox/front.jpg",
+		"assets/images/skybox/back.jpg"
+	};
+	skyboxTexture = loadCubemapTexture(faces);
+	// shader
+	int vertex = createShader("assets/shaders/skyboxVert.txt", GL_VERTEX_SHADER);
+	int fragment = createShader("assets/shaders/skyboxFrag.txt", GL_FRAGMENT_SHADER);
+	skyboxShader = createProgram({ vertex, fragment });
+	setShaderInt(skyboxShader, "skybox", 0);
+}
+
+void renderSkybox(){
+	if (!earthWorldGeneration.startedBegin) { return; }
+	glDepthFunc(GL_LEQUAL);
+	glUseProgram(skyboxShader);
+
+	mat4 newView = -mat4(mat3(viewMatrix()));
+	setMat4(skyboxShader, "view", newView);
+	setMat4(skyboxShader, "projection", projectionMatrix());
+	// draw
+	glBindVertexArray(skyboxVAO);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+	glDepthFunc(GL_LESS);
+}
+
 void worldGeneration::reserveMemory() {
 	glGenVertexArrays(1, &terrainVAO);
 	glGenBuffers(1, &terrainVBO);
@@ -197,8 +315,8 @@ void worldGeneration::beginFlatTerrain() {
 		areaScale = getVec2File(worldLinesPath, "planetEarthSize");
 	}
 	float triangleSize = 1.0f;
-	for (int x = 0; x < areaScale.x / triangleSize; x++) {
-		for (int y = 0; y < areaScale.y / triangleSize; y++) {
+	for (int x = -100; x < (areaScale.x + 100) / triangleSize; x++) {
+		for (int y = -100; y < (areaScale.y + 100) / triangleSize; y++) {
 			// draw triangle
 			// multipliers
 			float xMultiplied = x * triangleSize;
@@ -234,6 +352,7 @@ void worldGeneration::beginFlatTerrain() {
 
 vector<vec2> currentAllMountainPositions;
 vector<vec3> currentAllMountainScales;
+vec2 currentPlanetScale;
 
 vector<vec2> negativeMountainCoords, positiveMountainCoords;
 void worldGeneration::beginMountains() {
@@ -270,7 +389,8 @@ void worldGeneration::beginMountains() {
 	// assign to global
 	currentAllMountainPositions = mountainPositions;
 	currentAllMountainScales.resize(currentAllMountainPositions.size());
-	for (int i = 0; i < mountainPositions.size(); i++) {
+	int mCount = mountainPositions.size();
+	for (int i = 0; i < mCount; i++) {
 		currentAllMountainScales[i] = vec3(mountainScales[i], mountainGradients[i]);
 	}
 	// mountain stats
@@ -377,8 +497,8 @@ void worldGeneration::beginMountains() {
 				vector<vec3> allPoints = { pointOne, pointTwo, pointThree, pointFour };
 				for (int p = 0; p < 4; p++) {
 					vec3 currentPoint = allPoints[p];
-					currentPoint.x = clamp(currentPoint.x, 0.0f, currentAreaScale.x);
-					currentPoint.z = clamp(currentPoint.z, -(currentAreaScale.y + 1.0f), 0.0f);
+					//currentPoint.x = clamp(currentPoint.x, 0.0f, currentAreaScale.x);
+					//currentPoint.z = clamp(currentPoint.z, -(currentAreaScale.y + 1.0f), 0.0f);
 					allPoints[p] = currentPoint;
 				}
 				pointOne = allPoints[0]; pointTwo = allPoints[1]; pointThree = allPoints[2]; pointFour = allPoints[3];
@@ -484,7 +604,7 @@ vec2 worldGeneration::getAreaScale() {
 }
 
 void worldGeneration::begin() {
-	currentAreaScale = getAreaScale();
+	currentPlanetScale = currentAreaScale = getAreaScale();
 	allWorldLines = readLines(worldLinesPath);
 	startShader();
 	reserveMemory();

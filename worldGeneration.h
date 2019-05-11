@@ -40,6 +40,12 @@ public:
 
 extern vector<vec2> currentAllMountainPositions;
 extern vector<vec3> currentAllMountainScales;
+extern vec2 currentPlanetScale;
+
+extern unsigned int skyboxVAO, skyboxVBO, skyboxTexture;
+unsigned int loadCubemapTexture(vector<string> faces);
+void startSkybox();
+void renderSkybox();
 
 class worldGeneration {
 public:

@@ -17,4 +17,6 @@ int createProgram(vector<int> shaders); // combine shaders into a program
 
 void setMat4(int shader, const char* matrixName, mat4 usedMatrix);
 
+void setShaderInt(int shader, const char* intName, int usedInt);
+
 #endif 
