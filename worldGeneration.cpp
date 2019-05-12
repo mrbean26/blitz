@@ -196,7 +196,7 @@ GLuint loadCubemapTexture(vector<string> faces){
 
 	return textureId;
 }
-
+ 
 unsigned int skyboxVAO, skyboxVBO, skyboxTexture, skyboxShader;
 void startSkybox(){
 	float skyboxVertices[] = {
@@ -268,13 +268,17 @@ void startSkybox(){
 	setShaderInt(skyboxShader, "skybox", 0);
 }
 
-void renderSkybox(){
-	if (!earthWorldGeneration.startedBegin) { return; }
+void renderSkybox(bool startScreen){
 	glDepthFunc(GL_LEQUAL);
 	glUseProgram(skyboxShader);
-
-	mat4 newView = -mat4(mat3(viewMatrix()));
-	setMat4(skyboxShader, "view", newView);
+	mat4 newView = mat4(1.0f);
+	if (startScreen) {
+		newView = rotate(newView, radians((float) glfwGetTime() * 10.0f), vec3(0.0f, 1.0f, 0.0f));
+	}
+	if (!startScreen) {
+		newView = mat4(mat3(viewMatrix()));
+	}
+	setMat4(skyboxShader, "view", -newView);
 	setMat4(skyboxShader, "projection", projectionMatrix());
 	// draw
 	glBindVertexArray(skyboxVAO);
@@ -315,8 +319,8 @@ void worldGeneration::beginFlatTerrain() {
 		areaScale = getVec2File(worldLinesPath, "planetEarthSize");
 	}
 	float triangleSize = 1.0f;
-	for (int x = -100; x < (areaScale.x + 100) / triangleSize; x++) {
-		for (int y = -100; y < (areaScale.y + 100) / triangleSize; y++) {
+	for (int x = -50; x < (areaScale.x + 50) / triangleSize; x++) {
+		for (int y = -50; y < (areaScale.y + 50) / triangleSize; y++) {
 			// draw triangle
 			// multipliers
 			float xMultiplied = x * triangleSize;
@@ -526,7 +530,7 @@ void worldGeneration::beginMountains() {
 void worldGeneration::removeUselessTriangle(int radius, vec2 position, float circleMultiplier, bool mountain) {
 	// collect triangles over craters / under mountains
 	float newRadius = radius * circleMultiplier;
-	if (!mountain) { newRadius += 0.3f; }
+	if (!mountain) { newRadius += 0.0f; }
 	if (mountain) { newRadius -= 0.3f; } // this doesnt properly matter as it only affects render
 	int triangleIndex = 0;
 	for (triangle t : flatTerrainTriangles) {

@@ -47,6 +47,7 @@ public:
 	int jumpKey;
 
 	int playOneTexture=2, playTwoTexture=2; //0=create, 1=play
+	int loadingText;
 
 	vector<string> inputLines;
 

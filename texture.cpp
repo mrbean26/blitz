@@ -11,18 +11,18 @@ using namespace std;
 texture loadTexture(const char * filePath){
 	texture newTexture;
 	glGenTextures(1, &newTexture.textureId);
-	newTexture.data = stbi_load(filePath, &newTexture.width,
-		&newTexture.height, &newTexture.channels, STBI_rgb_alpha);
+	newTexture.data = stbi_load(filePath, &newTexture.width, &newTexture.height, &newTexture.channels, 4);
 	if (!newTexture.data)
 		cout << "File cannot be found: " << filePath << endl;
 	return newTexture;
 }
 
 void enableTexture(texture usedTexture){
-	glBindTexture(GL_TEXTURE_2D, usedTexture.textureId);
-	// set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, usedTexture.textureId);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, usedTexture.width,
 		usedTexture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, usedTexture.data);
 	glGenerateMipmap(GL_TEXTURE_2D);

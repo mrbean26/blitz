@@ -45,7 +45,7 @@ extern vec2 currentPlanetScale;
 extern unsigned int skyboxVAO, skyboxVBO, skyboxTexture;
 unsigned int loadCubemapTexture(vector<string> faces);
 void startSkybox();
-void renderSkybox();
+void renderSkybox(bool startScreen = false);
 
 class worldGeneration {
 public:

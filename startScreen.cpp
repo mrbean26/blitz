@@ -196,6 +196,30 @@ void startScreen::changeInputs(){
 	}
 }
 
+bool loading = false;
+const char * linesPathHold;
+void loadWorld(const char * linesPath) {
+	loading = true;
+	allButtons.clear();
+	int textCount = allTexts.size();
+	allTexts[mainStart.loadingText].active = true;
+	for (int i = 0; i < textCount; i++) {
+		if (i != mainStart.loadingText) {
+			allTexts[i].active = false;
+		}
+	}
+	linesPathHold = linesPath;
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+void startWorld(const char * linesPath) {
+	mainStart.active = false;
+	earthWorldGeneration.active = true;
+	earthWorldGeneration.worldLinesPath = linesPath;
+	allTexts.clear();
+	mainPlayer.active = true;
+}
+
 void startScreen::begin(){
 	//title
 	titleImage = createButton();
@@ -296,10 +320,21 @@ void startScreen::begin(){
 		allTexts[i].fontSize = display_x / 55;
 		allTexts[i].displayedText = asciiToString(stoi(inputLines[i - forwardKey]));
 	}
+	// loading text
+	loadingText = createText();
+	allTexts[loadingText].fontPath = "assets/fonts/zekton.ttf";
+	allTexts[loadingText].fontSize = (float) display_x / 30.0f;
+	allTexts[loadingText].displayedText = "Loading...";
+	allTexts[loadingText].position = vec2(display_x * 0.425f, display_y * 0.45f);
+	allTexts[loadingText].active = false;
 }
 
 void startScreen::mainloop(){
 	if (!active) {
+		return;
+	}
+	if (loading) {
+		startWorld(linesPathHold);
 		return;
 	}
 	// randomise saves
@@ -403,13 +438,7 @@ void startScreen::mainloop(){
 			createSave("assets/saves/saveOne.save", DEFAULT_SAVE);
 		}
 		if (playOneTexture == 1) {
-			allButtons.clear();
-			allTexts.clear();
-			earthWorldGeneration.worldLinesPath = "assets/saves/saveOne.save";
-			active = false;
-			earthWorldGeneration.active = true;
-			mainPlayer.active = true;
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			loadWorld("assets/saves/saveOne.save");
 			return;
 		}
 	}
@@ -418,13 +447,7 @@ void startScreen::mainloop(){
 			createSave("assets/saves/saveTwo.save", DEFAULT_SAVE);
 		}
 		if (playTwoTexture == 1) {
-			allButtons.clear();
-			allTexts.clear();
-			earthWorldGeneration.worldLinesPath = "assets/saves/saveTwo.save";
-			active = false;
-			earthWorldGeneration.active = true;
-			mainPlayer.active = true;
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			loadWorld("assets/saves/saveTwo.save");
 			return;
 		}
 	}

@@ -263,7 +263,8 @@ void textsBegin(){
 
 void renderText(string displayedText, vec2 position, float alpha, float size, vec3 colour, 
 	map<GLchar, Character> Characters){
-	glDisable(GL_DEPTH_TEST);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDepthFunc(GL_LEQUAL); // allows text over skybox
 	glUseProgram(textShader);
 	glActiveTexture(GL_TEXTURE0);
 	int textureLocation = glGetUniformLocation(textShader, "text");
@@ -308,7 +309,6 @@ void renderText(string displayedText, vec2 position, float alpha, float size, ve
 	}
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glEnable(GL_DEPTH_TEST);
 }
 
 void renderTexts(){

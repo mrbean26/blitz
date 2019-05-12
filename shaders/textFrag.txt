@@ -6,4 +6,7 @@ uniform vec4 textColor;
 void main(){
     vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, TexCoords).r);
     color = vec4(textColor) * sampled;
+    if(color.a < 0.25){
+	discard; // discard black colour
+    }
 }
