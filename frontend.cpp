@@ -23,8 +23,8 @@ void frontendMainloop(){
 		mainPlayer.begin();
 		earthWorldGeneration.startedBegin = true;
 	}
+	renderSkybox(!earthWorldGeneration.startedBegin);
 	earthWorldGeneration.mainloop();
 	mainPlayer.mainloop();
 	mainStart.mainloop();
-	renderSkybox(!earthWorldGeneration.startedBegin); // last
 }

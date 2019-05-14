@@ -69,8 +69,11 @@ public:
 	void beginMountains();
 	void removeUselessTriangle(int radius, vec2 position, float circleMultiplier, bool mountain);
 
+	GLuint areaLimitVAO, areaLimitVBO, areaLimitCount;
+	void beginAreaLimits();
 	void beginTerrrain();
 
+	void renderAreaLimits();
 	void renderTerrain(); // this may take some time
 
 	//called from other files

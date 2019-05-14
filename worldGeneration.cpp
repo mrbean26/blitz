@@ -588,6 +588,15 @@ void worldGeneration::beginTerrrain() {
 	total = triangleSize + 3;
 }
 
+void worldGeneration::renderAreaLimits(){
+	glUseProgram(terrainShader);
+	setMat4(terrainShader, "model", mat4(1.0f));
+	setMat4(terrainShader, "projection", projectionMatrix());
+	setMat4(terrainShader, "view", viewMatrix());
+	glBindVertexArray(areaLimitVAO);
+	glDrawArrays(GL_TRIANGLES, 0, areaLimitCount * 3);
+}
+
 void worldGeneration::renderTerrain() {
 	if (currentArea == PLANET_WORLD) {
 		glUseProgram(terrainShader);
@@ -612,10 +621,101 @@ void worldGeneration::begin() {
 	allWorldLines = readLines(worldLinesPath);
 	startShader();
 	reserveMemory();
-	beginFlatTerrain();
+	beginFlatTerrain();	
+	beginAreaLimits();
 }
 
 void worldGeneration::mainloop() {
 	if (!active) { return; }
 	renderTerrain();
+	renderAreaLimits();
+}
+
+int newVectorPos(vector<float> * usedVector) {
+	int size = usedVector->size();
+	usedVector->resize(size + 1);
+	return size;
+}
+
+void worldGeneration::beginAreaLimits() {
+	// generate points
+	vector<float> points;
+	vec3 colour = vec3(0.5f, 0.5f, 0.f);
+	float triangleSize = 3.0f;
+	float maxHeight = 30.0f;
+	// left side
+	vector<float> whichZ = { -currentAreaScale.y, 0.0f };
+	for (int z = 0; z < 2; z++) {
+		for (int xx = 0; xx < currentAreaScale.x / triangleSize; xx++) {
+			for (int yy = -15; yy < maxHeight / triangleSize; yy++) {
+				float x = xx * triangleSize;
+				float y = yy * triangleSize;
+
+				vec3 one = vec3(x, y, whichZ[z]);
+				vec3 two = vec3(x + triangleSize, y, whichZ[z]);
+				vec3 three = vec3(x, y + triangleSize, whichZ[z]);
+				vec3 four = vec3(x + triangleSize, y + triangleSize, whichZ[z]);
+				vector<vec3> whichPoint = { one, four };
+
+				vec3 squareColour = colour + colourDifference(0.2f);
+
+				for (int t = 0; t < 2; t++) { // two triangles
+					vector<vec3> allPoints = { whichPoint[t], two, three };
+					for (vec3 point : allPoints) {
+						for (int v = 0; v < 3; v++) {
+							points[newVectorPos(&points)] = point[v];
+						}
+						// add colour
+						for (int c = 0; c < 3; c++) {
+							points[newVectorPos(&points)] = squareColour[c];
+						}
+					}
+					areaLimitCount++;
+				}
+
+			}
+		}
+	}
+	whichZ = { currentAreaScale.x, 0.0f };
+	for (int z = 0; z < 2; z++) {
+		for (int xx = 0; xx < currentAreaScale.y / triangleSize; xx++) {
+			for (int yy = -15; yy < maxHeight / triangleSize; yy++) { // allow for deep craters
+				float x = xx * triangleSize;
+				float y = yy * triangleSize;
+
+				vec3 one = vec3(whichZ[z], y, -x);
+				vec3 two = vec3(whichZ[z], y, -x - triangleSize);
+				vec3 three = vec3(whichZ[z], y + triangleSize, -x);
+				vec3 four = vec3(whichZ[z], y + triangleSize, -x - triangleSize);
+				vector<vec3> whichPoint = { one, four };
+
+				vec3 squareColour = colour + colourDifference(0.2f);
+
+				for (int t = 0; t < 2; t++) { // two triangles
+					vector<vec3> allPoints = { whichPoint[t], two, three };
+					for (vec3 point : allPoints) {
+						for (int v = 0; v < 3; v++) {
+							points[newVectorPos(&points)] = point[v];
+						}
+						// add colour
+						for (int c = 0; c < 3; c++) {
+							points[newVectorPos(&points)] = squareColour[c];
+						}
+					}
+					areaLimitCount++;
+				}
+
+			}
+		}
+	}
+	// memory
+	glGenVertexArrays(1, &areaLimitVAO);
+	glGenBuffers(1, &areaLimitVBO);
+	glBindVertexArray(areaLimitVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, areaLimitVBO);
+	glBufferData(GL_ARRAY_BUFFER, points.size() * sizeof(float), points.data(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0); // position attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1); // colour attribute
 }
