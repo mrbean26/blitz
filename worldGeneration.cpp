@@ -585,16 +585,39 @@ void worldGeneration::beginTerrrain() {
 	glBindVertexArray(terrainVAO);
 	glBindBuffer(GL_ARRAY_BUFFER_ARB, terrainVBO);
 	glBufferData(GL_ARRAY_BUFFER_ARB, allVertices.size() * sizeof(float), allVertices.data(), GL_STATIC_DRAW_ARB);
-	total = triangleSize + 3;
+	total = triangleSize;
 }
 
 void worldGeneration::renderAreaLimits(){
+	// get alpha value
+	float alpha = 1.0f;
+	float distanceToLimit = 10.0f;
+
+	float distanceXMax = glm::max(mainPlayer.position.x, currentAreaScale.x) - glm::min(mainPlayer.position.x, currentAreaScale.x);
+	float distanceXMin = glm::max(mainPlayer.position.x, 0.0f) - glm::min(mainPlayer.position.x, 0.0f);
+
+	float distanceZMax = glm::max(mainPlayer.position.z, -currentAreaScale.y) - glm::min(mainPlayer.position.z, -currentAreaScale.y);
+	float distanceZMin = glm::max(mainPlayer.position.z, 0.0f) - glm::min(mainPlayer.position.z, 0.0f);
+
+	float xDistance = glm::min(distanceXMax, distanceXMin);
+	float zDistance = glm::min(distanceZMax, distanceZMin);
+
+	float alphaX = 0.0f + (xDistance / distanceToLimit);
+	float alphaZ = 0.0f + (zDistance / distanceToLimit);
+	alpha = 1.0f - (alphaX * alphaZ) / 2.0f; // divide by 2 to get average 
+
+	// render
 	glUseProgram(terrainShader);
+
 	setMat4(terrainShader, "model", mat4(1.0f));
 	setMat4(terrainShader, "projection", projectionMatrix());
 	setMat4(terrainShader, "view", viewMatrix());
+	setShaderFloat(terrainShader, "alpha", alpha);
+	
 	glBindVertexArray(areaLimitVAO);
 	glDrawArrays(GL_TRIANGLES, 0, areaLimitCount * 3);
+
+	glLinkProgram(terrainShader); // reset uniform values for terrain render
 }
 
 void worldGeneration::renderTerrain() {
@@ -640,13 +663,13 @@ int newVectorPos(vector<float> * usedVector) {
 void worldGeneration::beginAreaLimits() {
 	// generate points
 	vector<float> points;
-	vec3 colour = vec3(0.5f, 0.5f, 0.f);
+	vec3 colour = vec3(0.34f, 0.14f, 0.51f);
 	float triangleSize = 3.0f;
 	float maxHeight = 30.0f;
 	// left side
-	vector<float> whichZ = { -currentAreaScale.y, 0.0f };
+	vector<float> whichZ = { -currentAreaScale.y - 1.0f, 1.0f };
 	for (int z = 0; z < 2; z++) {
-		for (int xx = 0; xx < currentAreaScale.x / triangleSize; xx++) {
+		for (int xx = -1; xx < (currentAreaScale.x + 1) / triangleSize; xx++) {
 			for (int yy = -15; yy < maxHeight / triangleSize; yy++) {
 				float x = xx * triangleSize;
 				float y = yy * triangleSize;
@@ -676,9 +699,9 @@ void worldGeneration::beginAreaLimits() {
 			}
 		}
 	}
-	whichZ = { currentAreaScale.x, 0.0f };
+	whichZ = { currentAreaScale.x + 1.0f, -1.0f };
 	for (int z = 0; z < 2; z++) {
-		for (int xx = 0; xx < currentAreaScale.y / triangleSize; xx++) {
+		for (int xx = -1; xx < (currentAreaScale.y + 1) / triangleSize; xx++) {
 			for (int yy = -15; yy < maxHeight / triangleSize; yy++) { // allow for deep craters
 				float x = xx * triangleSize;
 				float y = yy * triangleSize;
@@ -689,7 +712,7 @@ void worldGeneration::beginAreaLimits() {
 				vec3 four = vec3(whichZ[z], y + triangleSize, -x - triangleSize);
 				vector<vec3> whichPoint = { one, four };
 
-				vec3 squareColour = colour + colourDifference(0.2f);
+				vec3 squareColour = colour + colourDifference(0.3f);
 
 				for (int t = 0; t < 2; t++) { // two triangles
 					vector<vec3> allPoints = { whichPoint[t], two, three };
