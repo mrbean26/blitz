@@ -95,7 +95,7 @@ bool insideMountain(vector<vec2> allPositions, vector<float> allScales,
 		int posCount = allPositions.size();
 		for (int i = 0; i < posCount; i++) {
 			float vectorScale = (allScales[i] * 100.0f) * 0.025f; // the scale used when rendering mountains
-			if (insideCircle(allPositions[i], vectorScale, point)) {
+			if (insideCircle(allPositions[i], vectorScale * 2, point)) {
 				return true;
 			}
 		}
@@ -591,7 +591,7 @@ void worldGeneration::beginTerrrain() {
 void worldGeneration::renderAreaLimits(){
 	// get alpha value
 	float alpha = 1.0f;
-	float distanceToLimit = 10.0f;
+	float distanceToLimit = 5.0f;
 
 	float distanceXMax = glm::max(mainPlayer.position.x, currentAreaScale.x) - glm::min(mainPlayer.position.x, currentAreaScale.x);
 	float distanceXMin = glm::max(mainPlayer.position.x, 0.0f) - glm::min(mainPlayer.position.x, 0.0f);

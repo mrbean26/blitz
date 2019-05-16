@@ -202,9 +202,9 @@ void loadWorld(const char * linesPath) {
 	loading = true;
 	allButtons.clear();
 	int textCount = allTexts.size();
-	allTexts[mainStart.loadingText].active = true;
+	allTexts[StartScreen.loadingText].active = true;
 	for (int i = 0; i < textCount; i++) {
-		if (i != mainStart.loadingText) {
+		if (i != StartScreen.loadingText) {
 			allTexts[i].active = false;
 		}
 	}
@@ -213,9 +213,9 @@ void loadWorld(const char * linesPath) {
 }
 
 void startWorld(const char * linesPath) {
-	mainStart.active = false;
-	earthWorldGeneration.active = true;
-	earthWorldGeneration.worldLinesPath = linesPath;
+	StartScreen.active = false;
+	WorldGeneration.active = true;
+	WorldGeneration.worldLinesPath = linesPath;
 	allTexts.clear();
 	mainPlayer.active = true;
 }

@@ -129,13 +129,12 @@ void player::collisions(){
 
 		if (distance > 0) {
 			inMountain = true;
-			distance = distance + (10 * currentAllMountainScales[i].z);
 			distance = distance / currentRad;
 			distance = clamp(distance, -1.0f, 1.0f);
 			float pointY = distance*currentAllMountainScales[i].y;
 			if (crater) { pointY = -pointY; }
 
-			pointY += 2.3f / 2.0f; // feet on floor
+			pointY += 2.3f; // feet on floor
 			if (pointY > highestPoint) { highestPoint = pointY; } // assign
 		}
 

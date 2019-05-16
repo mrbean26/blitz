@@ -5,10 +5,10 @@
 #define FRONTEND_H
 
 #include "worldGeneration.h"
-extern worldGeneration earthWorldGeneration;
+extern worldGeneration WorldGeneration;
 
 #include "startScreen.h"
-extern startScreen mainStart;
+extern startScreen StartScreen;
 
 #include "player.h"
 extern player mainPlayer;
