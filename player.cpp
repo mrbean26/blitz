@@ -37,6 +37,7 @@ void player::mainloop(){
 	collisions();
 }
 
+float startedLowestY = -999.0f;
 void player::movement(){
 	int forwardKey = stoi(inputLines[0]);
 	int leftKey = stoi(inputLines[1]);
@@ -69,18 +70,31 @@ void player::movement(){
 	}
 	if (checkKey(jumpKey) && !jumping) {
 		jumping = true;
+		startedLowestY = lowestY;
 		jumpVelocity = jumpHeight;
 	}
 	if (jumping) {
 		jumpVelocity -= (float) deltaTime * jumpSpeed;
-		if (jumpVelocity < -jumpHeight) {
+		if (position.y < lowestY) {
 			jumpVelocity = 0.0f;
 			jumping = false;
+		}
+		if (lowestY > startedLowestY) {
+			if (position.y < lowestY + 0.05f) {
+				jumpVelocity = 0.0f;
+				jumping = false;
+			}
+			
+		}
+		if (lowestY < startedLowestY) {
+			if (position.y < lowestY + 0.05f) {
+				jumpVelocity = 0.0f;
+				jumping = false;
+			}
 		}
 	}
 	velocity.y = jumpVelocity;
 	// rotations
-
 	float spinMultiplier = 140.0f;
 	if (checkKey(rightKey)) { 
 		rotation.y -= (float) deltaTime * spinMultiplier;
@@ -109,6 +123,7 @@ float distanceIntoCircle(float radius, vec2 circlePos, vec2 playerPos) {
 	return xSquared + ySquared;
 }
 
+float lowestY = -999.0f;
 void player::collisions(){
 	// mountains and craters
 	bool inMountain = false;
@@ -139,10 +154,13 @@ void player::collisions(){
 		}
 
 	}
-	position.y = highestPoint;
+	if (position.y < highestPoint && jumping) { position.y = highestPoint; }
+	if (!jumping) { position.y = highestPoint; }
+	lowestY = highestPoint;
 	// flat terrain collisions
 	float legPos = position.y - 2.3f;
-	if (legPos < 0 && !inMountain) { position.y += -legPos; }
+	if (legPos < 0 && !inMountain && !jumping) { position.y += -legPos; }
+	if (!inMountain) { lowestY = 2.2f; }
 	// distance outside of area scale
 	position.x = clamp(position.x, 0.0f, currentPlanetScale.x);
 	position.z = clamp(position.z, -currentPlanetScale.y, 0.0f);

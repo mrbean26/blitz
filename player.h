@@ -9,6 +9,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
 
+extern float lowestY;
 extern GLuint playerShader;
 void startPlayerShader();
 

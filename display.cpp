@@ -167,7 +167,10 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	// third person camera
 	float distanceFromCharacter = 10.0f;
 	float distanceAboveCharacter = 0.5f;
-	
+	// limit to area limits
+	float cameraXPos = -(distanceFromCharacter * (-sin(radians(playerYaw)) * cos(radians(playerPitch)))) + mainPlayer.position.x;
+	float cameraZPos = -(distanceFromCharacter * (-cos(radians(playerYaw)) * cos(radians(playerPitch)))) + mainPlayer.position.z;
+	// give matrix data
 	newMatrix = translate(newMatrix, -vec3(0.0f, distanceAboveCharacter, distanceFromCharacter)); // slightly above head & behind character slightly
 	newMatrix = rotate(newMatrix, -radians(playerPitch), vec3(1.0f, 0.0f, 0.0f)); // x rot
 	newMatrix = rotate(newMatrix, -radians(playerYaw), vec3(0.0f, 1.0f, 0.0f)); // y rot
