@@ -11,6 +11,7 @@ startScreen StartScreen;
 #include "player.h"
 player mainPlayer;
 
+#include "structures.h"
 #include "display.h"
 
 void frontendBegin(){
@@ -23,6 +24,7 @@ void frontendBegin(){
 void frontendMainloop(){
 	if (!WorldGeneration.startedBegin && WorldGeneration.active) {
 		WorldGeneration.begin();
+		StructuresBegin();
 		mainPlayer.begin();
 		WorldGeneration.startedBegin = true;
 	}
@@ -30,4 +32,5 @@ void frontendMainloop(){
 	mainPlayer.mainloop();
 	StartScreen.mainloop();
 	WorldGeneration.mainloop();
+	StructuresMainloop();
 }

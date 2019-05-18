@@ -161,23 +161,32 @@ mat4 modelMatrix(vec3 position, vec3 rotation, vec3 scale, bool child, vec3 pare
 bool playerView = false;
 float playerYaw = 0.0f;
 float playerPitch = 0.0f;
+float lowestCameraY = 0.0f;
+vec3 cameraThirdPos;
 
 mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	mat4 newMatrix = mat4(1.0f);
 	// third person camera
 	float distanceFromCharacter = 10.0f;
 	float distanceAboveCharacter = 0.5f;
-	// limit to area limits
-	float cameraXPos = -(distanceFromCharacter * (-sin(radians(playerYaw)) * cos(radians(playerPitch)))) + mainPlayer.position.x;
-	float cameraZPos = -(distanceFromCharacter * (-cos(radians(playerYaw)) * cos(radians(playerPitch)))) + mainPlayer.position.z;
-	// give matrix data
-	newMatrix = translate(newMatrix, -vec3(0.0f, distanceAboveCharacter, distanceFromCharacter)); // slightly above head & behind character slightly
-	newMatrix = rotate(newMatrix, -radians(playerPitch), vec3(1.0f, 0.0f, 0.0f)); // x rot
-	newMatrix = rotate(newMatrix, -radians(playerYaw), vec3(0.0f, 1.0f, 0.0f)); // y rot
-	
-	newMatrix = translate(newMatrix, -vec3(0.0f, mainPlayer.headLookAtY, 0.0f)); // translate to head
-	newMatrix = rotate(newMatrix, -radians(mainPlayer.rotation.y), vec3(0.0f, 1.0f, 0.0f)); // with character rotation
-	newMatrix = translate(newMatrix, -vec3(mainPlayer.position.x, 0.0f, mainPlayer.position.z)); // with player position
+	// camera positions
+	float cameraXPos = -(distanceFromCharacter * (-sin(radians(playerYaw)) * 
+		cos(radians(playerPitch)))) + mainPlayer.position.x;
+	float cameraZPos = -(distanceFromCharacter * (-cos(radians(playerYaw)) * 
+		cos(radians(playerPitch)))) + mainPlayer.position.z;
+	float cameraYPos = (-sin(radians(playerPitch)) * distanceFromCharacter) + 
+		mainPlayer.position.y + distanceAboveCharacter;
+	// assign
+	cameraThirdPos.x = cameraXPos;
+	cameraThirdPos.y = cameraYPos;
+	cameraThirdPos.z = cameraZPos;
+	// clamp values
+	cameraXPos = glm::clamp(cameraXPos, 0.1f, currentPlanetScale.x);
+	cameraZPos = glm::clamp(cameraZPos, -currentPlanetScale.y, 0.1f);
+	cameraYPos = glm::clamp(cameraYPos, lowestCameraY, 10000.0f);
+	// matrix
+	newMatrix = glm::lookAt(vec3(cameraXPos, cameraYPos, cameraZPos), 
+		vec3(mainPlayer.position.x, mainPlayer.headLookAtY, mainPlayer.position.z), vec3(0.0f, 1.0f, 0.0f));
 	// not 3rd person
 	if (!playerView) {
 		// clamp 0-360

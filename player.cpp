@@ -75,7 +75,7 @@ void player::movement(){
 	}
 	if (jumping) {
 		jumpVelocity -= (float) deltaTime * jumpSpeed;
-		if (position.y < lowestY) {
+		if (position.y < lowestY + 0.05f && jumpVelocity < 0) {
 			jumpVelocity = 0.0f;
 			jumping = false;
 		}
@@ -98,11 +98,9 @@ void player::movement(){
 	float spinMultiplier = 140.0f;
 	if (checkKey(rightKey)) { 
 		rotation.y -= (float) deltaTime * spinMultiplier;
-		playerYaw += (float) deltaTime * spinMultiplier;
 	}
 	if (checkKey(leftKey)) {
 		rotation.y += (float) deltaTime * spinMultiplier;
-		playerYaw -= (float) deltaTime * spinMultiplier;
 	}
 	runAnimation(movingMultiplier);
 	// physical movement
@@ -127,8 +125,10 @@ float lowestY = -999.0f;
 void player::collisions(){
 	// mountains and craters
 	bool inMountain = false;
+	bool cameraInMountain = false;
 	int mCount = currentAllMountainPositions.size();
 	float highestPoint = -999.0f;
+	float highestPointCamera = -999.0f;
 	for (int i = 0; i < mCount; i++) {
 		vec2 currentMPos = currentAllMountainPositions[i]; currentMPos.y *= -1.0f;
 		float currentRad = (currentAllMountainScales[i].x * 100.0f) * 0.025f;
@@ -137,10 +137,13 @@ void player::collisions(){
 		
 		vec3 mountainThree = vec3(currentMPos.x, 0.0f, currentMPos.y);
 		vec3 playerThree = vec3(position.x, 0.0f, position.z);
+		vec3 cameraThree = vec3(cameraThirdPos.x, 0.0f, cameraThirdPos.z);
 		if (currentAllMountainScales[i].z < 0) { crater = true; }
 
 		float distance = glm::distance(mountainThree, playerThree);
+		float distanceCamera = glm::distance(mountainThree, cameraThree);
 		distance = currentRad - distance;
+		distanceCamera = currentRad - distanceCamera;
 
 		if (distance > 0) {
 			inMountain = true;
@@ -152,15 +155,24 @@ void player::collisions(){
 			pointY += 2.3f; // feet on floor
 			if (pointY > highestPoint) { highestPoint = pointY; } // assign
 		}
-
+		if (distanceCamera > 0) {
+			cameraInMountain = true;
+			distanceCamera = distanceCamera / currentRad;
+			distanceCamera = clamp(distanceCamera, -1.0f, 1.0f);
+			float pointY = distanceCamera * currentAllMountainScales[i].y;
+			if (crater) { pointY = -pointY; }
+			if (pointY > highestPointCamera) { highestPointCamera = pointY; }
+		}
 	}
 	if (position.y < highestPoint && jumping) { position.y = highestPoint; }
 	if (!jumping) { position.y = highestPoint; }
 	lowestY = highestPoint;
+	lowestCameraY = highestPointCamera + 0.5f;
 	// flat terrain collisions
 	float legPos = position.y - 2.3f;
 	if (legPos < 0 && !inMountain && !jumping) { position.y += -legPos; }
 	if (!inMountain) { lowestY = 2.2f; }
+	if (!cameraInMountain) { lowestCameraY = 0.5f; }
 	// distance outside of area scale
 	position.x = clamp(position.x, 0.0f, currentPlanetScale.x);
 	position.z = clamp(position.z, -currentPlanetScale.y, 0.0f);

@@ -3,15 +3,19 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include <vector>
 #include <glew.h>
 #include <glfw3.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
+using namespace std;
 
 extern float lowestY;
 extern GLuint playerShader;
 void startPlayerShader();
+
+vector<vec3> colourVector(int size, vec3 colour);
 
 class player {
 public:
