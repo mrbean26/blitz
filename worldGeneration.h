@@ -30,6 +30,8 @@ int newLinePos(vector<string> &usedVector); // resize a vector of strings and re
 
 void createSave(const char * filePath, int saveType); // a lot of code
 
+int newVectorPos(vector<float>* usedVector);
+
 class triangle {
 public:
 	vector<vec3> allPoints;

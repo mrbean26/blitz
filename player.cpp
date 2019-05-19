@@ -39,6 +39,7 @@ void player::mainloop(){
 
 float startedLowestY = -999.0f;
 void player::movement(){
+	if (!canMove) { return; }
 	int forwardKey = stoi(inputLines[0]);
 	int leftKey = stoi(inputLines[1]);
 	int backKey = stoi(inputLines[2]);
@@ -178,13 +179,21 @@ void player::collisions(){
 	position.z = clamp(position.z, -currentPlanetScale.y, 0.0f);
 }
 
+bool lastFrameMove = true;
 void player::cameraMovement(){
+	if (!canMove) { 
+		lastFrameMove = false;
+		return; 
+	}
 	vec2 mouseDiffer = mouseDifferences();
-	playerYaw -= mouseDiffer.x*sensitivity;
-	playerPitch += mouseDiffer.y*sensitivity;
+	if (lastFrameMove) {
+		playerYaw -= mouseDiffer.x * sensitivity;
+		playerPitch += mouseDiffer.y * sensitivity;
+	}
 	playerPitch = clamp(playerPitch, -80.0f, 80.0f);
 	headLookAtY = position.y;
 	headLookAtY = headLookAtY + 1.25f;
+	lastFrameMove = true;
 }
 
 void player::renderPlayer(){

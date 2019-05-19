@@ -3,6 +3,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include <iostream>
 #include <vector>
 #include <glew.h>
 #include <glfw3.h>
@@ -16,10 +17,11 @@ extern GLuint playerShader;
 void startPlayerShader();
 
 vector<vec3> colourVector(int size, vec3 colour);
+extern vector<string> inputLines;
 
 class player {
 public:
-	bool active = false;
+	bool active = false, canMove = true;
 	void begin();
 	void mainloop();
 

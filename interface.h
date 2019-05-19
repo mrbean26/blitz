@@ -102,4 +102,8 @@ void interfaceMainloop(); // run every frame
 // key inputs
 bool checkKey(int key);
 
+int newVectorPos(vector<int> * usedVector);
+bool checkKeyDown(int key);
+void updateKeys();
+
 #endif

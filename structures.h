@@ -15,10 +15,10 @@ void StructuresMainloop();
 
 void startBuildings();
 void renderBuildings();
+void buildingInteractions();
 
-extern GLuint benchVAO, benchVBO;
-extern vec3 benchPos, benchScale, benchRot;
+extern bool benchInUse;
+extern buildingColour mainBench, mainBlueprint;
 
-extern GLuint benchBlueprintVAO, benchBlueprintVBO;
-extern vec3 benchBlueprintPos, benchBlueprintScale, benchBluePrintRot;
 void startBuildBench();
+void buildBenchInteraction();

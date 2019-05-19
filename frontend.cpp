@@ -24,8 +24,8 @@ void frontendBegin(){
 void frontendMainloop(){
 	if (!WorldGeneration.startedBegin && WorldGeneration.active) {
 		WorldGeneration.begin();
-		StructuresBegin();
 		mainPlayer.begin();
+		StructuresBegin();
 		WorldGeneration.startedBegin = true;
 	}
 	renderSkybox(!WorldGeneration.startedBegin);
@@ -33,4 +33,6 @@ void frontendMainloop(){
 	StartScreen.mainloop();
 	WorldGeneration.mainloop();
 	StructuresMainloop();
+	updateKeys(); // this has to be called last every frame / after last call of getkeydown
 }
+

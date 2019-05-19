@@ -2,14 +2,18 @@
 #include "player.h"
 #include "shader.h"
 #include "display.h"
+#include "interface.h"
 
+int interactKey;
 void StructuresBegin(){
+	interactKey = stoi(inputLines[6]);
 	startBuildings();
 }
 
 void StructuresMainloop(){
 	if (!WorldGeneration.active) { return; }
 	renderBuildings();
+	buildingInteractions();
 }
 
 void startColorBuilding(vector<float> vertices, buildingColour * usedBuilding) {
@@ -22,12 +26,13 @@ void startColorBuilding(vector<float> vertices, buildingColour * usedBuilding) {
 	glEnableVertexAttribArray(0); // position attribute
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1); // colour attribute
-	cout << vertices.size() << endl;
 	usedBuilding->size = vertices.size() / 6;
 }
 
 buildingColour mainBench;
 buildingColour mainBlueprint;
+bool benchInUse = false;
+
 void startBuildBench(){
 	// data
 	vector<vec3> benchColours = colourVector(20, vec3(0.43f, 0.24f, 0.11f));
@@ -131,6 +136,17 @@ void startBuildBench(){
 	startColorBuilding(blueprintVertices, &mainBlueprint);
 	mainBlueprint.position = vec3(mainBench.position.x + 0.5f, 
 		mainBench.position.y + 2.255f, mainBench.position.z + 0.5f);
+} 
+
+void buildBenchInteraction(){
+	float distanceNeeded = 10.0f;
+	float distance = glm::distance(mainPlayer.position, mainBench.position);
+	if (distance < distanceNeeded) {
+		if (checkKeyDown(interactKey)) {
+			benchInUse = !benchInUse;
+			mainPlayer.canMove = !benchInUse;
+		}
+	}
 }
 
 void startBuildings() {
@@ -149,4 +165,8 @@ void renderBuildings() {
 		glBindVertexArray(allColourBuildings[i].VAO);
 		glDrawArrays(GL_TRIANGLES, 0, allColourBuildings[i].size);
 	}
+}
+
+void buildingInteractions(){
+	buildBenchInteraction();
 }
