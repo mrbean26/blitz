@@ -19,6 +19,7 @@ void buildingInteractions();
 
 extern bool benchInUse;
 extern buildingColour mainBench, mainBlueprint;
+extern vec2 currentBuildingScale, currentBuildingPosition;
 
 void startBuildBench();
 void buildBenchInteraction();

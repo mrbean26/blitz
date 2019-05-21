@@ -30,7 +30,7 @@ int newLinePos(vector<string> &usedVector); // resize a vector of strings and re
 
 void createSave(const char * filePath, int saveType); // a lot of code
 
-int newVectorPos(vector<float>* usedVector);
+int newVectorPosFloat(vector<float>* usedVector);
 
 class triangle {
 public:
@@ -53,6 +53,7 @@ class worldGeneration {
 public:
 	int currentArea = PLANET_WORLD;
 	vec2 currentAreaScale;
+	vec3 currentAreaColour;
 	vec2 getAreaScale();
 
 	bool active = false;

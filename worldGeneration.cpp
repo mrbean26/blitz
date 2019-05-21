@@ -316,6 +316,7 @@ void worldGeneration::beginFlatTerrain() {
 	vec2 areaScale = vec2(0.0f);
 	if (currentArea == PLANET_WORLD) {
 		colour = vec3(0.35f, 0.78f, 0.31f);
+		currentAreaColour = colour;
 		areaScale = getVec2File(worldLinesPath, "planetEarthSize");
 	}
 	float triangleSize = 1.0f;
@@ -654,7 +655,7 @@ void worldGeneration::mainloop() {
 	renderAreaLimits();
 }
 
-int newVectorPos(vector<float> * usedVector) {
+int newVectorPosFloat(vector<float> * usedVector) {
 	int size = usedVector->size();
 	usedVector->resize(size + 1);
 	return size;
@@ -686,11 +687,11 @@ void worldGeneration::beginAreaLimits() {
 					vector<vec3> allPoints = { whichPoint[t], two, three };
 					for (vec3 point : allPoints) {
 						for (int v = 0; v < 3; v++) {
-							points[newVectorPos(&points)] = point[v];
+							points[newVectorPosFloat(&points)] = point[v];
 						}
 						// add colour
 						for (int c = 0; c < 3; c++) {
-							points[newVectorPos(&points)] = squareColour[c];
+							points[newVectorPosFloat(&points)] = squareColour[c];
 						}
 					}
 					areaLimitCount++;
@@ -718,11 +719,11 @@ void worldGeneration::beginAreaLimits() {
 					vector<vec3> allPoints = { whichPoint[t], two, three };
 					for (vec3 point : allPoints) {
 						for (int v = 0; v < 3; v++) {
-							points[newVectorPos(&points)] = point[v];
+							points[newVectorPosFloat(&points)] = point[v];
 						}
 						// add colour
 						for (int c = 0; c < 3; c++) {
-							points[newVectorPos(&points)] = squareColour[c];
+							points[newVectorPosFloat(&points)] = squareColour[c];
 						}
 					}
 					areaLimitCount++;

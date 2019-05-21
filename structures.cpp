@@ -3,6 +3,7 @@
 #include "shader.h"
 #include "display.h"
 #include "interface.h"
+#include "worldGeneration.h"
 
 int interactKey;
 void StructuresBegin(){
@@ -14,6 +15,19 @@ void StructuresMainloop(){
 	if (!WorldGeneration.active) { return; }
 	renderBuildings();
 	buildingInteractions();
+}
+
+void startIrregularColorBuilding(vector<float> vertices, GLuint &VAO, GLuint &VBO, GLuint &size) {
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0); // position attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1); // colour attribute
+	size = vertices.size() / 6;
 }
 
 void startColorBuilding(vector<float> vertices, buildingColour * usedBuilding) {
@@ -29,9 +43,96 @@ void startColorBuilding(vector<float> vertices, buildingColour * usedBuilding) {
 	usedBuilding->size = vertices.size() / 6;
 }
 
-buildingColour mainBench;
-buildingColour mainBlueprint;
+buildingColour mainBench, mainBlueprint;
+vec2 currentBuildingScale = vec2(1.0f), currentBuildingPosition;
 bool benchInUse = false;
+
+GLuint benchUIVAO, benchUIVBO, benchUIShader, benchUITotal;
+GLuint currentBuildingVAO, currentBuildingVBO, currentBuildingTotal;
+void startBuildBenchUI() {
+	vec2 area = currentPlanetScale / vec2(2.0f);
+	vec3 areaColourOne = WorldGeneration.currentAreaColour;
+	vec3 areaColourTwo = areaColourOne + vec3(0.03f);
+	vector<float> vertices = {
+		// blueprint
+		-0.75f, -0.75f, 0.0f, 0.16f, 0.42f, 0.83f,
+		-0.75f, 0.75f, 0.0f, 0.16f, 0.42f, 0.83f,
+		0.75f, -0.75f, 0.0f, 0.16f, 0.42f, 0.83f,
+
+		-0.75f, 0.75f, 0.0f, 0.19f, 0.46f, 0.89f,
+		0.75f, 0.75f, 0.0f, 0.19f, 0.46f, 0.89f,
+		0.75f, -0.75f, 0.0f, 0.19f, 0.46f, 0.89f,
+		// area
+		-area.x / 65.0f, -area.y / 65.0f, -0.1f,
+		areaColourOne.x, areaColourOne.y, areaColourOne.z,
+		-area.x / 65.0f, area.y / 65.0f, -0.1f,
+		areaColourOne.x, areaColourOne.y, areaColourOne.z,
+		area.x / 65.0f, -area.y / 65.0f, -0.1f,
+		areaColourOne.x, areaColourOne.y, areaColourOne.z,
+
+		area.x / 65.0f, area.y / 65.0f, -0.1f,
+		areaColourTwo.x, areaColourTwo.y, areaColourTwo.z,
+		-area.x / 65.0f, area.y / 65.0f, -0.1f,
+		areaColourTwo.x, areaColourTwo.y, areaColourTwo.z,
+		area.x / 65.0f, -area.y / 65.0f, -0.1f,
+		areaColourTwo.x, areaColourTwo.y, areaColourTwo.z,
+	};
+	// add to mountains to vertices
+	int mCount = currentAllMountainPositions.size();
+	for (int m = 0; m < mCount; m++) {
+		vec2 pos = currentAllMountainPositions[m];
+		pos = pos / vec2(65.0f);
+		vec3 scale = currentAllMountainScales[m];
+
+		float scaleX = scale.x / (float) aspect_x;
+		float scaleY = scale.x / (float) aspect_y;
+		scaleX = scaleX * 0.2f;
+		scaleY = scaleY * 0.2f;
+
+		vec3 one = vec3(-scaleX + pos.x, -scaleY + pos.y, -0.2f);
+		vec3 two = vec3(-scaleX + pos.x, scaleY + pos.y, -0.2f);
+		vec3 three = vec3(scaleX + pos.x, scaleY + pos.y, -0.2f);
+		vec3 four = vec3(scaleX + pos.x, -scaleY + pos.y, -0.2f);
+		vec3 whichPoint[] = { one, three };
+		
+		vec3 color = vec3(1.0f) - WorldGeneration.currentAreaColour;
+		vec3 colourTwo = color + vec3(0.2f);
+		vec3 whichColour[] = { color, colourTwo };
+
+		for (int t = 0; t < 2; t++) {
+			vec3 points[] = { whichPoint[t], two, four };
+			vec3 usedColour = whichColour[t];
+			for (int v = 0; v < 3; v++) {
+				points[v].x = points[v].x - area.x / 65.0f;
+				points[v].y = points[v].y - area.y / 65.0f;
+				for (int p = 0; p < 3; p++) {
+					vertices[newVectorPosFloat(&vertices)] = points[v][p];
+				}
+				for (int p = 0; p < 3; p++) {
+					vertices[newVectorPosFloat(&vertices)] = usedColour[p];
+				}
+			}
+		}
+	}
+	// memory
+	startIrregularColorBuilding(vertices, benchUIVAO, benchUIVBO, benchUITotal);
+	// shader
+	int vertex = createShader("assets/shaders/2DUIVert.txt", GL_VERTEX_SHADER);
+	int fragment = createShader("assets/shaders/2DUIFrag.txt", GL_FRAGMENT_SHADER);
+	benchUIShader = createProgram({ vertex, fragment });
+	// selected building square
+	vector<float> vertices2 = {
+		-0.1f, -0.1f, -0.5f, 1.0f, 1.0f, 1.0f,
+		-0.1f, 0.1f, -0.5f, 1.0f, 1.0f, 1.0f,
+		0.1f, -0.1f, -0.5f, 1.0f, 1.0f, 1.0f,
+
+		-0.1f, 0.1f, -0.5f, 0.6f, 0.6f, 0.6f, 
+		0.1f, 0.1f, -0.5f, 0.6f, 0.6f, 0.6f, 
+		0.1f, -0.1f, -0.5f, 0.6f, 0.6f, 0.6f
+	};
+	startIrregularColorBuilding(vertices2, currentBuildingVAO,
+		currentBuildingVBO, currentBuildingTotal);
+}
 
 void startBuildBench(){
 	// data
@@ -136,8 +237,10 @@ void startBuildBench(){
 	startColorBuilding(blueprintVertices, &mainBlueprint);
 	mainBlueprint.position = vec3(mainBench.position.x + 0.5f, 
 		mainBench.position.y + 2.255f, mainBench.position.z + 0.5f);
+	startBuildBenchUI();
 } 
 
+vec2 lastMouse;
 void buildBenchInteraction(){
 	float distanceNeeded = 10.0f;
 	float distance = glm::distance(mainPlayer.position, mainBench.position);
@@ -145,7 +248,20 @@ void buildBenchInteraction(){
 		if (checkKeyDown(interactKey)) {
 			benchInUse = !benchInUse;
 			mainPlayer.canMove = !benchInUse;
+			if (benchInUse) {
+				currentBuildingPosition = vec2(0.0f);
+				double newX, newY;
+				glfwGetCursorPos(window, &newX, &newY);
+				lastMouse = vec2(newX, newY);
+			}
 		}
+	}
+	if (benchInUse) {
+		double newX, newY;
+		glfwGetCursorPos(window, &newX, &newY);
+		currentBuildingPosition.x -= (lastMouse.x - newX) * 0.3f;
+		currentBuildingPosition.y += (lastMouse.y - newY) * 0.3f;
+		lastMouse = vec2(newX, newY);
 	}
 }
 
@@ -164,6 +280,18 @@ void renderBuildings() {
 			allColourBuildings[i].rotation, allColourBuildings[i].scale));
 		glBindVertexArray(allColourBuildings[i].VAO);
 		glDrawArrays(GL_TRIANGLES, 0, allColourBuildings[i].size);
+	}
+	if (benchInUse) {
+		glUseProgram(benchUIShader);
+		glBindVertexArray(benchUIVAO);
+		glDrawArrays(GL_TRIANGLES, 0, benchUITotal);
+		mat4 model = mat4(1.0f);
+		model = translate(model, vec3(currentBuildingPosition, 0.0f) / vec3(65.0f));
+		model = glm::scale(model, vec3(currentBuildingScale, 1.0f));
+		setMat4(benchUIShader, "model", model);
+		glBindVertexArray(currentBuildingVAO);
+		glDrawArrays(GL_TRIANGLES, 0, currentBuildingTotal);
+		glLinkProgram(benchUIShader);
 	}
 }
 

@@ -343,7 +343,7 @@ bool checkKey(int key){
 	return false;
 }
 
-int newVectorPos(vector<int> * usedVector) {
+int newVectorPosFloat(vector<int> * usedVector) {
 	int size = usedVector->size();
 	usedVector->resize(size + 1);
 	return size;

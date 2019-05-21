@@ -6,6 +6,6 @@ uniform mat4 modelviewMatrix;
 uniform vec3 buttonPos;
 void main(){
     vec3 changedPos = vec3(aPos.x+buttonPos.x, aPos.y+buttonPos.y, aPos.z+buttonPos.z);
-    gl_Position = vec4(changedPos, 1.0) * modelviewMatrix;
+    gl_Position = vec4(changedPos, 1.0f) * modelviewMatrix;
     TexCoord = vec2(aTexCoord.x, aTexCoord.y);
 }

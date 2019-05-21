@@ -69,7 +69,7 @@ void player::movement(){
 			velocity = vec3(runSpeed);
 		}
 	}
-	if (checkKey(jumpKey) && !jumping) {
+	if (checkKeyDown(jumpKey) && !jumping) {
 		jumping = true;
 		startedLowestY = lowestY;
 		jumpVelocity = jumpHeight;
