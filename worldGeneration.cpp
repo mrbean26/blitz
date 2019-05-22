@@ -312,11 +312,9 @@ void worldGeneration::startShader() {
 vector<triangle> flatTerrainTriangles, mountainTriangles;
 vector<float> flatXPoints, flatZPoints;
 void worldGeneration::beginFlatTerrain() {
-	vec3 colour;
 	vec2 areaScale = vec2(0.0f);
 	if (currentArea == PLANET_WORLD) {
-		colour = vec3(0.35f, 0.78f, 0.31f);
-		currentAreaColour = colour;
+		currentAreaColour = vec3(0.35f, 0.78f, 0.31f);
 		areaScale = getVec2File(worldLinesPath, "planetEarthSize");
 	}
 	float triangleSize = 1.0f;
@@ -335,7 +333,7 @@ void worldGeneration::beginFlatTerrain() {
 			// assign triangles to vector
 			for (int t = 0; t < 2; t++) {
 				// new Triangle
-				vec3 triangleColour = colour + colourDifference(0.2f);
+				vec3 triangleColour = currentAreaColour + colourDifference(0.2f);
 				triangle newTriangle;
 				newTriangle.allPoints = { whichPoint[t], pointTwo, pointThree };
 				newTriangle.colour = triangleColour;
@@ -361,11 +359,9 @@ vec2 currentPlanetScale;
 
 vector<vec2> negativeMountainCoords, positiveMountainCoords;
 void worldGeneration::beginMountains() {
-	vec3 colour;
 	string mountainName;
 	int lineCount = allWorldLines.size();
 	if (currentArea == PLANET_WORLD) {
-		colour = vec3(0.35f, 0.78f, 0.31f);
 		mountainName = "earthMountain";
 	}
 	// get all mountain stats
@@ -511,7 +507,7 @@ void worldGeneration::beginMountains() {
 				vec3 whichPoint[3] = { pointThree, pointFour, pointFour };
 				vec3 whichPointTwo[3] = { pointTwo, pointTwo, pointThree };
 				for (int t = 0; t < 3; t++) {
-					vec3 triangleColour = colour + colourDifference(0.2f);
+					vec3 triangleColour = currentAreaColour + colourDifference(0.2f);
 
 					triangle newTriangle;
 					newTriangle.allPoints = { pointOne, whichPointTwo[t], whichPoint[t] };
