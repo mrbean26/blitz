@@ -9,12 +9,21 @@ int interactKey;
 void StructuresBegin(){
 	interactKey = stoi(inputLines[6]);
 	startBuildings();
+	startBuildingSelectUI();
 }
 
 void StructuresMainloop(){
 	if (!WorldGeneration.active) { return; }
 	renderBuildings();
 	buildingInteractions();
+}
+
+int standardHouseButton;
+void startBuildingSelectUI() {
+	standardHouseButton = createButton();
+	allButtons[standardHouseButton].texture = loadTexture("assets/images/standardHouseImage.png");
+	allButtons[standardHouseButton].scale = vec2(0.5f);
+	allButtons[standardHouseButton].position = vec3(-8.0, 3.75f, 0.0f);
 }
 
 void startIrregularColorBuilding(vector<float> vertices, GLuint &VAO, GLuint &VBO, GLuint &size) {
@@ -256,6 +265,7 @@ void buildBenchInteraction(){
 			mainPlayer.canMove = !benchInUse;
 			if (benchInUse) {
 				currentBuildingPosition = vec2(0.0f);
+				glfwSetCursorPos(window, display_x / 2.0, display_y / 2.0);
 				double newX, newY;
 				glfwGetCursorPos(window, &newX, &newY);
 				lastMouse = vec2(newX, newY);
@@ -265,8 +275,13 @@ void buildBenchInteraction(){
 	if (benchInUse) {
 		double newX, newY;
 		glfwGetCursorPos(window, &newX, &newY);
-		currentBuildingPosition.x -= (lastMouse.x - newX) * 0.3f;
-		currentBuildingPosition.y += (lastMouse.y - newY) * 0.3f;
+		
+		currentBuildingPosition.x = ((-display_x / 2.0) + newX) / (display_x / 2.0);
+		currentBuildingPosition.y = ((display_y / 2.0) - newY) / (display_y / (aspect_y / 5));
+
+		currentBuildingPosition.x = glm::clamp(currentBuildingPosition.x, -1.0f, 1.0f);
+		currentBuildingPosition.y = glm::clamp(currentBuildingPosition.y, (float) -aspect_y / 10.0f, (float) aspect_y / 10.0f);
+
 		lastMouse = vec2(newX, newY);
 	}
 }
@@ -297,7 +312,7 @@ void renderBuildings() {
 
 		mat4 model = mat4(1.0f);
 		model = ortho(-aspect_x / 10, aspect_x / 10, -aspect_y / 10, aspect_y / 10);
-		model = translate(model, vec3(currentBuildingPosition, 65.0f) / vec3(65.0f));
+		model = translate(model, vec3(currentBuildingPosition, 1.0f));
 		model = scale(model, vec3(currentBuildingScale, 1.0f));
 		setMat4(benchUIShader, "model", model);
 

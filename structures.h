@@ -13,6 +13,8 @@ struct buildingColour {
 void StructuresBegin();
 void StructuresMainloop();
 
+void startBuildingSelectUI();
+
 void startBuildings();
 void renderBuildings();
 void buildingInteractions();

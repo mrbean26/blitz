@@ -335,6 +335,7 @@ void startScreen::mainloop(){
 	}
 	if (loading) {
 		startWorld(linesPathHold);
+		createButton(); // new empty button
 		return;
 	}
 	// randomise saves
