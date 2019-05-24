@@ -1,6 +1,8 @@
 #include "backend.h"
 #include "frontend.h"
 
+#include "structures.h"
+
 int main(){
 	if (!openglBegin(window, false, 800, 600)) {
 		return -1;
@@ -12,7 +14,7 @@ int main(){
 
 		backendMainloop();
 		frontendMainloop();
-		
+		insideMountain();
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}

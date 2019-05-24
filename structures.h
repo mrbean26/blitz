@@ -10,10 +10,25 @@ struct buildingColour {
 	int size = 0;
 };
 
+struct placedMiniBuilding {
+	vec2 scale = vec2(0.5f, 0.5f);
+	vec2 position = vec3(0.0f);
+	vec3 rotation = vec3(0.0f);
+};
+
 void StructuresBegin();
 void StructuresMainloop();
 
+extern vector<placedMiniBuilding> allMiniBuildings;
+extern vector<string> newBuildingLines;
+extern vector<vec2> mountainLimits;
+
 void startBuildingSelectUI();
+void getMountainLimits(vector<float> vertices);
+
+bool insideAreaScale();
+bool insideMountain();
+bool okToBuild();
 
 void startBuildings();
 void renderBuildings();

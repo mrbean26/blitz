@@ -363,6 +363,7 @@ void worldGeneration::beginMountains() {
 	int lineCount = allWorldLines.size();
 	if (currentArea == PLANET_WORLD) {
 		mountainName = "earthMountain";
+		currentAreaPrefix = "earth";
 	}
 	// get all mountain stats
 	vector<vec2> mountainPositions;

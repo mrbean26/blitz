@@ -5,9 +5,11 @@
 #include "interface.h"
 #include "worldGeneration.h"
 
-int interactKey;
+int interactKey, shootButton, aimButton;
 void StructuresBegin(){
 	interactKey = stoi(inputLines[6]);
+	shootButton = stoi(inputLines[5]);
+	aimButton = stoi(inputLines[4]);
 	startBuildings();
 	startBuildingSelectUI();
 }
@@ -24,6 +26,61 @@ void startBuildingSelectUI() {
 	allButtons[standardHouseButton].texture = loadTexture("assets/images/standardHouseImage.png");
 	allButtons[standardHouseButton].scale = vec2(0.5f);
 	allButtons[standardHouseButton].position = vec3(-8.0, 3.75f, 0.0f);
+}
+
+void getMountainLimits(vector<float> vertices){
+	for (int p = 0; p < 4; p++) { // all limits
+		float x = vertices[p * 3];
+		float y = vertices[(p * 3) + 1];
+		vec2 limit = vec2(x, y);
+
+		int size = mountainLimits.size();
+		mountainLimits.resize(size + 1);
+		mountainLimits[size] = limit;
+	}
+}
+
+bool insideAreaScale() {
+	vec2 areaScaleMin = vec2((-currentPlanetScale.x / 2.0f) / 65.0f, (-currentPlanetScale.y / 2.0f) / 65.0f);
+	vec2 areaScaleMax = vec2((currentPlanetScale.x / 2.0f) / 65.0f, (currentPlanetScale.y / 2.0f) / 65.0f);
+
+	vec2 buildPosMin = vec2(currentBuildingPosition.x - (0.1f * currentBuildingScale.x),
+		currentBuildingPosition.y - (0.1f * currentBuildingScale.y));
+	vec2 buildPosMax = vec2(currentBuildingPosition.x + (0.1f * currentBuildingScale.x),
+		currentBuildingPosition.y + (0.1f * currentBuildingScale.y));
+
+	if (buildPosMin.x >= areaScaleMin.x && buildPosMax.x <= areaScaleMax.x) {
+		if (buildPosMin.y >= areaScaleMin.y && buildPosMax.y <= areaScaleMax.y) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool insideMountain(){
+	vec2 buildPosMin = vec2(currentBuildingPosition.x - (0.1f * currentBuildingScale.x),
+		currentBuildingPosition.y - (0.1f * currentBuildingScale.y));
+	vec2 buildPosMax = vec2(currentBuildingPosition.x + (0.1f * currentBuildingScale.x),
+		currentBuildingPosition.y + (0.1f * currentBuildingScale.y));
+
+	int mCount = mountainLimits.size();
+	for (int m = 0; m < mCount / 4; m++) {
+		vec2 minMin = mountainLimits[m * 4];
+		vec2 maxMax = mountainLimits[(m * 4) + 3];
+
+		if (buildPosMin.x >= minMin.x && buildPosMin.x <= maxMax.x) {
+			if (buildPosMin.y >= minMin.y && buildPosMin.y <= maxMax.y) {
+				return true;
+			}
+		}
+
+		if (buildPosMax.x >= minMin.x && buildPosMax.x <= maxMax.x) {
+			if (buildPosMax.y >= minMin.y && buildPosMax.y <= maxMax.y) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 void startIrregularColorBuilding(vector<float> vertices, GLuint &VAO, GLuint &VBO, GLuint &size) {
@@ -58,6 +115,7 @@ bool benchInUse = false;
 
 GLuint benchUIVAO, benchUIVBO, benchUIShader, benchUITotal;
 GLuint currentBuildingVAO, currentBuildingVBO, currentBuildingTotal;
+vector<vec2> mountainLimits;
 void startBuildBenchUI() {
 	float mountainDisplaySizeScale = 0.02f;
 
@@ -112,6 +170,7 @@ void startBuildBenchUI() {
 		vec3 colourTwo = color + vec3(0.2f);
 		vec3 whichColour[] = { color, colourTwo };
 
+		vector<float> mountainVertices;
 		for (int t = 0; t < 2; t++) {
 			vec3 points[] = { whichPoint[t], two, four };
 			vec3 usedColour = whichColour[t];
@@ -120,12 +179,14 @@ void startBuildBenchUI() {
 				points[v].y = points[v].y - area.y / 65.0f;
 				for (int p = 0; p < 3; p++) {
 					vertices[newVectorPosFloat(&vertices)] = points[v][p];
+					mountainVertices[newVectorPosFloat(&mountainVertices)] = points[v][p];
 				}
 				for (int p = 0; p < 3; p++) {
 					vertices[newVectorPosFloat(&vertices)] = usedColour[p];
 				}
 			}
 		}
+		getMountainLimits(mountainVertices);
 	}
 	// memory
 	startIrregularColorBuilding(vertices, benchUIVAO, benchUIVBO, benchUITotal);
@@ -255,7 +316,19 @@ void startBuildBench(){
 	startBuildBenchUI();
 } 
 
+bool okToBuild() {
+	if (insideAreaScale()) {
+		if (!insideMountain()) {
+			return true;
+		}
+	}
+	return false;
+}
+
 vec2 lastMouse;
+vector<placedMiniBuilding> allMiniBuildings;
+vector<string> newBuildingLines;
+
 void buildBenchInteraction(){
 	float distanceNeeded = 10.0f;
 	float distance = glm::distance(mainPlayer.position, mainBench.position);
@@ -283,6 +356,19 @@ void buildBenchInteraction(){
 		currentBuildingPosition.y = glm::clamp(currentBuildingPosition.y, (float) -aspect_y / 10.0f, (float) aspect_y / 10.0f);
 
 		lastMouse = vec2(newX, newY);
+
+		// clicks
+		if (checkKeyDown(aimButton)) {
+			if (okToBuild()) {
+				placedMiniBuilding newMiniBuilding;
+				newMiniBuilding.position = currentBuildingPosition;
+				newMiniBuilding.scale = currentBuildingScale;
+
+				int size = allMiniBuildings.size();
+				allMiniBuildings.resize(size + 1);
+				allMiniBuildings[size] = newMiniBuilding;
+			}
+		}
 	}
 }
 
@@ -318,6 +404,16 @@ void renderBuildings() {
 
 		glBindVertexArray(currentBuildingVAO);
 		glDrawArrays(GL_TRIANGLES, 0, currentBuildingTotal);
+
+		int miniBuildingCount = allMiniBuildings.size();
+		for (int m = 0; m < miniBuildingCount; m++) {
+			mat4 newModel = mat4(1.0f);
+			model = ortho(-aspect_x / 10, aspect_x / 10, -aspect_y / 10, aspect_y / 10);
+			model = translate(model, vec3(allMiniBuildings[m].position, 1.0f));
+			model = scale(model, vec3(allMiniBuildings[m].scale, 1.0f));
+			setMat4(benchUIShader, "model", model);
+			glDrawArrays(GL_TRIANGLES, 0, currentBuildingTotal);
+		}
 	}
 }
 

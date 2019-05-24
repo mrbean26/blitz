@@ -54,6 +54,7 @@ public:
 	int currentArea = PLANET_WORLD;
 	vec2 currentAreaScale;
 	vec3 currentAreaColour;
+	string currentAreaPrefix;
 	vec2 getAreaScale();
 
 	bool active = false;

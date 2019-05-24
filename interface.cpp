@@ -350,6 +350,7 @@ int newVectorPosFloat(vector<int> * usedVector) {
 }
 
 vector<bool> allKeysPrevious(146);
+bool rightButtonDown, leftButtonDown, middleButtonDown;
 vector<int> keyIndexes = { 32, 39, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68,
 							69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 96, 
 							161, 162, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 
@@ -358,6 +359,31 @@ vector<int> keyIndexes = { 32, 39, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 5
 							314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 
 							334, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 347 };
 bool checkKeyDown(int key) {
+	vector<bool> booleans = { rightButtonDown, leftButtonDown, middleButtonDown };
+	vector<int> glfwMouse = { GLFW_MOUSE_BUTTON_RIGHT, GLFW_MOUSE_BUTTON_LEFT, GLFW_MOUSE_BUTTON_MIDDLE };
+	vector<int> blitzMouse = { 256256, 128128, 512512 };
+	bool returned = false;
+	for (int i = 0; i < 3; i++) {
+		if (key == blitzMouse[i]) {
+			int state = glfwGetMouseButton(window, glfwMouse[i]);
+			if (state == GLFW_PRESS){
+				if (!booleans[i]) {
+					returned = true;
+					booleans[i] = true;
+					continue;
+				}
+			}
+			if (state == GLFW_RELEASE) {
+				booleans[i] = false;
+			}
+		}
+	}
+	// update vector
+	rightButtonDown = booleans[0];
+	leftButtonDown = booleans[1];
+	middleButtonDown = booleans[2];
+	if (returned) { return true; }
+	// keys
 	if (checkKey(key)) {
 		vector<int>::iterator iterator = find(keyIndexes.begin(), keyIndexes.end(), key);
 		int index = std::distance(keyIndexes.begin(), iterator);
