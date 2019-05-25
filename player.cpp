@@ -3,6 +3,8 @@
 #include "display.h"
 #include "worldGeneration.h"
 #include "backend.h"
+#include "frontend.h"
+#include "structures.h"
 
 #include <glm/gtc/type_ptr.hpp>
 using namespace glm;
@@ -14,9 +16,7 @@ using namespace std;
 vector<vec3> colourVector(int size, vec3 colour) {
 	vector<vec3> newVector;
 	for (int i = 0; i < size; i++) {
-		int currentSize = newVector.size();
-		newVector.resize(currentSize + 1);
-		newVector[currentSize] = colour + colourDifference(0.2f);
+		newVector[newVectorPos(&newVector)] = colour + colourDifference(0.2f);
 	}
 	return newVector;
 }
@@ -27,6 +27,7 @@ void player::begin(){
 	startCharacterVertices();
 	playerView = true;
 	inputLines = readLines("assets/saves/inputs.save");
+	startPauseUI();
 }
 
 void player::mainloop(){
@@ -35,9 +36,111 @@ void player::mainloop(){
 	movement();
 	cameraMovement();
 	collisions();
+	pauseUIInteraction();
+}
+
+int continueButton, exitButton;
+bool paused = false;
+void startPauseUI() {
+	continueButton = createButton();
+	allButtons[continueButton].texture = loadTexture("assets/images/continueButton.png");
+	allButtons[continueButton].scale = vec2(1.2f, 0.45f);
+	allButtons[continueButton].position = vec3(0.0f, 1.2f, 0.0f);
+	allButtons[continueButton].active = false;
+	exitButton = createButton();
+	allButtons[exitButton].texture = loadTexture("assets/images/exitButton.png");
+	allButtons[exitButton].scale = vec2(1.2f, 0.45f);
+	allButtons[exitButton].position = vec3(0.0f, -1.2f, 0.0f);
+	allButtons[exitButton].active = false;
+}
+
+void exitToMenus() {
+	// exit to main menu
+			// world generation
+	glDeleteVertexArrays(1, &WorldGeneration.terrainVAO);
+	glDeleteVertexArrays(1, &WorldGeneration.areaLimitVAO);
+	glDeleteBuffers(1, &WorldGeneration.terrainVBO);
+	glDeleteBuffers(1, &WorldGeneration.areaLimitVBO);
+	WorldGeneration.areaLimitCount = 0;
+	// player
+	mainPlayer.deleteMemory();
+	// bools
+	mainPlayer.active = false;
+	allButtons.clear();
+	allTexts.clear();
+	StartScreen.active = true;
+	allButtons = previousAllButtons;
+	allTexts = previousAllTexts;
+	loading = false;
+	mainPlayer.canMove = true;
+	paused = false;
+	// worldGeneration.h
+	currentAllMountainPositions.clear();
+	currentAllMountainScales.clear();
+	flatTerrainTriangles.clear();
+	mountainTriangles.clear();
+	flatXPoints.clear();
+	flatZPoints.clear();
+	WorldGeneration.startedBegin = false;
+	WorldGeneration.active = false;
+	// write new buildings to file
+	int lineCount = newBuildingLines.size();
+	if (lineCount > 0) {
+		vector<string> currentAllLines = readLines(WorldGeneration.worldLinesPath);
+		currentAllLines.insert(currentAllLines.end(), newBuildingLines.begin(), newBuildingLines.end());
+		writeLines(WorldGeneration.worldLinesPath, currentAllLines);
+	}
+	// structures.h
+	mountainLimits.clear();
+	allMiniBuildings.clear();
+	newBuildingLines.clear();
+}
+
+void pauseUIInteraction() {
+	bool changePaused = false;
+	if (paused) {
+		if (allButtons[continueButton].clickUp) {
+			changePaused = true;
+		}
+		if (allButtons[exitButton].clickUp) {
+			exitToMenus();
+			return;
+		}
+	}
+	if ((checkKeyDown(GLFW_KEY_ESCAPE) && !benchInUse) || changePaused) {
+		if (!paused) {
+			paused = true;
+			allButtons[exitButton].active = true;
+			allButtons[continueButton].active = true;
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			mainPlayer.canMove = false;
+			return;
+		}
+		if (paused) {
+			paused = false;
+			allButtons[exitButton].active = false;
+			allButtons[continueButton].active = false;
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			mainPlayer.canMove = true;
+		}
+	}
 }
 
 float startedLowestY = -999.0f;
+void player::deleteMemory(){
+	glDeleteVertexArrays(1, &headVAO);
+	glDeleteVertexArrays(1, &armVAO);
+	glDeleteVertexArrays(1, &torsoVAO);
+	glDeleteVertexArrays(1, &legVAO);
+
+	glDeleteBuffers(1, &headVBO);
+	glDeleteBuffers(1, &armVBO);
+	glDeleteBuffers(1, &torsoVBO);
+	glDeleteBuffers(1, &legVBO);
+
+	position = vec3(0.0f);
+}
+
 void player::movement(){
 	if (!canMove) { return; }
 	int forwardKey = stoi(inputLines[0]);

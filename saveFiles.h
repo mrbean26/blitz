@@ -28,4 +28,6 @@ vec2 getVec2File(const char * fileName, string vec2Name, int pos = -1);
 
 float getFloatFile(const char * fileName, string floatName, int pos = -1);
 
+int getIntFile(const char* fileName, string intName, int pos = -1);
+
 #endif

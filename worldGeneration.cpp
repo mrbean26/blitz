@@ -73,19 +73,9 @@ vector<vec2> circleCoords(vec2 position, float radius, int pointCount, float sca
 		x += position.x;
 		y += position.y;
 		// assign to vector
-		int coordCount = coords.size();
-		coords.resize(coordCount + 1);
-		coords[coordCount] = vec2(x, y);
+		coords[newVectorPos(&coords)] = vec2(x, y);
 	}
 	return coords;
-}
-
-int lineCount = 0;
-int newLinePos(vector<string> & usedVector) { // used for creating saves
-	int currentSize = usedVector.size();
-	lineCount++;
-	usedVector.resize(lineCount);
-	return lineCount - 1;
 }
 
 bool insideMountain(vector<vec2> allPositions, vector<float> allScales,
@@ -105,19 +95,18 @@ bool insideMountain(vector<vec2> allPositions, vector<float> allScales,
 
 void createSave(const char* filePath, int saveType) {
 	vector<string> saveLines = { "IN USE" };
-	lineCount = 1; //including IN USE line
 	if (saveType == DEFAULT_SAVE) {
 		//inventory and hotbar with no items (start of world)
-		saveLines[newLinePos(saveLines)] = "inventory 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"; //15 slots
-		saveLines[newLinePos(saveLines)] = "hotbar 0 0 0 0 0"; //5 slots
+		saveLines[newVectorPos(&saveLines)] = "inventory 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"; //15 slots
+		saveLines[newVectorPos(&saveLines)] = "hotbar 0 0 0 0 0"; //5 slots
 		//"current" data
-		saveLines[newLinePos(saveLines)] = "currentPlanet earth"; //basic science base on earth
-		saveLines[newLinePos(saveLines)] = "currentPosition 0.0f, 0.0f, 0.0f";
+		saveLines[newVectorPos(&saveLines)] = "currentPlanet earth"; //basic science base on earth
+		saveLines[newVectorPos(&saveLines)] = "currentPosition 0.0f, 0.0f, 0.0f";
 		//EARTH SAVED DATA----------------------------------------------------------------------
 		//land scale
 		int earthScaleX = randomInt(35, 65);
 		int earthScaleY = 100 - earthScaleX;
-		saveLines[newLinePos(saveLines)] = "planetEarthSize " + to_string(earthScaleX) + " " + to_string(earthScaleY);
+		saveLines[newVectorPos(&saveLines)] = "planetEarthSize " + to_string(earthScaleX) + " " + to_string(earthScaleY);
 		// lists to check if inside each other
 		vector<vec2> craterPositions;
 		vector<float> craterScales;
@@ -152,18 +141,15 @@ void createSave(const char* filePath, int saveType) {
 				continue;
 			}
 			//write to file
-			saveLines[newLinePos(saveLines)] = "earthMountainPosition " +
+			saveLines[newVectorPos(&saveLines)] = "earthMountainPosition " +
 				to_string(mountainPositionX) + " " + to_string(mountainPositionY);
-			saveLines[newLinePos(saveLines)] = "earthMountainScale " +
+			saveLines[newVectorPos(&saveLines)] = "earthMountainScale " +
 				to_string(mountainScaleX) + " " + to_string(mountainScaleZ);
-			saveLines[newLinePos(saveLines)] = "earthMountainGradient " +
+			saveLines[newVectorPos(&saveLines)] = "earthMountainGradient " +
 				to_string(mountainGradient);
 			// assign to vectors
-			int size = craterPositions.size();
-			craterPositions.resize(size + 1);
-			craterScales.resize(size + 1);
-			craterPositions[size] = pos;
-			craterScales[size] = mountainScaleX;
+			craterPositions[newVectorPos(&craterPositions)] = pos;
+			craterScales[newVectorPos(&craterScales)] = mountainScaleX;
 		}
 	}
 	writeLines(filePath, saveLines);
@@ -338,15 +324,10 @@ void worldGeneration::beginFlatTerrain() {
 				newTriangle.allPoints = { whichPoint[t], pointTwo, pointThree };
 				newTriangle.colour = triangleColour;
 				for (vec3 v : newTriangle.allPoints) {
-					int size = flatXPoints.size();
-					flatXPoints.resize(size + 1);
-					flatZPoints.resize(size + 1);
-					flatXPoints[size] = v.x;
-					flatZPoints[size] = -v.z;
+					flatXPoints[newVectorPos(&flatXPoints)] = v.x;
+					flatZPoints[newVectorPos(&flatZPoints)] = -v.z;
 				}
-				int vectorSize = flatTerrainTriangles.size();
-				flatTerrainTriangles.resize(vectorSize + 1);
-				flatTerrainTriangles[vectorSize] = newTriangle;
+				flatTerrainTriangles[newVectorPos(&flatTerrainTriangles)] = newTriangle;
 			}
 		}
 	}
@@ -377,23 +358,17 @@ void worldGeneration::beginMountains() {
 			vec2 mountainScale = getVec2File(worldLinesPath, mountainName + "Scale", l + 1);
 			float mountainGradient = getFloatFile(worldLinesPath, mountainName + "Gradient", l + 2);
 			// add to vector
-			// resize
-			int currentVectorSize = mountainPositions.size();
-			mountainPositions.resize(currentVectorSize + 1);
-			mountainGradients.resize(currentVectorSize + 1);
-			mountainScales.resize(currentVectorSize + 1);
 			// add values
-			mountainPositions[currentVectorSize] = currentLineMountainPos;
-			mountainScales[currentVectorSize] = mountainScale;
-			mountainGradients[currentVectorSize] = mountainGradient;
+			mountainPositions[newVectorPos(&mountainPositions)] = currentLineMountainPos;
+			mountainScales[newVectorPos(&mountainScales)] = mountainScale;
+			mountainGradients[newVectorPos(&mountainGradients)] = mountainGradient;
 		}
 	}
 	// assign to global
 	currentAllMountainPositions = mountainPositions;
-	currentAllMountainScales.resize(currentAllMountainPositions.size());
 	int mCount = mountainPositions.size();
 	for (int i = 0; i < mCount; i++) {
-		currentAllMountainScales[i] = vec3(mountainScales[i], mountainGradients[i]);
+		currentAllMountainScales[newVectorPos(&currentAllMountainScales)] = vec3(mountainScales[i], mountainGradients[i]);
 	}
 	// mountain stats
 	float defaultScale = 0.025f;
@@ -414,9 +389,7 @@ void worldGeneration::beginMountains() {
 		vector<int> radiuses;
 		float loopDifference = radiusDifference / 100.0f;
 		for (float r = 0.2f; r < sca.x; r += loopDifference) { // the lowest needs to be 10
-			int size = radiuses.size();
-			radiuses.resize(size + 1);
-			radiuses[size] = (int)std::round(r * 100.0f);
+			radiuses[newVectorPos(&radiuses)] = (int)std::round(r * 100.0f);
 		}
 		// reverse radiuses so 1st is highest
 		reverse(radiuses.begin(), radiuses.end());
@@ -514,9 +487,7 @@ void worldGeneration::beginMountains() {
 					newTriangle.allPoints = { pointOne, whichPointTwo[t], whichPoint[t] };
 					newTriangle.colour = triangleColour;
 
-					int triangleCount = mountainTriangles.size();
-					mountainTriangles.resize(triangleCount + 1);
-					mountainTriangles[triangleCount] = newTriangle;
+					mountainTriangles[newVectorPos(&mountainTriangles)] = newTriangle;
 				}
 				pointIndex++;
 			}
@@ -563,16 +534,12 @@ void worldGeneration::beginTerrrain() {
 			vector<vec3> points = currentVector[f].allPoints;
 			for (vec3 point : points) {
 				for (int v = 0; v < 3; v++) {
-					int floatCount = allVertices.size();
-					allVertices.resize(floatCount + 1);
-					allVertices[floatCount] = point[v];
+					allVertices[newVectorPos(&allVertices)] = point[v];
 				}
 				//color
 				vec3 colour = currentVector[f].colour;
 				for (int c = 0; c < 3; c++) {
-					int newFloatCount = allVertices.size();
-					allVertices.resize(newFloatCount + 1);
-					allVertices[newFloatCount] = colour[c];
+					allVertices[newVectorPos(&allVertices)] = colour[c];
 				}
 			}
 			triangleSize = triangleSize + 1;
@@ -652,12 +619,6 @@ void worldGeneration::mainloop() {
 	renderAreaLimits();
 }
 
-int newVectorPosFloat(vector<float> * usedVector) {
-	int size = usedVector->size();
-	usedVector->resize(size + 1);
-	return size;
-}
-
 void worldGeneration::beginAreaLimits() {
 	// generate points
 	vector<float> points;
@@ -684,11 +645,11 @@ void worldGeneration::beginAreaLimits() {
 					vector<vec3> allPoints = { whichPoint[t], two, three };
 					for (vec3 point : allPoints) {
 						for (int v = 0; v < 3; v++) {
-							points[newVectorPosFloat(&points)] = point[v];
+							points[newVectorPos(&points)] = point[v];
 						}
 						// add colour
 						for (int c = 0; c < 3; c++) {
-							points[newVectorPosFloat(&points)] = squareColour[c];
+							points[newVectorPos(&points)] = squareColour[c];
 						}
 					}
 					areaLimitCount++;
@@ -716,11 +677,11 @@ void worldGeneration::beginAreaLimits() {
 					vector<vec3> allPoints = { whichPoint[t], two, three };
 					for (vec3 point : allPoints) {
 						for (int v = 0; v < 3; v++) {
-							points[newVectorPosFloat(&points)] = point[v];
+							points[newVectorPos(&points)] = point[v];
 						}
 						// add colour
 						for (int c = 0; c < 3; c++) {
-							points[newVectorPosFloat(&points)] = squareColour[c];
+							points[newVectorPos(&points)] = squareColour[c];
 						}
 					}
 					areaLimitCount++;

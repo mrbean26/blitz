@@ -13,10 +13,8 @@ std::vector<button> allButtons;
 
 int createButton(){
 	button newButton;
-	int buttonCount = allButtons.size();
-	allButtons.resize(buttonCount + 1);
-	allButtons[buttonCount] = newButton;
-	return buttonCount;
+	allButtons[newVectorPos(&allButtons)] = newButton;
+	return allButtons.size() - 1;
 }
 
 void renderButtons(){
@@ -181,10 +179,8 @@ GLuint textVAO, textVBO;
 
 int createText(){
 	text newText;
-	int size = allTexts.size();
-	allTexts.resize(size + 1);
-	allTexts[size] = newText;
-	return size;
+	allTexts[newVectorPos(&allTexts)] = newText;
+	return allTexts.size() - 1;
 }
 
 void textsBegin(){
@@ -341,12 +337,6 @@ bool checkKey(int key){
 		return true;
 	}
 	return false;
-}
-
-int newVectorPosFloat(vector<int> * usedVector) {
-	int size = usedVector->size();
-	usedVector->resize(size + 1);
-	return size;
 }
 
 vector<bool> allKeysPrevious(146);

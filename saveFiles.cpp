@@ -63,7 +63,7 @@ vec2 getVec2File(const char * fileName, string vec2Name, int pos) {
 			if (currentLine.find(vec2Name) != string::npos) {
 				string valueOnly = removeString(currentLine, vec2Name);
 				int valueLength = valueOnly.length();
-				int midValuePosition;
+				int midValuePosition = 0;
 				// get values from string
 				for (int c = 0; c < valueLength; c++) {
 					char currentChar = valueOnly[c];
@@ -88,7 +88,7 @@ vec2 getVec2File(const char * fileName, string vec2Name, int pos) {
 		if (contains(fileLines[pos], vec2Name)) {
 			string valueOnly = removeString(fileLines[pos], vec2Name);
 			int valueLength = valueOnly.length();
-			int midValuePosition;
+			int midValuePosition = 0;
 			// get values from string
 			for (int c = 0; c < valueLength; c++) {
 				char currentChar = valueOnly[c];
@@ -134,4 +134,27 @@ float getFloatFile(const char * fileName, string floatName, int pos){
 		}
 	}
 	return -1.0f;
+}
+
+int getIntFile(const char* fileName, string intName, int pos){
+	intName += " ";
+	vector<string> allLines = readLines(fileName);
+	if (pos == -1) {
+		int lineCount = allLines.size();
+		for (int i = 0; i < lineCount; i++) {
+			string currentString = allLines[i];
+			if (contains(currentString, intName)) {
+				string justValue = removeString(currentString, intName);
+				return stoi(justValue);
+			}
+		}
+	}
+	if (pos != -1) {
+		if (contains(allLines[pos], intName)) {
+			string justValue = removeString(allLines[pos], intName);
+			return stoi(justValue);
+		}
+	}
+	return -1;
+	return 0;
 }

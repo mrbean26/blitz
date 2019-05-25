@@ -19,6 +19,13 @@ void startPlayerShader();
 vector<vec3> colourVector(int size, vec3 colour);
 extern vector<string> inputLines;
 
+extern int continueButton, exitButton;
+extern bool paused;
+void startPauseUI();
+void pauseUIInteraction();
+
+void exitToMenus();
+
 class player {
 public:
 	bool active = false, canMove = true;
@@ -29,6 +36,8 @@ public:
 	vec3 velocity = vec3(0.0f);
 
 	float headLookAtY = 0.0f;
+
+	void deleteMemory();
 private:
 	void movement();
 	void collisions();

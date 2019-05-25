@@ -198,8 +198,15 @@ void startScreen::changeInputs(){
 
 bool loading = false;
 const char * linesPathHold;
+vector<text> previousAllTexts;
+vector<button> previousAllButtons;
+
 void loadWorld(const char * linesPath) {
 	loading = true;
+	allButtons[StartScreen.playOneButton].clickUp = false;
+	allButtons[StartScreen.playTwoButton].clickUp = false;
+	previousAllButtons = allButtons;
+	previousAllTexts = allTexts;
 	allButtons.clear();
 	int textCount = allTexts.size();
 	allTexts[StartScreen.loadingText].active = true;
@@ -336,6 +343,7 @@ void startScreen::mainloop(){
 	if (loading) {
 		startWorld(linesPathHold);
 		createButton(); // new empty button
+		loading = false;
 		return;
 	}
 	// randomise saves

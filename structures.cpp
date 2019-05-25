@@ -12,20 +12,125 @@ void StructuresBegin(){
 	aimButton = stoi(inputLines[4]);
 	startBuildings();
 	startBuildingSelectUI();
+	startPhysicalBuildings();
+	getAllBuildingPositions();
 }
 
 void StructuresMainloop(){
-	if (!WorldGeneration.active) { return; }
+	if (!WorldGeneration.startedBegin) { return; }
 	renderBuildings();
 	buildingInteractions();
+	changeBuildings();
 }
 
-int standardHouseButton;
+vector<vec2> buildingScales = {
+	vec2(0.5f, 0.5f), // standard house
+	vec2(0.5f, 0.5f), // pointy house
+};
+
+vector<buildingColour> physicalBuildings;
+void startPhysicalBuildings() {
+	buildingColour standardHouseBuilding;
+	vector<float> standardHouseVertices = {
+		0.0f, 10.0f, 100.0f, 1.0f, 1.0f, 1.0f,
+		0.0f, 0.0f, 10.0f, 1.0f, 1.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f
+	};
+	startColorBuilding(standardHouseVertices, &standardHouseBuilding);
+	physicalBuildings[newVectorPos(&physicalBuildings)] = standardHouseBuilding;
+	// point house
+	buildingColour pointHouseBuilding;
+	vector<float> pointHouseVertices = {
+		// sides
+		-4.0f, 0.0f, -4.0f, 1.0f, 0.0f, 0.0f,
+		4.0f, 0.0f, -4.0f, 1.0f, 0.0f, 0.0f,
+		4.0f, 8.0f, -4.0f, 1.0f, 0.0f, 0.0f,
+
+		-4.0f, 0.0f, -4.0f, 1.0f, 0.0f, 0.0f,
+		-4.0f, 8.0f, -4.0f, 1.0f, 0.0f, 0.0f,
+		4.0f, 8.0f, -4.0f, 1.0f, 0.0f, 0.0f,
+
+		-4.0f, 0.0f, 4.0f, 1.0f, 0.0f, 0.0f,
+		4.0f, 0.0f, 4.0f, 1.0f, 0.0f, 0.0f,
+		4.0f, 8.0f, 4.0f, 1.0f, 0.0f, 0.0f,
+
+		-4.0f, 0.0f, 4.0f, 1.0f, 0.0f, 0.0f,
+		-4.0f, 8.0f, 4.0f, 1.0f, 0.0f, 0.0f,
+		4.0f, 8.0f, 4.0f, 1.0f, 0.0f, 0.0f,
+		// back
+		
+
+	};
+	startColorBuilding(pointHouseVertices, &pointHouseBuilding);
+	physicalBuildings[newVectorPos(&physicalBuildings)] = pointHouseBuilding;
+}
+
+int standardHouseButton, pointyHouseButton;
+vector<int> buildingSelectButtons;
+int currentBuildingType = 0;
+void getAllBuildingPositions(){
+	vector<string> allLines = readLines(WorldGeneration.worldLinesPath);
+	int lineCount = allLines.size();
+	for (int l = 0; l < lineCount; l++) {
+		int buildType = getIntFile(WorldGeneration.worldLinesPath,
+			WorldGeneration.currentAreaPrefix + "BuildingType", l);
+		if (buildType != -1) {
+			vec2 areaScaleMax = vec2((currentPlanetScale.x) / 65.0f, (currentPlanetScale.y) / 65.0f);
+
+			vec2 buildPos = getVec2File(WorldGeneration.worldLinesPath,
+				WorldGeneration.currentAreaPrefix + "BuildingPosition", l + 1);
+			vec2 buildUIPos = vec2(
+				((buildPos.x / currentPlanetScale.x) * areaScaleMax.x) - (areaScaleMax.x / 2.0f),
+				-(((buildPos.y / currentPlanetScale.y) * areaScaleMax.y) + areaScaleMax.y / 2.0f)
+			);
+
+			placedMiniBuilding newBuilding;
+			newBuilding.position = buildUIPos;
+			newBuilding.scale = buildingScales[buildType];
+
+			allMiniBuildings[newVectorPos(&allMiniBuildings)] = newBuilding;
+
+			// physical buildngs
+			buildingColour newBuildingPhysical = physicalBuildings[buildType];
+			newBuildingPhysical.position = vec3(buildPos.x, 0.0f, buildPos.y);
+
+			allColourBuildings[newVectorPos(&allColourBuildings)] = newBuildingPhysical;
+		}
+	}
+}
+
+void changeBuildings() {
+	int buttonCount = buildingSelectButtons.size();
+	for (int i = 0; i < buttonCount; i++) {
+		allButtons[buildingSelectButtons[i]].colour = vec3(1.0f);
+		if (i == currentBuildingType) {
+			allButtons[buildingSelectButtons[i]].colour = vec3(0.86f, 0.27f, 0.32f);
+		}
+		if (allButtons[buildingSelectButtons[i]].clickUp) {
+			allButtons[buildingSelectButtons[i]].colour = vec3(0.86f, 0.27f, 0.32f);
+			currentBuildingType = i;
+		}
+	}
+}
+
 void startBuildingSelectUI() {
+	buildingSelectButtons.clear();
+	int empty = createButton();
+	allButtons[empty].position = vec3(1000.0f);
+
 	standardHouseButton = createButton();
 	allButtons[standardHouseButton].texture = loadTexture("assets/images/standardHouseImage.png");
 	allButtons[standardHouseButton].scale = vec2(0.5f);
 	allButtons[standardHouseButton].position = vec3(-8.0, 3.75f, 0.0f);
+	allButtons[standardHouseButton].active = false;
+	buildingSelectButtons[newVectorPos(&buildingSelectButtons)] = standardHouseButton;
+
+	pointyHouseButton = createButton();
+	allButtons[pointyHouseButton].texture = loadTexture("assets/images/pointRoofHouse.png");
+	allButtons[pointyHouseButton].scale = vec2(0.5f);
+	allButtons[pointyHouseButton].position = vec3(-8.0f, 1.5f, 0.0f);
+	allButtons[pointyHouseButton].active = false;
+	buildingSelectButtons[newVectorPos(&buildingSelectButtons)] = pointyHouseButton;
 }
 
 void getMountainLimits(vector<float> vertices){
@@ -34,10 +139,41 @@ void getMountainLimits(vector<float> vertices){
 		float y = vertices[(p * 3) + 1];
 		vec2 limit = vec2(x, y);
 
-		int size = mountainLimits.size();
-		mountainLimits.resize(size + 1);
-		mountainLimits[size] = limit;
+		mountainLimits[newVectorPos(&mountainLimits)] = limit;
 	}
+}
+
+bool insideOtherBuilding(){
+	vec2 buildPosMin = vec2(currentBuildingPosition.x - (0.1f * currentBuildingScale.x),
+		currentBuildingPosition.y - (0.1f * currentBuildingScale.y));
+	vec2 buildPosMax = vec2(currentBuildingPosition.x + (0.1f * currentBuildingScale.x),
+		currentBuildingPosition.y + (0.1f * currentBuildingScale.y));
+
+	int mCount = allMiniBuildings.size();
+	for (int m = 0; m < mCount; m++) {
+		placedMiniBuilding current = allMiniBuildings[m];
+		vec2 minMin = current.position - (current.scale * 0.1f);
+		vec2 maxMax = current.position + (current.scale * 0.1f);
+
+		if (buildPosMin.x >= minMin.x && buildPosMin.x <= maxMax.x) {
+			if (buildPosMin.y >= minMin.y && buildPosMin.y <= maxMax.y) {
+				return true;
+			}
+		}
+
+		if (buildPosMax.x >= minMin.x && buildPosMax.x <= maxMax.x) {
+			if (buildPosMax.y >= minMin.y && buildPosMax.y <= maxMax.y) {
+				return true;
+			}
+		}
+
+		if (buildPosMax.x >= minMin.x && buildPosMin.x <= maxMax.x) {
+			if (buildPosMax.y >= minMin.y && buildPosMin.y <= maxMax.y) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 bool insideAreaScale() {
@@ -76,6 +212,12 @@ bool insideMountain(){
 
 		if (buildPosMax.x >= minMin.x && buildPosMax.x <= maxMax.x) {
 			if (buildPosMax.y >= minMin.y && buildPosMax.y <= maxMax.y) {
+				return true;
+			}
+		}
+
+		if (buildPosMax.x >= minMin.x && buildPosMin.x <= maxMax.x) {
+			if (buildPosMax.y >= minMin.y && buildPosMin.y <= maxMax.y) {
 				return true;
 			}
 		}
@@ -123,8 +265,8 @@ void startBuildBenchUI() {
 	vec3 areaColourOne = WorldGeneration.currentAreaColour;
 	vec3 areaColourTwo = areaColourOne + vec3(0.03f);
 
-	float blueprintX = (aspect_x / 10.0f) * 0.95f;
-	float blueprintY = (aspect_y / 10.0f) * 0.95f;
+	float blueprintX = ((float) aspect_x / 10.0f) * 0.95f;
+	float blueprintY = ((float) aspect_y / 10.0f) * 0.95f;
 
 	vector<float> vertices = {
 		// blueprint
@@ -178,11 +320,11 @@ void startBuildBenchUI() {
 				points[v].x = points[v].x - area.x / 65.0f;
 				points[v].y = points[v].y - area.y / 65.0f;
 				for (int p = 0; p < 3; p++) {
-					vertices[newVectorPosFloat(&vertices)] = points[v][p];
-					mountainVertices[newVectorPosFloat(&mountainVertices)] = points[v][p];
+					vertices[newVectorPos(&vertices)] = points[v][p];
+					mountainVertices[newVectorPos(&mountainVertices)] = points[v][p];
 				}
 				for (int p = 0; p < 3; p++) {
-					vertices[newVectorPosFloat(&vertices)] = usedColour[p];
+					vertices[newVectorPos(&vertices)] = usedColour[p];
 				}
 			}
 		}
@@ -319,7 +461,9 @@ void startBuildBench(){
 bool okToBuild() {
 	if (insideAreaScale()) {
 		if (!insideMountain()) {
-			return true;
+			if (!insideOtherBuilding()) {
+				return true;
+			}
 		}
 	}
 	return false;
@@ -330,13 +474,21 @@ vector<placedMiniBuilding> allMiniBuildings;
 vector<string> newBuildingLines;
 
 void buildBenchInteraction(){
+	currentBuildingScale = buildingScales[currentBuildingType];
 	float distanceNeeded = 10.0f;
 	float distance = glm::distance(mainPlayer.position, mainBench.position);
 	if (distance < distanceNeeded) {
 		if (checkKeyDown(interactKey)) {
 			benchInUse = !benchInUse;
 			mainPlayer.canMove = !benchInUse;
+			int size = buildingSelectButtons.size();
+			for (int b = 0; b < size; b++) {
+				allButtons[buildingSelectButtons[b]].active = false;
+			}
 			if (benchInUse) {
+				for (int b = 0; b < size; b++) {
+					allButtons[buildingSelectButtons[b]].active = true;
+				}
 				currentBuildingPosition = vec2(0.0f);
 				glfwSetCursorPos(window, display_x / 2.0, display_y / 2.0);
 				double newX, newY;
@@ -349,8 +501,10 @@ void buildBenchInteraction(){
 		double newX, newY;
 		glfwGetCursorPos(window, &newX, &newY);
 		
-		currentBuildingPosition.x = ((-display_x / 2.0) + newX) / (display_x / 2.0);
-		currentBuildingPosition.y = ((display_y / 2.0) - newY) / (display_y / (aspect_y / 5));
+		currentBuildingPosition.x = (((float) -display_x / 2.0f) + (float) newX) /
+			((float) display_x / 2.0f);
+		currentBuildingPosition.y = ((float) (display_y / 2.0f) - (float) newY) / 
+			((float) display_y / ((float) aspect_y / 5));
 
 		currentBuildingPosition.x = glm::clamp(currentBuildingPosition.x, -1.0f, 1.0f);
 		currentBuildingPosition.y = glm::clamp(currentBuildingPosition.y, (float) -aspect_y / 10.0f, (float) aspect_y / 10.0f);
@@ -364,9 +518,26 @@ void buildBenchInteraction(){
 				newMiniBuilding.position = currentBuildingPosition;
 				newMiniBuilding.scale = currentBuildingScale;
 
-				int size = allMiniBuildings.size();
-				allMiniBuildings.resize(size + 1);
-				allMiniBuildings[size] = newMiniBuilding;
+				allMiniBuildings[newVectorPos(&allMiniBuildings)] = newMiniBuilding;
+
+				// lines to save
+				vec2 areaScaleMax = vec2((currentPlanetScale.x) / 65.0f, (currentPlanetScale.y) / 65.0f);
+				vec2 buildWorldPos = vec2(((currentBuildingPosition.x / areaScaleMax.x) * currentPlanetScale.x) + currentPlanetScale.x / 2.0f,
+					((currentBuildingPosition.y / areaScaleMax.y) * currentPlanetScale.y) + currentPlanetScale.y / 2.0f);
+				
+				string buildTypeLine = WorldGeneration.currentAreaPrefix + "BuildingType " + 
+					to_string(currentBuildingType);
+				string buildPosLine = WorldGeneration.currentAreaPrefix + "BuildingPosition " +
+					to_string(buildWorldPos.x) + " " + to_string(-buildWorldPos.y);
+
+				newBuildingLines[newVectorPos(&newBuildingLines)] = buildTypeLine;
+				newBuildingLines[newVectorPos(&newBuildingLines)] = buildPosLine;
+
+				// physical
+				buildingColour newBuildingPhysical = physicalBuildings[currentBuildingType];
+				newBuildingPhysical.position = vec3(buildWorldPos.x, 0.0f, -buildWorldPos.y);
+
+				allColourBuildings[newVectorPos(&allColourBuildings)] = newBuildingPhysical;
 			}
 		}
 	}
@@ -376,8 +547,8 @@ void startBuildings() {
 	startBuildBench();
 }
 
+extern vector<buildingColour> allColourBuildings = { mainBench, mainBlueprint };
 void renderBuildings() {
-	vector<buildingColour> allColourBuildings = { mainBench, mainBlueprint };
 	int count = allColourBuildings.size();
 	for (int i = 0; i < count; i++) {
 		glUseProgram(playerShader);

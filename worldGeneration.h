@@ -25,12 +25,7 @@ vec3 colourDifference(float multiplier);
 
 vector<vec2> circleCoords(vec2 position, float radius, int pointCount, float scale);
 
-extern int lineCount;
-int newLinePos(vector<string> &usedVector); // resize a vector of strings and return the position to be edited
-
 void createSave(const char * filePath, int saveType); // a lot of code
-
-int newVectorPosFloat(vector<float>* usedVector);
 
 class triangle {
 public:
@@ -40,6 +35,8 @@ public:
 	bool active = true;
 };
 
+extern vector<triangle> flatTerrainTriangles, mountainTriangles;
+extern vector<float> flatXPoints, flatZPoints;
 extern vector<vec2> currentAllMountainPositions;
 extern vector<vec3> currentAllMountainScales;
 extern vec2 currentPlanetScale;

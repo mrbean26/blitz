@@ -22,6 +22,13 @@ using namespace glm;
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+template<class T>
+int newVectorPos(vector<T> * used) {
+	int size = used->size();
+	used->resize(size + 1);
+	return size;
+}
+
 //buttons
 class button {
 public:
@@ -102,7 +109,6 @@ void interfaceMainloop(); // run every frame
 // key inputs
 bool checkKey(int key);
 
-int newVectorPosFloat(vector<int> * usedVector);
 bool checkKeyDown(int key);
 void updateKeys();
 

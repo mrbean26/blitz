@@ -4,6 +4,7 @@
 #ifndef START_SCREEN
 #define START_SCREEN
 
+#include "interface.h"
 #include <iostream>
 
 extern int lastKey;
@@ -12,6 +13,10 @@ void keyInput(GLFWwindow * window, int key,
 
 void mouseInput(GLFWwindow * window, int button,
 	int action, int mods); // detect if m1, m2 or mwheel is clicked
+
+extern vector<text> previousAllTexts;
+extern vector<button> previousAllButtons;
+extern bool loading;
 
 class startScreen {
 public:
