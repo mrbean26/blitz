@@ -78,6 +78,16 @@ vector<vec2> circleCoords(vec2 position, float radius, int pointCount, float sca
 	return coords;
 }
 
+bool insideBuildBench(vec2 currentPos, float currentScale, vec2 areaScale) {
+	vec2 benchPos = vec2(areaScale.x - 1.0f, areaScale.y / 2.0f);
+	currentScale = currentScale * 1.2f;
+	currentScale = (currentScale * 100.0f) * 0.025f;
+	if (insideCircle(currentPos, currentScale, benchPos)) {
+		return true;
+	}
+	return false;
+}
+
 bool insideMountain(vector<vec2> allPositions, vector<float> allScales,
 	vec2 currentPos, float currentScale) {
 	vector<vec2> allPoints = circleCoords(currentPos, currentScale, 720, 1.0f);
@@ -140,6 +150,15 @@ void createSave(const char* filePath, int saveType) {
 				}
 				continue;
 			}
+			if (insideBuildBench(pos, mountainScaleX, vec2(earthScaleX, earthScaleY))) {
+				i = i - 1;
+				failedCraterAttempts++;
+				if (failedCraterAttempts > 19) {
+					i = i + 1;
+					failedCraterAttempts = 0;
+				}
+				continue;
+			}
 			//write to file
 			saveLines[newVectorPos(&saveLines)] = "earthMountainPosition " +
 				to_string(mountainPositionX) + " " + to_string(mountainPositionY);
@@ -151,6 +170,8 @@ void createSave(const char* filePath, int saveType) {
 			craterPositions[newVectorPos(&craterPositions)] = pos;
 			craterScales[newVectorPos(&craterScales)] = mountainScaleX;
 		}
+		saveLines[newVectorPos(&saveLines)] = "earthBuildingType 2"; // bench
+		saveLines[newVectorPos(&saveLines)] = "earthBuildingPosition " + to_string(earthScaleX - 1.0f) + " " + to_string(earthScaleY / -2.0f);
 	}
 	writeLines(filePath, saveLines);
 }

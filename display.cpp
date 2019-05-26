@@ -76,6 +76,7 @@ bool openglBegin(GLFWwindow *& used_window, bool fullscreen,
 	if (glewInit() != GLEW_OK) {
 		return false;
 	}
+	glfwSwapInterval(0); // unlimited fps
 	// assign variables
 	display_x = used_x;
 	display_y = used_y;

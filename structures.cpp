@@ -6,6 +6,7 @@
 #include "worldGeneration.h"
 
 int interactKey, shootButton, aimButton;
+vector<buildingColour> allColourBuildings = { mainBench, mainBlueprint };
 void StructuresBegin(){
 	interactKey = stoi(inputLines[6]);
 	shootButton = stoi(inputLines[5]);
@@ -24,44 +25,188 @@ void StructuresMainloop(){
 }
 
 vector<vec2> buildingScales = {
-	vec2(0.5f, 0.5f), // standard house
-	vec2(0.5f, 0.5f), // pointy house
+	vec2(0.55f, 0.55f), // standard house
+	vec2(0.95f, 0.95f), // pointy house
+	vec2(0.1f, 0.3f), // bench
 };
 
 vector<buildingColour> physicalBuildings;
 void startPhysicalBuildings() {
 	buildingColour standardHouseBuilding;
+	vector<vec3> standardHouseColour = colourVector(8, vec3(0.65f, 0.35f, 0.2f));
 	vector<float> standardHouseVertices = {
-		0.0f, 10.0f, 100.0f, 1.0f, 1.0f, 1.0f,
-		0.0f, 0.0f, 10.0f, 1.0f, 1.0f, 1.0f,
-		0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f
+		// sides
+		-4.0f, 0.0f, -4.0f, standardHouseColour[0].x, standardHouseColour[0].y, standardHouseColour[0].z,
+		4.0f, 0.0f, -4.0f, standardHouseColour[0].x, standardHouseColour[0].y, standardHouseColour[0].z,
+		4.0f, 8.0f, -4.0f, standardHouseColour[0].x, standardHouseColour[0].y, standardHouseColour[0].z,
+
+		-4.0f, 0.0f, -4.0f, standardHouseColour[1].x, standardHouseColour[1].y, standardHouseColour[1].z,
+		-4.0f, 8.0f, -4.0f, standardHouseColour[1].x, standardHouseColour[1].y, standardHouseColour[1].z,
+		4.0f, 8.0f, -4.0f, standardHouseColour[1].x, standardHouseColour[1].y, standardHouseColour[1].z,
+
+		-4.0f, 0.0f, 4.0f, standardHouseColour[2].x, standardHouseColour[2].y, standardHouseColour[2].z,
+		4.0f, 0.0f, 4.0f, standardHouseColour[2].x, standardHouseColour[2].y, standardHouseColour[2].z,
+		4.0f, 8.0f, 4.0f, standardHouseColour[2].x, standardHouseColour[2].y, standardHouseColour[2].z,
+
+		-4.0f, 0.0f, 4.0f, standardHouseColour[3].x, standardHouseColour[3].y, standardHouseColour[3].z,
+		-4.0f, 8.0f, 4.0f, standardHouseColour[3].x, standardHouseColour[3].y, standardHouseColour[3].z,
+		4.0f, 8.0f, 4.0f, standardHouseColour[3].x, standardHouseColour[3].y, standardHouseColour[3].z,
+		// back
+		4.0f, 0.0f, -4.0f, standardHouseColour[4].x, standardHouseColour[4].y, standardHouseColour[4].z,
+		4.0f, 8.0f, -4.0f, standardHouseColour[4].x, standardHouseColour[4].y, standardHouseColour[4].z,
+		4.0f, 0.0f, 4.0f, standardHouseColour[4].x, standardHouseColour[4].y, standardHouseColour[4].z,
+
+		4.0f, 8.0f, -4.0f, standardHouseColour[5].x, standardHouseColour[5].y, standardHouseColour[5].z,
+		4.0f, 8.0f, 4.0f, standardHouseColour[5].x, standardHouseColour[5].y, standardHouseColour[5].z,
+		4.0f, 0.0f, 4.0f, standardHouseColour[5].x, standardHouseColour[5].y, standardHouseColour[5].z,
+		// front w door & window
+		-4.0f, 0.0f, -4.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 8.0f, -4.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 0.0f, -3.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+
+		-4.0f, 8.0f, -4.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 8.0f, -3.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 0.0f, -3.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+
+		-4.0f, 0.0f, 1.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 8.0f, 1.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 0.0f, 0.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+
+		-4.0f, 8.0f, 1.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 8.0f, 0.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 0.0f, 0.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+
+		-4.0f, 0.0f, 4.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 8.0f, 4.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 0.0f, 3.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+
+		-4.0f, 8.0f, 4.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 8.0f, 3.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 0.0f, 3.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		// top & bottom of window
+		-4.0f, 4.5f, 1.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 8.0f, 1.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 4.5f, 3.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+
+		-4.0f, 8.0f, 1.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 8.0f, 3.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 4.5f, 3.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+
+		-4.0f, 0.0f, 1.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 2.0f, 1.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 0.0f, 3.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+
+		-4.0f, 2.0f, 1.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 2.0f, 3.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 0.0f, 3.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		// top of door		
+		-4.0f, 5.0f, -3.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 8.0f, -3.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 5.0f, 0.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+
+		-4.0f, 8.0f, -3.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 8.0f, 0.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 5.0f, 0.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		// roof
+		-4.0f, 8.0f, -4.0f, standardHouseColour[7].x, standardHouseColour[7].y, standardHouseColour[7].z,
+		-4.0f, 8.0f, 4.0f, standardHouseColour[7].x, standardHouseColour[7].y, standardHouseColour[7].z,
+		4.0f, 8.0f, -4.0f, standardHouseColour[7].x, standardHouseColour[7].y, standardHouseColour[7].z,
+
+		4.0f, 8.0f, -4.0f, standardHouseColour[7].x, standardHouseColour[7].y, standardHouseColour[7].z,
+		-4.0f, 8.0f, 4.0f, standardHouseColour[7].x, standardHouseColour[7].y, standardHouseColour[7].z,
+		4.0f, 8.0f, 4.0f, standardHouseColour[7].x, standardHouseColour[7].y, standardHouseColour[7].z,
+		// window
+		-4.0f, 3.5f, 1.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 3.5f, 3.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 3.0f, 1.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+
+		-4.0f, 3.0f, 1.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 3.0f, 3.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 3.5f, 3.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+
+		-4.0f, 4.5f, 2.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 4.5f, 2.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 2.0f, 2.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+
+		-4.0f, 4.5f, 2.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 2.0f, 2.5f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
+		-4.0f, 2.0f, 2.0f, standardHouseColour[6].x, standardHouseColour[6].y, standardHouseColour[6].z,
 	};
 	startColorBuilding(standardHouseVertices, &standardHouseBuilding);
+	standardHouseBuilding.scale = vec3(0.88f);
+	standardHouseBuilding.buildingType = 0;
 	physicalBuildings[newVectorPos(&physicalBuildings)] = standardHouseBuilding;
 	// point house
 	buildingColour pointHouseBuilding;
+	vector<vec3> pointHouseColour = colourVector(11, vec3(0.42f, 0.22f, 0.10f));
 	vector<float> pointHouseVertices = {
 		// sides
-		-4.0f, 0.0f, -4.0f, 1.0f, 0.0f, 0.0f,
-		4.0f, 0.0f, -4.0f, 1.0f, 0.0f, 0.0f,
-		4.0f, 8.0f, -4.0f, 1.0f, 0.0f, 0.0f,
+		-4.0f, 0.0f, -4.0f, pointHouseColour[0].x, pointHouseColour[0].y, pointHouseColour[0].z,
+		4.0f, 0.0f, -4.0f, pointHouseColour[0].x, pointHouseColour[0].y, pointHouseColour[0].z,
+		4.0f, 8.0f, -4.0f, pointHouseColour[0].x, pointHouseColour[0].y, pointHouseColour[0].z,
 
-		-4.0f, 0.0f, -4.0f, 1.0f, 0.0f, 0.0f,
-		-4.0f, 8.0f, -4.0f, 1.0f, 0.0f, 0.0f,
-		4.0f, 8.0f, -4.0f, 1.0f, 0.0f, 0.0f,
+		-4.0f, 0.0f, -4.0f, pointHouseColour[1].x, pointHouseColour[1].y, pointHouseColour[1].z,
+		-4.0f, 8.0f, -4.0f, pointHouseColour[1].x, pointHouseColour[1].y, pointHouseColour[1].z,
+		4.0f, 8.0f, -4.0f, pointHouseColour[1].x, pointHouseColour[1].y, pointHouseColour[1].z,
 
-		-4.0f, 0.0f, 4.0f, 1.0f, 0.0f, 0.0f,
-		4.0f, 0.0f, 4.0f, 1.0f, 0.0f, 0.0f,
-		4.0f, 8.0f, 4.0f, 1.0f, 0.0f, 0.0f,
+		-4.0f, 0.0f, 4.0f, pointHouseColour[2].x, pointHouseColour[2].y, pointHouseColour[2].z,
+		4.0f, 0.0f, 4.0f, pointHouseColour[2].x, pointHouseColour[2].y, pointHouseColour[2].z,
+		4.0f, 8.0f, 4.0f, pointHouseColour[2].x, pointHouseColour[2].y, pointHouseColour[2].z,
 
-		-4.0f, 0.0f, 4.0f, 1.0f, 0.0f, 0.0f,
-		-4.0f, 8.0f, 4.0f, 1.0f, 0.0f, 0.0f,
-		4.0f, 8.0f, 4.0f, 1.0f, 0.0f, 0.0f,
+		-4.0f, 0.0f, 4.0f, pointHouseColour[3].x, pointHouseColour[3].y, pointHouseColour[3].z,
+		-4.0f, 8.0f, 4.0f, pointHouseColour[3].x, pointHouseColour[3].y, pointHouseColour[3].z,
+		4.0f, 8.0f, 4.0f, pointHouseColour[3].x, pointHouseColour[3].y, pointHouseColour[3].z,
 		// back
-		
+		4.0f, 0.0f, -4.0f, pointHouseColour[4].x, pointHouseColour[4].y, pointHouseColour[4].z,
+		4.0f, 8.0f, -4.0f, pointHouseColour[4].x, pointHouseColour[4].y, pointHouseColour[4].z,
+		4.0f, 0.0f, 4.0f, pointHouseColour[4].x, pointHouseColour[4].y, pointHouseColour[4].z,
 
+		4.0f, 8.0f, -4.0f, pointHouseColour[5].x, pointHouseColour[5].y, pointHouseColour[5].z,
+		4.0f, 8.0f, 4.0f, pointHouseColour[5].x, pointHouseColour[5].y, pointHouseColour[5].z,
+		4.0f, 0.0f, 4.0f, pointHouseColour[5].x, pointHouseColour[5].y, pointHouseColour[5].z,
+		// front w door
+		-4.0f, 0.0f, -4.0f, pointHouseColour[6].x, pointHouseColour[6].y, pointHouseColour[6].z,
+		-4.0f, 8.0f, -4.0f, pointHouseColour[6].x, pointHouseColour[6].y, pointHouseColour[6].z,
+		-4.0f, 0.0f, -2.0f, pointHouseColour[6].x, pointHouseColour[6].y, pointHouseColour[6].z,
+
+		-4.0f, 8.0f, -4.0f, pointHouseColour[6].x, pointHouseColour[6].y, pointHouseColour[6].z,
+		-4.0f, 8.0f, -2.0f, pointHouseColour[6].x, pointHouseColour[6].y, pointHouseColour[6].z,
+		-4.0f, 0.0f, -2.0f, pointHouseColour[6].x, pointHouseColour[6].y, pointHouseColour[6].z,
+
+		-4.0f, 0.0f, 4.0f, pointHouseColour[6].x, pointHouseColour[6].y, pointHouseColour[6].z,
+		-4.0f, 8.0f, 4.0f, pointHouseColour[6].x, pointHouseColour[6].y, pointHouseColour[6].z,
+		-4.0f, 0.0f, 2.0f, pointHouseColour[6].x, pointHouseColour[6].y, pointHouseColour[6].z,
+
+		-4.0f, 8.0f, 4.0f, pointHouseColour[6].x, pointHouseColour[6].y, pointHouseColour[6].z,
+		-4.0f, 8.0f, 2.0f, pointHouseColour[6].x, pointHouseColour[6].y, pointHouseColour[6].z,
+		-4.0f, 0.0f, 2.0f, pointHouseColour[6].x, pointHouseColour[6].y, pointHouseColour[6].z,
+
+		-4.0f, 5.0f, -2.0f, pointHouseColour[6].x, pointHouseColour[6].y, pointHouseColour[6].z,
+		-4.0f, 8.0f, -2.0f, pointHouseColour[6].x, pointHouseColour[6].y, pointHouseColour[6].z,
+		-4.0f, 5.0f, 2.0f, pointHouseColour[6].x, pointHouseColour[6].y, pointHouseColour[6].z,
+
+		-4.0f, 8.0f, -2.0f, pointHouseColour[6].x, pointHouseColour[6].y, pointHouseColour[6].z,
+		-4.0f, 8.0f, 2.0f, pointHouseColour[6].x, pointHouseColour[6].y, pointHouseColour[6].z,
+		-4.0f, 5.0f, 2.0f, pointHouseColour[6].x, pointHouseColour[6].y, pointHouseColour[6].z,
+		// roof
+		6.0f, 6.0f, -6.0f, pointHouseColour[7].x, pointHouseColour[7].y, pointHouseColour[7].z,
+		-6.0f, 6.0f, -6.0f, pointHouseColour[7].x, pointHouseColour[7].y, pointHouseColour[7].z,
+		0.0f, 12.0f, 0.0f, pointHouseColour[7].x, pointHouseColour[7].y, pointHouseColour[7].z,
+
+		6.0f, 6.0f, 6.0f, pointHouseColour[8].x, pointHouseColour[8].y, pointHouseColour[8].z,
+		-6.0f, 6.0f, 6.0f, pointHouseColour[8].x, pointHouseColour[8].y, pointHouseColour[8].z,
+		0.0f, 12.0f, 0.0f, pointHouseColour[8].x, pointHouseColour[8].y, pointHouseColour[8].z,
+
+		-6.0f, 6.0f, 6.0f, pointHouseColour[9].x, pointHouseColour[9].y, pointHouseColour[9].z,
+		-6.0f, 6.0f, -6.0f, pointHouseColour[9].x, pointHouseColour[9].y, pointHouseColour[9].z,
+		0.0f, 12.0f, 0.0f, pointHouseColour[9].x, pointHouseColour[9].y, pointHouseColour[9].z,
+
+		6.0f, 6.0f, 6.0f, pointHouseColour[10].x, pointHouseColour[10].y, pointHouseColour[10].z,
+		6.0f, 6.0f, -6.0f, pointHouseColour[10].x, pointHouseColour[10].y, pointHouseColour[10].z,
+		0.0f, 12.0f, 0.0f, pointHouseColour[10].x, pointHouseColour[10].y, pointHouseColour[10].z,
 	};
 	startColorBuilding(pointHouseVertices, &pointHouseBuilding);
+	pointHouseBuilding.buildingType = 1;
 	physicalBuildings[newVectorPos(&physicalBuildings)] = pointHouseBuilding;
 }
 
@@ -89,6 +234,10 @@ void getAllBuildingPositions(){
 			newBuilding.scale = buildingScales[buildType];
 
 			allMiniBuildings[newVectorPos(&allMiniBuildings)] = newBuilding;
+
+			if (buildType == 2) {
+				return; // bench already being rendered
+			}
 
 			// physical buildngs
 			buildingColour newBuildingPhysical = physicalBuildings[buildType];
@@ -259,7 +408,7 @@ GLuint benchUIVAO, benchUIVBO, benchUIShader, benchUITotal;
 GLuint currentBuildingVAO, currentBuildingVBO, currentBuildingTotal;
 vector<vec2> mountainLimits;
 void startBuildBenchUI() {
-	float mountainDisplaySizeScale = 0.02f;
+	float mountainDisplaySizeScale = 0.034f;
 
 	vec2 area = currentPlanetScale / vec2(2.0f);
 	vec3 areaColourOne = WorldGeneration.currentAreaColour;
@@ -545,9 +694,11 @@ void buildBenchInteraction(){
 
 void startBuildings() {
 	startBuildBench();
+	allColourBuildings.clear();
+	mainBench.buildingType = 2;
+	allColourBuildings = { mainBench, mainBlueprint };
 }
 
-extern vector<buildingColour> allColourBuildings = { mainBench, mainBlueprint };
 void renderBuildings() {
 	int count = allColourBuildings.size();
 	for (int i = 0; i < count; i++) {

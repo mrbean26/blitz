@@ -179,23 +179,25 @@ void player::movement(){
 	}
 	if (jumping) {
 		jumpVelocity -= (float) deltaTime * jumpSpeed;
-		if (position.y < lowestY + 0.05f && jumpVelocity < 0) {
+		if (position.y < lowestY + 0.02f && jumpVelocity < 0) {
 			jumpVelocity = 0.0f;
 			jumping = false;
 		}
+		/* I don't think this affects jumping mechanics 
 		if (lowestY > startedLowestY) {
-			if (position.y < lowestY + 0.05f) {
+			if (position.y < lowestY + 0.02f) {
 				jumpVelocity = 0.0f;
 				jumping = false;
 			}
 			
 		}
 		if (lowestY < startedLowestY) {
-			if (position.y < lowestY + 0.05f) {
+			if (position.y < lowestY + 0.02f) {
 				jumpVelocity = 0.0f;
 				jumping = false;
 			}
 		}
+		*/
 	}
 	velocity.y = jumpVelocity;
 	// rotations
@@ -280,6 +282,22 @@ void player::collisions(){
 	// distance outside of area scale
 	position.x = clamp(position.x, 0.0f, currentPlanetScale.x);
 	position.z = clamp(position.z, -currentPlanetScale.y, 0.0f);
+	// outside of buildings
+	int buildingCount = allColourBuildings.size();
+	float playerDifference = 0.5f;
+	for (int b = 0; b < buildingCount; b++) {
+		buildingColour current = allColourBuildings[b];
+		if (current.buildingType == 0) { // normal housew
+
+		}
+		if (current.buildingType == 1) { // pointy house
+
+		}
+		if (current.buildingType == 2) { // bench
+			
+		}
+	}
+
 }
 
 bool lastFrameMove = true;

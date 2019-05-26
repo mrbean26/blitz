@@ -5,6 +5,7 @@
 #include "frontend.h"
 
 struct buildingColour {
+	int buildingType = -1;
 	GLuint VAO = 0, VBO = 0;
 	vec3 scale = vec3(1.0f);
 	vec3 position = vec3(0.0f);
