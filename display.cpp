@@ -2,6 +2,7 @@
 #include "worldGeneration.h"
 #include "interface.h"
 #include "frontend.h"
+#include "structures.h"
 
 #include <math.h>
 #include <vector>
@@ -177,16 +178,13 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 		cos(radians(playerPitch)))) + mainPlayer.position.z;
 	float cameraYPos = (-sin(radians(playerPitch)) * distanceFromCharacter) + 
 		mainPlayer.position.y + distanceAboveCharacter;
-	// assign
-	cameraThirdPos.x = cameraXPos;
-	cameraThirdPos.y = cameraYPos;
-	cameraThirdPos.z = cameraZPos;
 	// clamp values
 	cameraXPos = glm::clamp(cameraXPos, 0.1f, currentPlanetScale.x);
 	cameraZPos = glm::clamp(cameraZPos, -currentPlanetScale.y, 0.1f);
 	cameraYPos = glm::clamp(cameraYPos, lowestCameraY, 10000.0f);
+	cameraThirdPos = vec3(cameraXPos, cameraYPos, cameraZPos);
 	// matrix
-	newMatrix = glm::lookAt(vec3(cameraXPos, cameraYPos, cameraZPos), 
+	newMatrix = glm::lookAt(cameraThirdPos, 
 		vec3(mainPlayer.position.x, mainPlayer.headLookAtY, mainPlayer.position.z), vec3(0.0f, 1.0f, 0.0f));
 	// not 3rd person
 	if (!playerView) {

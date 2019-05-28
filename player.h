@@ -40,7 +40,9 @@ public:
 	void deleteMemory();
 private:
 	void movement();
+
 	void collisions();
+
 	bool jumping = false;
 	float jumpVelocity;
 

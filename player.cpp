@@ -284,17 +284,251 @@ void player::collisions(){
 	position.z = clamp(position.z, -currentPlanetScale.y, 0.0f);
 	// outside of buildings
 	int buildingCount = allColourBuildings.size();
-	float playerDifference = 0.5f;
+	float playerDifference = 1.0f;
+	float playerYDifference = 0.5f;
 	for (int b = 0; b < buildingCount; b++) {
 		buildingColour current = allColourBuildings[b];
-		if (current.buildingType == 0) { // normal housew
-
+		vec3 pos = current.position;
+		vec3 sca = current.scale;
+		vec3 rot = current.rotation;
+		rot.y = rot.y - (floor((rot.y / 360.0f)) * 360.0f);
+		if (current.buildingType == 0) { // normal house
+			// outside walls
+			if (position.x >= pos.x - 4.0f * sca.x && position.x <= pos.x + 4.0f * sca.x) {
+				if (position.z >= pos.z + 4.0f * sca.z && position.z <= playerDifference + pos.z + 4.0f * sca.z) {
+					// 270 deg
+					if (radians(90.0f) == radians(rot.y)) {
+						if (position.x >= pos.x + 0.5f * sca.x) {
+							position.z = playerDifference + pos.z + 4.0f * sca.z;
+						}
+					}
+					else {
+						position.z = playerDifference + pos.z + 4.0f * sca.z;
+					}
+				}
+				if (position.z <= pos.z - 4.0f * sca.z && position.z >= -playerDifference + pos.z - 4.0f * sca.z) {
+					// 90 deg
+					if (radians(270.0f) == radians(rot.y)) {
+						if (position.x <= pos.x - 0.5f * sca.x) {
+							position.z = -playerDifference + pos.z - 4.0f * sca.z;
+						}
+					}
+					else {
+						position.z = -playerDifference + pos.z - 4.0f * sca.z;
+					}
+				}
+			}
+			if (position.z >= pos.z - 4.0f * sca.z && position.z <= pos.z + 4.0f * sca.z) {
+				if (position.x >= pos.x + 4.0f * sca.x && position.x <= playerDifference + pos.x + 4.0f * sca.x) {
+					// 180 deg
+					if (radians(180.0f) == radians(rot.y)) {
+						if (position.z <= pos.z - 0.5f * sca.z) {
+							position.x = playerDifference + pos.x + 4.0f * sca.x;
+						}
+					}
+					else {
+						position.x = playerDifference + pos.x + 4.0f * sca.x;
+					}
+				}
+				if (position.x <= pos.x - 4.0f * sca.x && position.x >= -playerDifference + pos.x - 4.0f * sca.x) {
+					// 0 deg
+					if (radians(0.0f) == radians(rot.y)) {
+						if (position.z >= pos.z + 0.5f * sca.z) {
+							position.x = -playerDifference + pos.x - 4.0f * sca.x;
+						}
+					}
+					else {
+						position.x = -playerDifference + pos.x - 4.0f * sca.x;
+					}
+				}
+			}
+			// inside walls
+			if (position.x >= pos.x - 4.0f * sca.x && position.x <= pos.x + 4.0f * sca.x) {
+				if (position.z <= pos.z + 4.0f * sca.z && position.z >= -playerDifference + pos.z + 4.0f * sca.z) {
+					// 270 deg
+					if (radians(90.0f) == radians(rot.y)) {
+						if (position.x >= pos.x + 0.5f * sca.x) {
+							position.z = -playerDifference + pos.z + 4.0f * sca.z;
+						}
+					}
+					else {
+						position.z = -playerDifference + pos.z + 4.0f * sca.z;
+					}
+				}
+				if (position.z >= pos.z - 4.0f * sca.z && position.z <= playerDifference + pos.z - 4.0f * sca.z) {
+					// 90 deg
+					if (radians(270.0f) == radians(rot.y)) {
+						if (position.x <= pos.x - 0.5f * sca.x) {
+							position.z = playerDifference + pos.z - 4.0f * sca.z;
+						}
+					}
+					else {
+						position.z = playerDifference + pos.z - 4.0f * sca.z;
+					}
+				}
+			}
+			if (position.z >= pos.z - 4.0f * sca.z && position.z <= pos.z + 4.0f * sca.z) {
+				if (position.x <= pos.x + 4.0f * sca.x && position.x >= -playerDifference + pos.x + 4.0f * sca.x) {
+					// 180 deg
+					if (radians(180.0f) == radians(rot.y)) {
+						if (position.z <= pos.z - 0.5f * sca.z) {
+							position.x = -playerDifference + pos.x + 4.0f * sca.x;
+						}
+					}
+					else {
+						position.x = -playerDifference + pos.x + 4.0f * sca.x;
+					}
+				}
+				if (position.x >= pos.x - 4.0f * sca.x && position.x <= playerDifference + pos.x - 4.0f * sca.x) {
+					// 0 deg
+					if (radians(0.0f) == radians(rot.y)) {
+						if (position.z >= pos.z + 0.5f * sca.z) {
+							position.x = playerDifference + pos.x - 4.0f * sca.x;
+						}
+					}
+					else {
+						position.x = playerDifference + pos.x - 4.0f * sca.x;
+					}
+				}
+			}
 		}
 		if (current.buildingType == 1) { // pointy house
-
+			// outside walls
+			if (position.x >= pos.x - 4.0f * sca.x && position.x <= pos.x + 4.0f * sca.x) {
+				if (position.z >= pos.z + 4.0f * sca.z && position.z <= playerDifference + pos.z + 4.0f * sca.z) {
+					// 270 deg
+					if (radians(90.0f) == radians(rot.y)) {
+						if (position.x >= pos.x - playerDifference + 2.0f * sca.x || position.x <= pos.x + playerDifference - 2.0f * sca.x) {
+							position.z = playerDifference + pos.z + 4.0f * sca.z;
+						}
+					}
+					else {
+						position.z = playerDifference + pos.z + 4.0f * sca.z;
+					}
+				}
+				if (position.z <= pos.z - 4.0f * sca.z && position.z >= -playerDifference + pos.z - 4.0f * sca.z) {
+					// 90 deg
+					if (radians(270.0f) == radians(rot.y)) {
+						if (position.x <= pos.x + playerDifference - 2.0f * sca.x || position.x >= pos.x - playerDifference + 2.0f * sca.x) {
+							position.z = -playerDifference + pos.z - 4.0f * sca.z;
+						}
+					}
+					else {
+						position.z = -playerDifference + pos.z - 4.0f * sca.z;
+					}
+				}
+			}
+			if (position.z >= pos.z - 4.0f * sca.z && position.z <= pos.z + 4.0f * sca.z) {
+				if (position.x >= pos.x + 4.0f * sca.x && position.x <= playerDifference + pos.x + 4.0f * sca.x) {
+					// 180 deg
+					if (radians(180.0f) == radians(rot.y)) {
+						if (position.z <= pos.z + playerDifference - 2.0f * sca.z || position.z >= pos.z - playerDifference + 2.0f * sca.z) {
+							position.x = playerDifference + pos.x + 4.0f * sca.x;
+						}
+					}
+					else {
+						position.x = playerDifference + pos.x + 4.0f * sca.x;
+					}
+				}
+				if (position.x <= pos.x - 4.0f * sca.x && position.x >= -playerDifference + pos.x - 4.0f * sca.x) {
+					// 0 deg
+					if (radians(0.0f) == radians(rot.y)) {
+						if (position.z >= pos.z - playerDifference + 2.0f * sca.z || position.z <= pos.z + playerDifference - 2.0f * sca.z) {
+							position.x = -playerDifference + pos.x - 4.0f * sca.x;
+						}
+					}
+					else {
+						position.x = -playerDifference + pos.x - 4.0f * sca.x;
+					}
+				}
+			}
+			// inside walls
+			if (position.x >= pos.x - 4.0f * sca.x && position.x <= pos.x + 4.0f * sca.x) {
+				if (position.z <= pos.z + 4.0f * sca.z && position.z >= -playerDifference + pos.z + 4.0f * sca.z) {
+					// 270 deg
+					if (radians(90.0f) == radians(rot.y)) {
+						if (position.x >= pos.x - playerDifference + 2.0f * sca.x || position.x <= pos.x + playerDifference - 2.0f * sca.x) {
+							position.z = -playerDifference + pos.z + 4.0f * sca.z;
+						}
+					}
+					else {
+						position.z = -playerDifference + pos.z + 4.0f * sca.z;
+					}
+				}
+				if (position.z >= pos.z - 4.0f * sca.z && position.z <= playerDifference + pos.z - 4.0f * sca.z) {
+					// 90 deg
+					if (radians(270.0f) == radians(rot.y)) {
+						if (position.x <= pos.x + playerDifference - 2.0f * sca.x || position.x >= pos.x - playerDifference + 2.0f * sca.x) {
+							position.z = playerDifference + pos.z - 4.0f * sca.z;
+						}
+					}
+					else {
+						position.z = playerDifference + pos.z - 4.0f * sca.z;
+					}
+				}
+			}
+			if (position.z >= pos.z - 4.0f * sca.z && position.z <= pos.z + 4.0f * sca.z) {
+				if (position.x <= pos.x + 4.0f * sca.x && position.x >= -playerDifference + pos.x + 4.0f * sca.x) {
+					// 180 deg
+					if (radians(180.0f) == radians(rot.y)) {
+						if (position.z <= pos.z + playerDifference - 2.0f * sca.z || position.z >= pos.z - playerDifference + 2.0f * sca.z) {
+							position.x = -playerDifference + pos.x + 4.0f * sca.x;
+						}
+					}
+					else {
+						position.x = -playerDifference + pos.x + 4.0f * sca.x;
+					}
+				}
+				if (position.x >= pos.x - 4.0f * sca.x && position.x <= playerDifference + pos.x - 4.0f * sca.x) {
+					// 0 deg
+					if (radians(0.0f) == radians(rot.y)) {
+						if (position.z >= pos.z - playerDifference + 2.0f * sca.z || position.z <= pos.z + playerDifference - 2.0f * sca.z) {
+							position.x = playerDifference + pos.x - 4.0f * sca.x;
+						}
+					}
+					else {
+						position.x = playerDifference + pos.x - 4.0f * sca.x;
+					}
+				}
+			}
+			// ceiling colliders
+			if (position.x >= pos.x - 6.0f * sca.x && position.x <= pos.x + 6.0f * sca.x) {
+				if (position.z >= pos.z - 6.0f * sca.z && position.z <= pos.z + 6.0f * sca.z) {
+					if (position.y + 2.3f >= playerYDifference + pos.y + 6.0f * sca.y) {
+						position.y = playerYDifference + -2.3f + pos.y + 6.0f * sca.y;
+					}
+				}
+			}
 		}
 		if (current.buildingType == 2) { // bench
-			
+			if (position.y - 2.3f <= pos.y + 2.25f * sca.y) {
+				if (position.x >= pos.x - 0.5f * sca.x && position.x <= pos.x + 1.5f * sca.x) {
+					// on top
+					if (position.z >= pos.z - 2.0f * sca.z && position.z <= pos.z + 3.0f * sca.z) {
+						if (position.y - 2.3f <= pos.y + 2.25f * sca.y) {
+							position.y = 2.3f + pos.y + 2.25f * sca.y;
+							jumping = false;
+							jumpVelocity = 0.0f;
+							onBench = true;
+						}
+					}
+					// sides
+					if (position.z >= pos.z + 3.0f * sca.z && position.z <= playerDifference + pos.z + 3.0f * sca.z) {
+						position.z = playerDifference + pos.z + 3.0f * sca.z;
+					}
+					if (position.z <= pos.z - 2.0f * sca.z && position.z >= -playerDifference + pos.z - 2.0f * sca.z) {
+						position.z = -playerDifference + pos.z - 2.0f * sca.z;
+					}
+				}
+				if (position.z >= pos.z - 2.0f * sca.z && position.z <= pos.z + 3.0f * sca.z) {
+					if (position.x >= pos.x + 1.5f * sca.x && position.x <= playerDifference + pos.x + 1.5f * sca.x) {
+						position.x = playerDifference + pos.x + 1.5f * sca.x;
+					}
+					if (position.x <= pos.x - 0.5f * sca.x && position.x >= -playerDifference + pos.x - 0.5f * sca.x) {
+						position.x = -playerDifference + pos.x - 0.5f * sca.x;
+					}
+				}
+			}
 		}
 	}
 

@@ -228,21 +228,22 @@ void getAllBuildingPositions(){
 				((buildPos.x / currentPlanetScale.x) * areaScaleMax.x) - (areaScaleMax.x / 2.0f),
 				-(((buildPos.y / currentPlanetScale.y) * areaScaleMax.y) + areaScaleMax.y / 2.0f)
 			);
-
+			float buildRot = getFloatFile(WorldGeneration.worldLinesPath,
+				WorldGeneration.currentAreaPrefix + "BuildingRotation", l + 2);
 			placedMiniBuilding newBuilding;
 			newBuilding.position = buildUIPos;
 			newBuilding.scale = buildingScales[buildType];
-
+			newBuilding.rotation = vec3(0.0f, buildRot, 0.0f);
 			allMiniBuildings[newVectorPos(&allMiniBuildings)] = newBuilding;
 
 			if (buildType == 2) {
-				return; // bench already being rendered
+				continue; // bench already being rendered
 			}
 
 			// physical buildngs
 			buildingColour newBuildingPhysical = physicalBuildings[buildType];
 			newBuildingPhysical.position = vec3(buildPos.x, 0.0f, buildPos.y);
-
+			newBuildingPhysical.rotation = vec3(0.0f, buildRot, 0.0f);
 			allColourBuildings[newVectorPos(&allColourBuildings)] = newBuildingPhysical;
 		}
 	}
@@ -401,7 +402,7 @@ void startColorBuilding(vector<float> vertices, buildingColour * usedBuilding) {
 }
 
 buildingColour mainBench, mainBlueprint;
-vec2 currentBuildingScale = vec2(0.5f), currentBuildingPosition;
+vec2 currentBuildingScale = vec2(0.5f), currentBuildingPosition, currentBuildingRotation;
 bool benchInUse = false;
 
 GLuint benchUIVAO, benchUIVBO, benchUIShader, benchUITotal;
@@ -489,6 +490,15 @@ void startBuildBenchUI() {
 	vec3 buildingColor = (WorldGeneration.currentAreaColour / vec3(2.0f));
 	vec3 buildingColourTwo = buildingColor + vec3(0.1f);
 	vector<float> vertices2 = {
+		// door
+		-0.1f, -0.06f, -0.5f, 1.0f, 1.0f, 1.0f,
+		-0.075f, -0.06f, -0.5f, 1.0f, 1.0f, 1.0f,
+		-0.1f, 0.06f, -0.5f, 1.0f, 1.0f, 1.0f,
+
+		-0.1f, 0.06f, -0.5f, 1.0f, 1.0f, 1.0f,
+		-0.075f, 0.06f, -0.5f, 1.0f, 1.0f, 1.0f,
+		-0.075f, -0.06f, -0.5f, 1.0f, 1.0f, 1.0f,
+		// building
 		-0.1f, -0.1f, -0.5f, buildingColor.x, buildingColor.y, buildingColor.z,
 		-0.1f, 0.1f, -0.5f, buildingColor.x, buildingColor.y, buildingColor.z,
 		0.1f, -0.1f, -0.5f, buildingColor.x, buildingColor.y, buildingColor.z,
@@ -661,10 +671,14 @@ void buildBenchInteraction(){
 		lastMouse = vec2(newX, newY);
 
 		// clicks
+		if (checkKeyDown(shootButton)) {
+			currentBuildingRotation.y -= 90.0f;
+		}
 		if (checkKeyDown(aimButton)) {
 			if (okToBuild()) {
 				placedMiniBuilding newMiniBuilding;
 				newMiniBuilding.position = currentBuildingPosition;
+				newMiniBuilding.rotation.y = currentBuildingRotation.y;
 				newMiniBuilding.scale = currentBuildingScale;
 
 				allMiniBuildings[newVectorPos(&allMiniBuildings)] = newMiniBuilding;
@@ -678,14 +692,17 @@ void buildBenchInteraction(){
 					to_string(currentBuildingType);
 				string buildPosLine = WorldGeneration.currentAreaPrefix + "BuildingPosition " +
 					to_string(buildWorldPos.x) + " " + to_string(-buildWorldPos.y);
+				string buildRotLine = WorldGeneration.currentAreaPrefix + "BuildingRotation " +
+					to_string(currentBuildingRotation.y);
 
 				newBuildingLines[newVectorPos(&newBuildingLines)] = buildTypeLine;
 				newBuildingLines[newVectorPos(&newBuildingLines)] = buildPosLine;
+				newBuildingLines[newVectorPos(&newBuildingLines)] = buildRotLine;
 
 				// physical
 				buildingColour newBuildingPhysical = physicalBuildings[currentBuildingType];
 				newBuildingPhysical.position = vec3(buildWorldPos.x, 0.0f, -buildWorldPos.y);
-
+				newBuildingPhysical.rotation = vec3(0.0f, currentBuildingRotation.y, 0.0f);
 				allColourBuildings[newVectorPos(&allColourBuildings)] = newBuildingPhysical;
 			}
 		}
@@ -721,6 +738,7 @@ void renderBuildings() {
 		mat4 model = mat4(1.0f);
 		model = ortho(-aspect_x / 10, aspect_x / 10, -aspect_y / 10, aspect_y / 10);
 		model = translate(model, vec3(currentBuildingPosition, 1.0f));
+		model = rotate(model, radians(currentBuildingRotation.y), vec3(0.0f, 0.0f, 1.0f));
 		model = scale(model, vec3(currentBuildingScale, 1.0f));
 		setMat4(benchUIShader, "model", model);
 
@@ -729,9 +747,9 @@ void renderBuildings() {
 
 		int miniBuildingCount = allMiniBuildings.size();
 		for (int m = 0; m < miniBuildingCount; m++) {
-			mat4 newModel = mat4(1.0f);
 			model = ortho(-aspect_x / 10, aspect_x / 10, -aspect_y / 10, aspect_y / 10);
 			model = translate(model, vec3(allMiniBuildings[m].position, 1.0f));
+			model = rotate(model, radians(allMiniBuildings[m].rotation.y), vec3(0.0f, 0.0f, 1.0f));
 			model = scale(model, vec3(allMiniBuildings[m].scale, 1.0f));
 			setMat4(benchUIShader, "model", model);
 			glDrawArrays(GL_TRIANGLES, 0, currentBuildingTotal);

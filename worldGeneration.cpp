@@ -172,6 +172,7 @@ void createSave(const char* filePath, int saveType) {
 		}
 		saveLines[newVectorPos(&saveLines)] = "earthBuildingType 2"; // bench
 		saveLines[newVectorPos(&saveLines)] = "earthBuildingPosition " + to_string(earthScaleX - 1.0f) + " " + to_string(earthScaleY / -2.0f);
+		saveLines[newVectorPos(&saveLines)] = "earthBuildingRotation 0.0";
 	}
 	writeLines(filePath, saveLines);
 }
