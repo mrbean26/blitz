@@ -141,6 +141,7 @@ void player::deleteMemory(){
 	position = vec3(0.0f);
 }
 
+bool lastOnBench = false;
 void player::movement(){
 	if (!canMove) { return; }
 	int forwardKey = stoi(inputLines[0]);
@@ -274,18 +275,11 @@ void player::collisions(){
 	if (!jumping) { position.y = highestPoint; }
 	lowestY = highestPoint;
 	lowestCameraY = highestPointCamera + 0.5f;
-	// flat terrain collisions
-	float legPos = position.y - 2.3f;
-	if (legPos < 0 && !inMountain && !jumping) { position.y += -legPos; }
-	if (!inMountain) { lowestY = 2.2f; }
-	if (!cameraInMountain) { lowestCameraY = 0.5f; }
-	// distance outside of area scale
-	position.x = clamp(position.x, 0.0f, currentPlanetScale.x);
-	position.z = clamp(position.z, -currentPlanetScale.y, 0.0f);
 	// outside of buildings
 	int buildingCount = allColourBuildings.size();
 	float playerDifference = 1.0f;
 	float playerYDifference = 0.5f;
+	bool onBenchCurrent = false;
 	for (int b = 0; b < buildingCount; b++) {
 		buildingColour current = allColourBuildings[b];
 		vec3 pos = current.position;
@@ -507,9 +501,14 @@ void player::collisions(){
 					if (position.z >= pos.z - 2.0f * sca.z && position.z <= pos.z + 3.0f * sca.z) {
 						if (position.y - 2.3f <= pos.y + 2.25f * sca.y) {
 							position.y = 2.3f + pos.y + 2.25f * sca.y;
-							jumping = false;
-							jumpVelocity = 0.0f;
-							onBench = true;
+							if (jumpVelocity < 0) { jumpVelocity = 0.0f; }
+							int jumpKey = stoi(inputLines[9]);
+							float jumpHeight = 8.0f;
+							if (checkKeyDown(jumpKey)) {
+								jumpVelocity = jumpHeight;
+							}
+							onBenchCurrent = true;
+							lastOnBench = true;
 						}
 					}
 					// sides
@@ -529,9 +528,19 @@ void player::collisions(){
 					}
 				}
 			}
+			if (!onBenchCurrent && lastOnBench) {
+				lastOnBench = false;
+			}
 		}
 	}
-
+	// flat terrain collisions
+	float legPos = position.y - 2.3f;
+	if (legPos < 0 && !inMountain && !jumping) { position.y += -legPos; }
+	if (!inMountain) { lowestY = 2.2f; }
+	if (!cameraInMountain) { lowestCameraY = 0.5f; }
+	// distance outside of area scale
+	position.x = clamp(position.x, 0.0f, currentPlanetScale.x);
+	position.z = clamp(position.z, -currentPlanetScale.y, 0.0f);
 }
 
 bool lastFrameMove = true;
