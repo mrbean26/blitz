@@ -161,15 +161,17 @@ mat4 modelMatrix(vec3 position, vec3 rotation, vec3 scale, bool child, vec3 pare
 }
 
 bool playerView = false;
+bool aimingView = false;
 float playerYaw = 0.0f;
 float playerPitch = 0.0f;
 float lowestCameraY = 0.0f;
+float distanceFromCharacter = 0.0f;
 vec3 cameraThirdPos;
 
 mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	mat4 newMatrix = mat4(1.0f);
 	// third person camera
-	float distanceFromCharacter = 10.0f;
+	distanceFromCharacter = 10.0f;
 	float distanceAboveCharacter = 0.5f;
 	// camera positions
 	float cameraXPos = -(distanceFromCharacter * (-sin(radians(playerYaw)) * 
@@ -183,6 +185,7 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	cameraZPos = glm::clamp(cameraZPos, -currentPlanetScale.y, 0.1f);
 	cameraYPos = glm::clamp(cameraYPos, lowestCameraY, 10000.0f);
 	cameraThirdPos = vec3(cameraXPos, cameraYPos, cameraZPos);
+	cameraThirdPos = cameraBuildingCollisions(cameraThirdPos);
 	// matrix
 	newMatrix = glm::lookAt(cameraThirdPos, 
 		vec3(mainPlayer.position.x, mainPlayer.headLookAtY, mainPlayer.position.z), vec3(0.0f, 1.0f, 0.0f));
@@ -224,6 +227,8 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 		// currently not possible to rotate more than one axis
 		newMatrix = lookAt(cameraPosition, cameraPosition + cameraFront, vec3(0.0f, 1.0f, 0.0f));
 	}
-	
+	if (aimingView) {
+		
+	}
 	return newMatrix;
 }

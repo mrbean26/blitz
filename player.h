@@ -24,6 +24,7 @@ extern bool paused;
 void startPauseUI();
 void pauseUIInteraction();
 
+vec3 cameraBuildingCollisions(vec3 original);
 void exitToMenus();
 
 class player {
@@ -49,6 +50,7 @@ private:
 	void cameraMovement();
 	float sensitivity = 0.3f;
 	
+	bool aiming = false;
 
 	void renderPlayer();
 
@@ -73,7 +75,6 @@ private:
 	vec3 legPositionTwo = vec3(0.25f, -0.775f, 0.0f), legRotationTwo, legScaleTwo = vec3(0.3f, 0.3f, 0.3f);
 
 	// animations
-
 	bool walking = false, running = false;
 	bool finishedFirst = false, finishedSecond = false;
 	float movingMultiplier = 0.0f; // speed at which to move limbs in runAnimation()

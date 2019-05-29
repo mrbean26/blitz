@@ -332,6 +332,17 @@ void interfaceMainloop(){
 }
 
 bool checkKey(int key){
+	vector<int> glfwMouse = { GLFW_MOUSE_BUTTON_RIGHT, GLFW_MOUSE_BUTTON_LEFT, GLFW_MOUSE_BUTTON_MIDDLE };
+	vector<int> blitzMouse = { 256256, 128128, 512512 };
+	for (int i = 0; i < 3; i++) {
+		if (key == blitzMouse[i]) {
+			int state = glfwGetMouseButton(window, glfwMouse[i]);
+			if (state == GLFW_PRESS) {
+				return true;
+			}
+			return false;
+		}
+	}
 	int keyState = glfwGetKey(window, key);
 	if (keyState == GLFW_PRESS) {
 		return true;

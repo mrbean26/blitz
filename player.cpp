@@ -151,6 +151,7 @@ void player::movement(){
 	
 	int sprintKey = stoi(inputLines[7]);
 	int jumpKey = stoi(inputLines[9]);
+	int aimButton = stoi(inputLines[4]);
 
 	float walkSpeed = 8.0f;
 	float runSpeed = 12.0f;
@@ -210,6 +211,22 @@ void player::movement(){
 		rotation.y += (float) deltaTime * spinMultiplier;
 	}
 	runAnimation(movingMultiplier);
+	if (checkKey(aimButton)) {
+		aiming = true;
+		armRotation.x = 90.0f;
+		armRotationTwo = vec3(90.0f, 0.0f, -45.0f);
+		armPositionTwo = vec3(0.55f, -0.425f, 0.0f);
+		aimingView = true;
+	}
+	if (!checkKey(aimButton)) {
+		if (aiming) {
+			armRotation.x = 0.0f;
+			armPositionTwo = vec3(0.7f, -0.55f, 0.0f);
+			armRotationTwo = vec3(0.0f);
+			aimingView = false;
+		}
+		aiming = false;
+	}
 	// physical movement
 
 	float xGap = -sin(radians(rotation.y));
@@ -228,6 +245,7 @@ float distanceIntoCircle(float radius, vec2 circlePos, vec2 playerPos) {
 	return xSquared + ySquared;
 }
 
+int insideBuildingIndex = -1;
 float lowestY = -999.0f;
 void player::collisions(){
 	// mountains and craters
@@ -280,6 +298,7 @@ void player::collisions(){
 	float playerDifference = 1.0f;
 	float playerYDifference = 0.5f;
 	bool onBenchCurrent = false;
+	insideBuildingIndex = -1;
 	for (int b = 0; b < buildingCount; b++) {
 		buildingColour current = allColourBuildings[b];
 		vec3 pos = current.position;
@@ -287,7 +306,13 @@ void player::collisions(){
 		vec3 rot = current.rotation;
 		rot.y = rot.y - (floor((rot.y / 360.0f)) * 360.0f);
 		if (current.buildingType == 0) { // normal house
-			// outside walls
+			// check if inside for camera collisions
+			if (position.x >= pos.x - 4.0f * sca.x && position.x <= pos.x + 4.0f * sca.x) {
+				if (position.z >= pos.z - 4.0f * sca.z && position.z <= pos.z + 4.0f * sca.z) {
+					insideBuildingIndex = b;
+				}
+			}
+										 // outside walls
 			if (position.x >= pos.x - 4.0f * sca.x && position.x <= pos.x + 4.0f * sca.x) {
 				if (position.z >= pos.z + 4.0f * sca.z && position.z <= playerDifference + pos.z + 4.0f * sca.z) {
 					// 270 deg
@@ -439,6 +464,7 @@ void player::collisions(){
 			// inside walls
 			if (position.x >= pos.x - 4.0f * sca.x && position.x <= pos.x + 4.0f * sca.x) {
 				if (position.z <= pos.z + 4.0f * sca.z && position.z >= -playerDifference + pos.z + 4.0f * sca.z) {
+					insideBuildingIndex = b;
 					// 270 deg
 					if (radians(90.0f) == radians(rot.y)) {
 						if (position.x >= pos.x - playerDifference + 2.0f * sca.x || position.x <= pos.x + playerDifference - 2.0f * sca.x) {
@@ -541,6 +567,136 @@ void player::collisions(){
 	// distance outside of area scale
 	position.x = clamp(position.x, 0.0f, currentPlanetScale.x);
 	position.z = clamp(position.z, -currentPlanetScale.y, 0.0f);
+}
+
+vec3 cameraBuildingCollisions(vec3 original) {
+	int bCount = allColourBuildings.size();
+	float cameraDifference = -0.25f;
+	if (insideBuildingIndex != -1) {
+		buildingColour current = allColourBuildings[insideBuildingIndex];
+		vec3 bPos = current.position;
+		vec3 bSca = current.scale;
+		int bType = current.buildingType;
+		// inside a building
+		if (bType == 0 || bType == 1) {
+			if (original.x <= -cameraDifference + bPos.x - 4.0f * bSca.x) {
+				original.x = -cameraDifference + bPos.x - 4.0f * bSca.x;
+			}
+			if (original.x >= cameraDifference + bPos.x + 4.0f * bSca.x) {
+				original.x = cameraDifference + bPos.x + 4.0f * bSca.x;
+			}
+			if (original.z <= -cameraDifference + bPos.z - 4.0f * bSca.z) {
+				original.z = -cameraDifference + bPos.z - 4.0f * bSca.z;
+			}
+			if (original.z >= cameraDifference + bPos.z + 4.0f * bSca.z) {
+				original.z = cameraDifference + bPos.z + 4.0f * bSca.z;
+			}
+			if (original.y >= cameraDifference + bPos.y + 8.0f * bSca.y) {
+				original.y = cameraDifference + bPos.y + 8.0f * bSca.y;
+			}
+		}
+	}
+	if (insideBuildingIndex == -1) {
+		// for outsides of buildings
+		for (int b = 0; b < bCount; b++) {
+			buildingColour current = allColourBuildings[b];
+			vec3 bPos = current.position;
+			vec3 bSca = current.scale;
+			int bType = current.buildingType;
+
+			vec3 playerPos = mainPlayer.position;
+			if (bType == 0 || bType == 1) {
+				// side 1
+				if (original.x >= bPos.x - 4.0f * bSca.x && original.x <= bPos.x + 4.0f * bSca.x ||
+						playerPos.x >= bPos.x - 4.0f * bSca.x && playerPos.x <= bPos.x + 4.0f * bSca.x) {
+					if (playerPos.z <= bPos.z - 4.0f * bSca.z) {
+						if (original.z >= cameraDifference + bPos.z - 4.0f * bSca.z) {
+							original.z = cameraDifference + bPos.z - 4.0f * bSca.z;
+						}
+					}
+				}
+				// side 2
+				if (original.x >= bPos.x - 4.0f * bSca.x && original.x <= bPos.x + 4.0f * bSca.x ||
+						playerPos.x >= bPos.x - 4.0f * bSca.x && playerPos.x <= bPos.x + 4.0f * bSca.x) {
+					if (playerPos.z >= bPos.z + 4.0f * bSca.z) {
+						if (original.z <= -cameraDifference + bPos.z + 4.0f + bSca.z) {
+							original.z = -cameraDifference + bPos.z + 4.0f * bSca.z;
+						}
+					}
+				}
+				// side 3
+				if (original.z >= bPos.z - 4.0f * bSca.z && original.z <= bPos.z + 4.0f * bSca.z ||
+					playerPos.z >= bPos.z - 4.0f * bSca.z && playerPos.z <= bPos.z + 4.0f * bSca.z) {
+					if (playerPos.x <= bPos.x - 4.0f * bSca.x) {
+						if (original.x >= cameraDifference + bPos.x - 4.0f * bSca.x) {
+							original.x = cameraDifference + bPos.x - 4.0f * bSca.x;
+						}
+					}
+				}
+				// side 4
+				if (original.z >= bPos.z - 4.0f * bSca.z && original.z <= bPos.z + 4.0f * bSca.z ||
+					playerPos.z >= bPos.z - 4.0f * bSca.z && playerPos.z <= bPos.z + 4.0f * bSca.z) {
+					if (playerPos.x >= bPos.x + 4.0f * bSca.x) {
+						if (original.x <= -cameraDifference + bPos.x + 4.0f + bSca.x) {
+							original.x = -cameraDifference + bPos.x + 4.0f * bSca.x;
+						}
+					}
+				}
+			}
+			if (bType == 1) {
+				if ((original.x >= bPos.x - 6.0f * bSca.x && original.x <= bPos.x + 6.0f * bSca.x) ||
+						(playerPos.x >= bPos.x - 6.0f * bSca.x && playerPos.x <= bPos.x + 6.0f * bSca.x)) {
+					if ((original.z >= bPos.z - 6.0f * bSca.z && original.z <= bPos.z + 6.0f * bSca.z) ||
+							(playerPos.z >= bPos.z - 6.0f * bSca.z && playerPos.z <= bPos.z + 6.0f * bSca.z)) {
+						if (original.y >= cameraDifference + bPos.y + 6.0f * bSca.y) {
+							original.y = cameraDifference + bPos.y + 6.0f * bSca.y;
+						}
+					}
+				}
+			}
+			if (bType == 2) {
+				if (original.y < bPos.y + 2.25f * bSca.y) {
+					// side 1
+					if (original.x >= bPos.x - 0.5f * bSca.x && original.x <= bPos.x + 1.5f * bSca.x ||
+						playerPos.x >= bPos.x - 0.5f * bSca.x && playerPos.x <= bPos.x + 1.5f * bSca.x) {
+						if (playerPos.z <= bPos.z - 2.0f * bSca.z) {
+							if (original.z >= cameraDifference + bPos.z - 2.0f * bSca.z) {
+								original.z = cameraDifference + bPos.z - 2.0f * bSca.z;
+							}
+						}
+					}
+					// side 2
+					if (original.x >= bPos.x - 0.5f * bSca.x && original.x <= bPos.x + 1.5f * bSca.x ||
+						playerPos.x >= bPos.x - 0.5f * bSca.x && playerPos.x <= bPos.x + 1.5f * bSca.x) {
+						if (playerPos.z >= bPos.z + 3.0f * bSca.z) {
+							if (original.z <= -cameraDifference + bPos.z + 3.0f + bSca.z) {
+								original.z = -cameraDifference + bPos.z + 3.0f * bSca.z;
+							}
+						}
+					}
+					// side 3
+					if (original.z >= bPos.z - 2.0f * bSca.z && original.z <= bPos.z + 3.0f * bSca.z ||
+						playerPos.z >= bPos.z - 2.0f * bSca.z && playerPos.z <= bPos.z + 3.0f * bSca.z) {
+						if (playerPos.x <= bPos.x - 0.5f * bSca.x) {
+							if (original.x >= cameraDifference + bPos.x - 0.5f * bSca.x) {
+								original.x = cameraDifference + bPos.x - 0.5f * bSca.x;
+							}
+						}
+					}
+					// side 4
+					if (original.z >= bPos.z - 2.0f * bSca.z && original.z <= bPos.z + 3.0f * bSca.z ||
+						playerPos.z >= bPos.z - 2.0f * bSca.z && playerPos.z <= bPos.z + 3.0f * bSca.z) {
+						if (playerPos.x >= bPos.x + 1.5f * bSca.x) {
+							if (original.x <= -cameraDifference + bPos.x + 1.5f + bSca.x) {
+								original.x = -cameraDifference + bPos.x + 1.5f * bSca.x;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return original;
 }
 
 bool lastFrameMove = true;
@@ -880,32 +1036,40 @@ void player::startLeg() {
 void player::runAnimation(float multiplier){
 	if (multiplier == 0.0f) {
 		int upDown = 0;
-		if (armRotation.x > 0) {
+		if (legRotationTwo.x > 0) {
 			upDown = 1;
-			armRotation.x -= (float)deltaTime * 3 * 40.0f;
-			armRotationTwo.x += (float) deltaTime * 3 * 40.0f;
+			if (!aiming) {
+				armRotation.x -= (float)deltaTime * 3 * 40.0f;
+				armRotationTwo.x += (float)deltaTime * 3 * 40.0f;
+			}
 			legRotation.x += (float) deltaTime * 3 * 40.0f;
 			legRotationTwo.x -= (float) deltaTime * 3 * 40.0f;
 		}
-		if (armRotation.x < 0) {
+		if (legRotationTwo.x < 0) {
 			upDown = -1;
-			armRotation.x += (float) deltaTime * 3 * 40.0f;
-			armRotationTwo.x -= (float) deltaTime * 3 * 40.0f;
+			if (!aiming) {
+				armRotation.x += (float)deltaTime * 3 * 40.0f;
+				armRotationTwo.x -= (float)deltaTime * 3 * 40.0f;
+			}
 			legRotation.x -= (float) deltaTime * 3 * 40.0f;
 			legRotationTwo.x += (float) deltaTime * 3 * 40.0f;
 		}
 		if (upDown == -1) {
-			if (armRotation.x > 0) {
-				armRotation.x = 0.0f;
-				armRotationTwo.x = 0.0f;
+			if (legRotationTwo.x > 0) {
+				if (!aiming) {
+					armRotation.x = 0.0f;
+					armRotationTwo.x = 0.0f;
+				}
 				legRotation.x = 0.0f;
 				legRotationTwo.x = 0.0f;
 			}
 		}
 		if (upDown == 1) {
-			if (armRotation.x < 0) {
-				armRotation.x = 0.0f;
-				armRotationTwo.x = 0.0f;
+			if (legRotationTwo.x < 0) {
+				if (!aiming) {
+					armRotation.x = 0.0f;
+					armRotationTwo.x = 0.0f;
+				}
 				legRotation.x = 0.0f;
 				legRotationTwo.x = 0.0f;
 			}
@@ -913,34 +1077,42 @@ void player::runAnimation(float multiplier){
 		return;
 	}
 	if (!finishedFirst) {
-		armRotation.x += (float) deltaTime * 3 * multiplier;
-		armRotationTwo.x -= (float) deltaTime * 3 * multiplier;
+		if (!aiming) {
+			armRotation.x += (float)deltaTime * 3 * multiplier;
+			armRotationTwo.x -= (float)deltaTime * 3 * multiplier;
+		}
 		legRotation.x -= (float) deltaTime * 2.5f * multiplier;
 		legRotationTwo.x += (float) deltaTime * 2.5f * multiplier;
 		
-		if (armRotation.x >= 30.0f) {
+		if (legRotationTwo.x >= 30.0f) {
 			finishedFirst = true;
 		}
 	}
 	if (!finishedSecond && finishedFirst) {
-		armRotation.x -= (float) deltaTime * 3 * multiplier;
-		armRotationTwo.x += (float) deltaTime * 3 * multiplier;
+		if (!aiming) {
+			armRotation.x -= (float)deltaTime * 3 * multiplier;
+			armRotationTwo.x += (float)deltaTime * 3 * multiplier;
+		}
 		legRotation.x += (float) deltaTime * 2.5f * multiplier;
 		legRotationTwo.x -= (float) deltaTime * 2.5f * multiplier;
 
-		if (armRotation.x <= -30.0f) {
+		if (legRotationTwo.x <= -30.0f) {
 			finishedSecond = true;
 		}
 	}
 	if (finishedFirst && finishedSecond) {
-		armRotation.x += (float) deltaTime * 3 * multiplier;
-		armRotationTwo.x -= (float) deltaTime * 3 * multiplier;
+		if (!aiming) {
+			armRotation.x += (float)deltaTime * 3 * multiplier;
+			armRotationTwo.x -= (float)deltaTime * 3 * multiplier;
+		}
 		legRotation.x -= (float) deltaTime * 2.5f * multiplier;
 		legRotationTwo.x += (float) deltaTime * 2.5f * multiplier;
 
-		if (armRotation.x >= 0) {
-			armRotation.x = 0.0f;
-			armRotationTwo.x = 0.0f;
+		if (legRotationTwo.x >= 0) {
+			if (!aiming) {
+				armRotation.x = 0.0f;
+				armRotationTwo.x = 0.0f;
+			}
 			legRotation.x = 0.0f;
 			legRotationTwo.x = 0.0f;
 
