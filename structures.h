@@ -24,6 +24,7 @@ void StructuresMainloop();
 
 extern vector<buildingColour> allColourBuildings;
 void startColorBuilding(vector<float> vertices, buildingColour* usedBuilding);
+void startIrregularColorBuilding(vector<float> vertices, GLuint& VAO, GLuint& VBO, GLuint& size);
 void startPhysicalBuildings();
 
 extern vector<placedMiniBuilding> allMiniBuildings;

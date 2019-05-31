@@ -16,7 +16,7 @@ extern float lowestY;
 extern GLuint playerShader;
 void startPlayerShader();
 
-vector<vec3> colourVector(int size, vec3 colour);
+vector<vec3> colourVector(int size, vec3 colour, float multiplier = 0.2f);
 extern vector<string> inputLines;
 
 extern int continueButton, exitButton;
@@ -39,6 +39,7 @@ public:
 	float headLookAtY = 0.0f;
 
 	void deleteMemory();
+	int currentWeapon = 0;
 private:
 	void movement();
 
@@ -51,6 +52,8 @@ private:
 	float sensitivity = 0.3f;
 	
 	bool aiming = false;
+	void startLaserForBullets();
+	GLuint laserVAO, laserVBO;
 
 	void renderPlayer();
 

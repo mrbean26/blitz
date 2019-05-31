@@ -5,6 +5,7 @@
 #include "backend.h"
 #include "frontend.h"
 #include "structures.h"
+#include "weapons.h"
 
 #include <glm/gtc/type_ptr.hpp>
 using namespace glm;
@@ -13,10 +14,10 @@ using namespace glm;
 #include <vector>
 using namespace std;
 
-vector<vec3> colourVector(int size, vec3 colour) {
+vector<vec3> colourVector(int size, vec3 colour, float multiplier) {
 	vector<vec3> newVector;
 	for (int i = 0; i < size; i++) {
-		newVector[newVectorPos(&newVector)] = colour + colourDifference(0.2f);
+		newVector[newVectorPos(&newVector)] = colour + colourDifference(multiplier);
 	}
 	return newVector;
 }
@@ -31,7 +32,7 @@ void player::begin(){
 }
 
 void player::mainloop(){
-	if (!active) { return; }
+	if (!WorldGeneration.startedBegin) { return; }
 	renderPlayer();
 	movement();
 	cameraMovement();
@@ -212,9 +213,14 @@ void player::movement(){
 	}
 	runAnimation(movingMultiplier);
 	if (checkKey(aimButton)) {
+		if (!aiming) {
+			armRotation.x = 90.0f;
+			armRotationTwo.x = 90.0f;
+		}
 		aiming = true;
-		armRotation.x = 90.0f;
-		armRotationTwo = vec3(90.0f, 0.0f, -45.0f);
+		armRotationTwo.z = -45.0f;
+		armRotation.x = playerPitch + 90.0f;
+		armRotationTwo.x = playerPitch + 90.0f;
 		armPositionTwo = vec3(0.55f, -0.425f, 0.0f);
 		aimingView = true;
 	}
@@ -709,6 +715,9 @@ void player::cameraMovement(){
 	if (lastFrameMove) {
 		playerYaw -= mouseDiffer.x * sensitivity;
 		playerPitch += mouseDiffer.y * sensitivity;
+		if (aiming) {
+			rotation.y -= mouseDiffer.x * sensitivity;
+		}
 	}
 	playerPitch = clamp(playerPitch, -80.0f, 80.0f);
 	headLookAtY = position.y;
@@ -741,6 +750,21 @@ void player::renderPlayer(){
 		glBindVertexArray(vaos[i]);
 		glDrawArrays(GL_TRIANGLES, 0, vertCounts[i]);
 	}
+	// laser
+	if (aiming) {
+		glBindVertexArray(laserVAO);
+		setShaderFloat(playerShader, "alpha", 0.5f);
+		setMat4(playerShader, "model", modelMatrix(vec3(0.0f, 0.0f, -0.65f), vec3(playerPitch, 90.0f, 0.0f), vec3(250.0f, 0.1f, 0.1f),
+			true, vec3(position.x, position.y + 0.5f, position.z), rotation));
+		glDrawArrays(GL_TRIANGLES, 0, 24);
+		glLinkProgram(playerShader);
+		// weapon
+		if (currentWeapon == 0) {
+			allWeapons[currentWeapon].render(modelMatrix(vec3(1.2f, 0.0f, -0.7f), 
+				vec3(playerPitch, 90.0f, 0.0f), vec3(0.4f), true, 
+					vec3(position.x, position.y + 0.25f, position.z), rotation));
+		}
+	}
 }
 
 void player::startCharacterVertices(){
@@ -748,6 +772,56 @@ void player::startCharacterVertices(){
 	startArm();
 	startTorso();
 	startLeg();
+	startLaserForBullets();
+}
+
+void player::startLaserForBullets() {
+	float laserVertices[] = {
+		0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+
+		0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+
+		0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+
+		0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+
+		// top & bottom
+		0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+
+		0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+
+		0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+
+		0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+	};
+
+	// start ints
+	glCreateVertexArrays(1, &laserVAO);
+	glCreateBuffers(1, &laserVBO);
+	glBindVertexArray(laserVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, laserVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(laserVertices), laserVertices, GL_STATIC_DRAW);
+	// pointers
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
 }
 
 void player::startHead(){

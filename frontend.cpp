@@ -12,6 +12,7 @@ startScreen StartScreen;
 player mainPlayer;
 
 #include "structures.h"
+#include "weapons.h"
 #include "display.h"
 
 void frontendBegin(){
@@ -26,13 +27,15 @@ void frontendMainloop(){
 		WorldGeneration.begin();
 		mainPlayer.begin();
 		StructuresBegin();
+		weaponsBegin();
 		WorldGeneration.startedBegin = true;
 	}
 	renderSkybox(!WorldGeneration.startedBegin);
-	mainPlayer.mainloop();
 	StartScreen.mainloop();
 	WorldGeneration.mainloop();
 	StructuresMainloop();
+	weaponsMainloop();
+	mainPlayer.mainloop();
 	updateKeys(); // this has to be called last every frame / after last call of getkeydown
 }
 

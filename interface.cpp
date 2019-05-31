@@ -361,29 +361,27 @@ vector<int> keyIndexes = { 32, 39, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 5
 							334, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 347 };
 bool checkKeyDown(int key) {
 	vector<bool> booleans = { rightButtonDown, leftButtonDown, middleButtonDown };
-	vector<int> glfwMouse = { GLFW_MOUSE_BUTTON_RIGHT, GLFW_MOUSE_BUTTON_LEFT, GLFW_MOUSE_BUTTON_MIDDLE };
 	vector<int> blitzMouse = { 256256, 128128, 512512 };
 	bool returned = false;
-	for (int i = 0; i < 3; i++) {
-		if (key == blitzMouse[i]) {
-			int state = glfwGetMouseButton(window, glfwMouse[i]);
-			if (state == GLFW_PRESS){
-				if (!booleans[i]) {
+	for (int m = 0; m < 3; m++) {
+		if (key == blitzMouse[m]) {
+			if (checkKey(blitzMouse[m])) {
+				if (!booleans[m]) {
 					returned = true;
-					booleans[i] = true;
-					continue;
 				}
+				booleans[m] = true;
+				continue;
 			}
-			if (state == GLFW_RELEASE) {
-				booleans[i] = false;
-			}
+			booleans[m] = false;
 		}
 	}
 	// update vector
 	rightButtonDown = booleans[0];
 	leftButtonDown = booleans[1];
 	middleButtonDown = booleans[2];
-	if (returned) { return true; }
+	if (key == 256256 || key == 128128 || key == 512512) {
+		return returned;
+	}
 	// keys
 	if (checkKey(key)) {
 		vector<int>::iterator iterator = find(keyIndexes.begin(), keyIndexes.end(), key);

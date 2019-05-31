@@ -109,6 +109,7 @@ void interfaceMainloop(); // run every frame
 // key inputs
 bool checkKey(int key);
 
+extern bool rightButtonDown, leftButtonDown, middleButtonDown;
 bool checkKeyDown(int key);
 void updateKeys();
 
