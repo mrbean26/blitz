@@ -38,6 +38,7 @@ void player::mainloop(){
 	cameraMovement();
 	collisions();
 	pauseUIInteraction();
+	shoot();
 }
 
 int continueButton, exitButton;
@@ -467,10 +468,14 @@ void player::collisions(){
 					}
 				}
 			}
+			if (position.x >= pos.x - 4.0f * sca.x && position.x <= pos.x + 4.0f * sca.x) {
+				if (position.z <= pos.z + 4.0f * sca.z && position.z >= pos.z - 4.0f * sca.z) {
+					insideBuildingIndex = b;
+				}
+			}
 			// inside walls
 			if (position.x >= pos.x - 4.0f * sca.x && position.x <= pos.x + 4.0f * sca.x) {
 				if (position.z <= pos.z + 4.0f * sca.z && position.z >= -playerDifference + pos.z + 4.0f * sca.z) {
-					insideBuildingIndex = b;
 					// 270 deg
 					if (radians(90.0f) == radians(rot.y)) {
 						if (position.x >= pos.x - playerDifference + 2.0f * sca.x || position.x <= pos.x + playerDifference - 2.0f * sca.x) {
@@ -1271,4 +1276,19 @@ void startPlayerShader(){
 	int vertShad = createShader("assets/shaders/terrainVert.txt", GL_VERTEX_SHADER);
 	int fragShad = createShader("assets/shaders/terrainFrag.txt", GL_FRAGMENT_SHADER);
 	playerShader = createProgram({ vertShad, fragShad });
+}
+
+void player::shoot() {
+	int shootButton = stoi(inputLines[5]);
+	if (checkKeyDown(shootButton) && canShoot && aiming) {
+		vec3 bulletPos = position;
+		bulletPos.x += (-sin(radians(rotation.y)) * cos(radians(playerPitch))) * 1.2f;
+		bulletPos.z += (-cos(radians(rotation.y)) * cos(radians(playerPitch))) * -0.7f;
+
+		vec3 bulletRot;
+		bulletRot.x = playerPitch + 90.0f;
+		bulletRot.y = rotation.y;
+
+		createBullet(bulletPos, bulletRot);
+	}
 }

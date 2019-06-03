@@ -11,6 +11,7 @@ void weaponsMainloop(){
 	if (!WorldGeneration.startedBegin) {
 		return;
 	}
+	moveBullets();
 }
 
 void startWeapons() {
@@ -153,4 +154,29 @@ void weapon::render(mat4 model){
 	setMat4(playerShader, "view", viewMatrix());
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, vertCount);
+}
+
+vector<bullet> allBullets;
+
+void moveBullets() {
+	int count = allBullets.size();
+	float bulletSpeed = 0.5f;
+	for (int i = 0; i < count; i++) {
+		vec3 bulletRot = allBullets[i].rotation;
+
+		vec3 added = vec3(0.0f);
+		added.x = -sin(radians(bulletRot.y)) * bulletSpeed;
+		added.y = -cos(radians(bulletRot.x)) * bulletSpeed;
+		added.z = -cos(radians(bulletRot.y)) * bulletSpeed;
+
+		allBullets[i].position += added;
+	}
+}
+
+int createBullet(vec3 position, vec3 rotation) {
+	bullet newBullet;
+	newBullet.position = position;
+	newBullet.rotation = rotation;
+	allBullets[newVectorPos(&allBullets)] = newBullet;
+	return allBullets.size() - 1;
 }

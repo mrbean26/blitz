@@ -39,7 +39,10 @@ public:
 	float headLookAtY = 0.0f;
 
 	void deleteMemory();
+
 	int currentWeapon = 0;
+	bool canShoot = true;
+	void shoot();
 private:
 	void movement();
 

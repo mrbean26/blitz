@@ -27,8 +27,18 @@ public:
 	GLuint vertCount;
 };
 
+struct bullet {
+	vec3 position;
+	vec3 rotation;
+};
+
 extern vector<weapon> allWeapons;
 int createWeapon(vector<float> vertices);
+
+extern vector<bullet> allBullets;
+int createBullet(vec3 position, vec3 rotation);
+
+void moveBullets();
 
 extern int basicPistol;
 
