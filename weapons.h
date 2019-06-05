@@ -18,6 +18,9 @@ void weaponsMainloop();
 
 void startWeapons();
 
+void startWeaponUI();
+extern int weaponSelectImage, weaponSelectCornerOne, weaponSelectCornerTwo, weaponSelectCornerThree, weaponSelectCornerFour;
+
 class weapon {
 public:
 	weapon(vector<float> vertices = {});

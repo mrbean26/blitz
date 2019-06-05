@@ -741,7 +741,7 @@ void player::renderPlayer(){
 	vec3 legParentPos = position - vec3(0.0f, 0.775f, 0.0f);
 	vec3 armParentPos = position + vec3(0.0f, 0.5f, 0.0f);
 	vector<vec3> parentPositions = { position, position, armParentPos, legParentPos, armParentPos, legParentPos };
-	
+	setShaderVecThree(playerShader, "multiplyColour", vec3(1.0f));
 	glUseProgram(playerShader);
 	for (int i = 0; i < 6; i++) {
 		
@@ -757,6 +757,7 @@ void player::renderPlayer(){
 	}
 	// laser
 	if (aiming) {
+		setShaderVecThree(playerShader, "multiplyColour", laserColour);
 		glBindVertexArray(laserVAO);
 		setShaderFloat(playerShader, "alpha", 0.5f);
 		setMat4(playerShader, "model", modelMatrix(vec3(0.0f, 0.0f, -0.65f), vec3(playerPitch, 90.0f, 0.0f), vec3(250.0f, 0.1f, 0.1f),
@@ -782,38 +783,38 @@ void player::startCharacterVertices(){
 
 void player::startLaserForBullets() {
 	float laserVertices[] = {
-		0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+		0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
 
-		0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
 
-		0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+		0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
 
-		0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
 
 		// top & bottom
-		0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+		0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
 
-		0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
 
-		0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+		0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
 
-		0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
 	};
 
 	// start ints
@@ -1278,17 +1279,48 @@ void startPlayerShader(){
 	playerShader = createProgram({ vertShad, fragShad });
 }
 
+float shotDelays[] = { 0.25f };
+float automaticGun[] = { false };
+
 void player::shoot() {
 	int shootButton = stoi(inputLines[5]);
-	if (checkKeyDown(shootButton) && canShoot && aiming) {
-		vec3 bulletPos = position;
-		bulletPos.x += (-sin(radians(rotation.y)) * cos(radians(playerPitch))) * 1.2f;
-		bulletPos.z += (-cos(radians(rotation.y)) * cos(radians(playerPitch))) * -0.7f;
+	if (!canShoot) {
+		laserColour = vec3(1.0f, 0.0f, 0.0f);
+		currentDelay -= deltaTime;
+		if (currentDelay < 0) {
+			currentDelay = 0.0f;
+			canShoot = true;
+		}
+	}
+	if (canShoot) {
+		laserColour = vec3(0.0f, 0.0f, 1.0f);
+	}
+	// check if auto key down
+	bool keyDown = false;
+	if (!automaticGun[currentWeapon]) {
+		if (checkKeyDown(shootButton)) {
+			keyDown = true;
+		}
+	}
+	if (automaticGun[currentWeapon]) {
+		if (checkKey(shootButton)) {
+			keyDown = true;
+		}
+	}
+	// shoot
+	if (keyDown && canShoot && aiming) {
+		vec3 bulletRot = vec3(0.0f);
+		bulletRot.y = rotation.y + 90.0f;
+		bulletRot.z = playerPitch;
 
-		vec3 bulletRot;
-		bulletRot.x = playerPitch + 90.0f;
-		bulletRot.y = rotation.y;
+		vec3 bulletPos = position;
+		bulletPos.z += 0.7f * sin(radians(rotation.y));
+		bulletPos.y += 0.25f;
+		bulletPos.x += 0.7f * -cos(radians(rotation.y));
 
 		createBullet(bulletPos, bulletRot);
+
+		canShoot = false;
+		currentDelay = shotDelays[currentWeapon];
 	}
 }

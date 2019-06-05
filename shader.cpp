@@ -58,3 +58,8 @@ void setShaderFloat(int shader, const char* floatName, float usedFloat){
 	int location = glGetUniformLocation(shader, floatName);
 	glUniform1f(location, usedFloat);
 }
+
+void setShaderVecThree(int shader, const char* vecName, vec3 usedVec) {
+	int location = glGetUniformLocation(shader, vecName);
+	glUniform3f(location, usedVec.x, usedVec.y, usedVec.z);
+}

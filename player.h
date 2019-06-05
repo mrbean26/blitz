@@ -57,6 +57,8 @@ private:
 	bool aiming = false;
 	void startLaserForBullets();
 	GLuint laserVAO, laserVBO;
+	vec3 laserColour = vec3(1.0f, 0.0f, 0.0f);
+	float currentDelay = 0.0f;
 
 	void renderPlayer();
 

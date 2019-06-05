@@ -36,6 +36,7 @@ public:
 
 	vec3 position = vec3(0.0f, 0.0f, 0.0f);
 	vec2 scale = vec2(1.0f, 1.0f);
+	float rotation = 0.0f;
 
 	bool clickUp = false;
 	bool clickDown = false;

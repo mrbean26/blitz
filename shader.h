@@ -21,4 +21,6 @@ void setShaderInt(int shader, const char* intName, int usedInt);
 
 void setShaderFloat(int shader, const char* floatName, float usedFloat);
 
+void setShaderVecThree(int shader, const char* vecName, vec3 usedVec);
+
 #endif 

@@ -41,6 +41,7 @@ void renderButtons(){
 			position *= vec3(1.05f, 1.05f, 1.0f);
 		}
 		//rescale the matrix and send position info to shader
+		scaleMat = glm::rotate(scaleMat, radians(currentButton.rotation), vec3(0.0f, 0.0f, 1.0f));
 		scaleMat = glm::scale(scaleMat, vec3(scale, 1.0f));
 		int shaderButtonPosition = glGetUniformLocation(buttonTextureShader, "buttonPos");
 		glUniform3f(shaderButtonPosition, position.x,

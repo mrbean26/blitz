@@ -5,6 +5,7 @@ int basicPistol;
 
 void weaponsBegin(){
 	startWeapons();
+	startWeaponUI();
 }
 
 void weaponsMainloop(){
@@ -135,6 +136,34 @@ void startWeapons() {
 	basicPistol = createWeapon(basicPistolVertices);
 }
 
+int weaponSelectImage, weaponSelectCornerOne, weaponSelectCornerTwo, weaponSelectCornerThree, weaponSelectCornerFour;
+void startWeaponUI(){
+	weaponSelectImage = createButton();
+	allButtons[weaponSelectImage].interactive = false;
+	allButtons[weaponSelectImage].scale = vec2(0.51f, 0.267f);
+	allButtons[weaponSelectImage].texture = loadTexture("assets/images/weaponSelectImage.png");
+	// select buttons
+
+	button defaultSelect;
+	defaultSelect.texture= loadTexture("assets/images/weaponSelectCorner.png");
+	defaultSelect.position= vec3(-1.5f, -1.5f, 0.0f);
+
+	weaponSelectCornerOne = createButton();
+	allButtons[weaponSelectCornerOne] = defaultSelect;
+	allButtons[weaponSelectCornerOne].rotation = 90.0f;
+
+	weaponSelectCornerTwo = createButton();
+	allButtons[weaponSelectCornerTwo] = defaultSelect;
+
+	weaponSelectCornerThree = createButton();
+	allButtons[weaponSelectCornerThree] = defaultSelect;
+	allButtons[weaponSelectCornerThree].rotation = 180.0f;
+
+	weaponSelectCornerFour = createButton();
+	allButtons[weaponSelectCornerFour] = defaultSelect;
+	allButtons[weaponSelectCornerFour].rotation = 270.0f;
+}
+
 vector<weapon> allWeapons;
 int createWeapon(vector<float> vertices){
 	weapon newWeapon(vertices);
@@ -160,14 +189,14 @@ vector<bullet> allBullets;
 
 void moveBullets() {
 	int count = allBullets.size();
-	float bulletSpeed = 0.5f;
+	float bulletSpeed = 1.0f;
 	for (int i = 0; i < count; i++) {
 		vec3 bulletRot = allBullets[i].rotation;
 
 		vec3 added = vec3(0.0f);
-		added.x = -sin(radians(bulletRot.y)) * bulletSpeed;
-		added.y = -cos(radians(bulletRot.x)) * bulletSpeed;
-		added.z = -cos(radians(bulletRot.y)) * bulletSpeed;
+		added.x = cos(radians(bulletRot.y)) * cos(radians(bulletRot.z)) * bulletSpeed;
+		added.y = sin(radians(bulletRot.z)) * bulletSpeed;
+		added.z = -sin(radians(bulletRot.y)) * cos(radians(bulletRot.z)) * bulletSpeed;
 
 		allBullets[i].position += added;
 	}
