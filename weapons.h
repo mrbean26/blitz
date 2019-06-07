@@ -19,6 +19,8 @@ void weaponsMainloop();
 void startWeapons();
 
 void startWeaponUI();
+void weaponUI();
+extern bool weaponSelectOpen;
 extern int weaponSelectImage, weaponSelectCornerOne, weaponSelectCornerTwo, weaponSelectCornerThree, weaponSelectCornerFour;
 
 class weapon {

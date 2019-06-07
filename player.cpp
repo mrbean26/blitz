@@ -45,7 +45,7 @@ int continueButton, exitButton;
 bool paused = false;
 void startPauseUI() {
 	continueButton = createButton();
-	allButtons[continueButton].texture = loadTexture("assets/images/continueButton.png");
+	allButtons[continueButton].texture = loadTexture("assets/images/exitButton.png");
 	allButtons[continueButton].scale = vec2(1.2f, 0.45f);
 	allButtons[continueButton].position = vec3(0.0f, 1.2f, 0.0f);
 	allButtons[continueButton].active = false;
@@ -712,7 +712,7 @@ vec3 cameraBuildingCollisions(vec3 original) {
 
 bool lastFrameMove = true;
 void player::cameraMovement(){
-	if (!canMove) { 
+	if (!canMove || !canMoveCamera) { 
 		lastFrameMove = false;
 		return; 
 	}
@@ -1286,7 +1286,7 @@ void player::shoot() {
 	int shootButton = stoi(inputLines[5]);
 	if (!canShoot) {
 		laserColour = vec3(1.0f, 0.0f, 0.0f);
-		currentDelay -= deltaTime;
+		currentDelay -= (float) deltaTime;
 		if (currentDelay < 0) {
 			currentDelay = 0.0f;
 			canShoot = true;

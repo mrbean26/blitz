@@ -13,6 +13,7 @@ void weaponsMainloop(){
 		return;
 	}
 	moveBullets();
+	weaponUI();
 }
 
 void startWeapons() {
@@ -20,44 +21,44 @@ void startWeapons() {
 	vector<vec3> pistolColours = colourVector(14, vec3(0.8f, 0.8f, 0.8f), 0.2f);
 	vector<float> basicPistolVertices{
 		0.0f, 0.0f, 0.0f, pistolColours[0].x, pistolColours[0].y, pistolColours[0].z,
-		0.0f, 1.0f, 0.0f, pistolColours[0].x, pistolColours[0].y, pistolColours[0].z,
+		0.0f, 1.1f, 0.0f, pistolColours[0].x, pistolColours[0].y, pistolColours[0].z,
 		0.4f, 0.0f, 0.0f, pistolColours[0].x, pistolColours[0].y, pistolColours[0].z,
 
-		0.4f, 1.0f, 0.0f, pistolColours[0].x, pistolColours[0].y, pistolColours[0].z,
-		0.0f, 1.0f, 0.0f, pistolColours[0].x, pistolColours[0].y, pistolColours[0].z,
+		0.4f, 1.1f, 0.0f, pistolColours[0].x, pistolColours[0].y, pistolColours[0].z,
+		0.0f, 1.1f, 0.0f, pistolColours[0].x, pistolColours[0].y, pistolColours[0].z,
 		0.4f, 0.0f, 0.0f, pistolColours[0].x, pistolColours[0].y, pistolColours[0].z,
 
 		0.0f, 0.0f, 0.5f, pistolColours[1].x, pistolColours[1].y, pistolColours[1].z,
-		0.0f, 1.0f, 0.5f, pistolColours[1].x, pistolColours[1].y, pistolColours[1].z,
+		0.0f, 1.1f, 0.5f, pistolColours[1].x, pistolColours[1].y, pistolColours[1].z,
 		0.4f, 0.0f, 0.5f, pistolColours[1].x, pistolColours[1].y, pistolColours[1].z,
 
-		0.4f, 1.0f, 0.5f, pistolColours[1].x, pistolColours[1].y, pistolColours[1].z,
-		0.0f, 1.0f, 0.5f, pistolColours[1].x, pistolColours[1].y, pistolColours[1].z,
+		0.4f, 1.1f, 0.5f, pistolColours[1].x, pistolColours[1].y, pistolColours[1].z,
+		0.0f, 1.1f, 0.5f, pistolColours[1].x, pistolColours[1].y, pistolColours[1].z,
 		0.4f, 0.0f, 0.5f, pistolColours[1].x, pistolColours[1].y, pistolColours[1].z,
 
 		0.4f, 0.6f, 0.0f, pistolColours[2].x, pistolColours[2].y, pistolColours[2].z,
 		1.4f, 0.6f, 0.0f, pistolColours[2].x, pistolColours[2].y, pistolColours[2].z,
-		0.4f, 1.0f, 0.0f, pistolColours[2].x, pistolColours[2].y, pistolColours[2].z,
+		0.4f, 1.1f, 0.0f, pistolColours[2].x, pistolColours[2].y, pistolColours[2].z,
 
-		1.4f, 1.0f, 0.0f, pistolColours[2].x, pistolColours[2].y, pistolColours[2].z,
+		1.4f, 1.1f, 0.0f, pistolColours[2].x, pistolColours[2].y, pistolColours[2].z,
 		1.4f, 0.6f, 0.0f, pistolColours[2].x, pistolColours[2].y, pistolColours[2].z,
-		0.4f, 1.0f, 0.0f, pistolColours[2].x, pistolColours[2].y, pistolColours[2].z,
+		0.4f, 1.1f, 0.0f, pistolColours[2].x, pistolColours[2].y, pistolColours[2].z,
 
 		0.4f, 0.6f, 0.5f, pistolColours[3].x, pistolColours[3].y, pistolColours[3].z,
 		1.4f, 0.6f, 0.5f, pistolColours[3].x, pistolColours[3].y, pistolColours[3].z,
-		0.4f, 1.0f, 0.5f, pistolColours[3].x, pistolColours[3].y, pistolColours[3].z,
+		0.4f, 1.1f, 0.5f, pistolColours[3].x, pistolColours[3].y, pistolColours[3].z,
 
-		1.4f, 1.0f, 0.5f, pistolColours[3].x, pistolColours[3].y, pistolColours[3].z,
+		1.4f, 1.1f, 0.5f, pistolColours[3].x, pistolColours[3].y, pistolColours[3].z,
 		1.4f, 0.6f, 0.5f, pistolColours[3].x, pistolColours[3].y, pistolColours[3].z,
-		0.4f, 1.0f, 0.5f, pistolColours[3].x, pistolColours[3].y, pistolColours[3].z,
+		0.4f, 1.1f, 0.5f, pistolColours[3].x, pistolColours[3].y, pistolColours[3].z,
 
-		0.0f, 1.0f, 0.0f, pistolColours[4].x, pistolColours[4].y, pistolColours[4].z,
-		1.4f, 1.0f, 0.0f, pistolColours[4].x, pistolColours[4].y, pistolColours[4].z,
-		0.0f, 1.0f, 0.5f, pistolColours[4].x, pistolColours[4].y, pistolColours[4].z,
+		0.0f, 1.1f, 0.0f, pistolColours[4].x, pistolColours[4].y, pistolColours[4].z,
+		1.4f, 1.1f, 0.0f, pistolColours[4].x, pistolColours[4].y, pistolColours[4].z,
+		0.0f, 1.1f, 0.5f, pistolColours[4].x, pistolColours[4].y, pistolColours[4].z,
 
-		1.4f, 1.0f, 0.5f, pistolColours[4].x, pistolColours[4].y, pistolColours[4].z,
-		1.4f, 1.0f, 0.0f, pistolColours[4].x, pistolColours[4].y, pistolColours[4].z,
-		0.0f, 1.0f, 0.5f, pistolColours[4].x, pistolColours[4].y, pistolColours[4].z,
+		1.4f, 1.1f, 0.5f, pistolColours[4].x, pistolColours[4].y, pistolColours[4].z,
+		1.4f, 1.1f, 0.0f, pistolColours[4].x, pistolColours[4].y, pistolColours[4].z,
+		0.0f, 1.1f, 0.5f, pistolColours[4].x, pistolColours[4].y, pistolColours[4].z,
 
 		0.0f, 0.6f, 0.0f, pistolColours[5].x, pistolColours[5].y, pistolColours[5].z,
 		1.4f, 0.6f, 0.0f, pistolColours[5].x, pistolColours[5].y, pistolColours[5].z,
@@ -68,19 +69,19 @@ void startWeapons() {
 		0.4f, 0.6f, 0.5f, pistolColours[5].x, pistolColours[5].y, pistolColours[5].z,
 
 		1.4f, 0.6f, 0.0f, pistolColours[6].x, pistolColours[6].y, pistolColours[6].z,
-		1.4f, 1.0f, 0.0f, pistolColours[6].x, pistolColours[6].y, pistolColours[6].z,
+		1.4f, 1.1f, 0.0f, pistolColours[6].x, pistolColours[6].y, pistolColours[6].z,
 		1.4f, 0.6f, 0.5f, pistolColours[6].x, pistolColours[6].y, pistolColours[6].z,
 
-		1.4f, 1.0f, 0.5f, pistolColours[6].x, pistolColours[6].y, pistolColours[6].z,
-		1.4f, 1.0f, 0.0f, pistolColours[6].x, pistolColours[6].y, pistolColours[6].z,
+		1.4f, 1.1f, 0.5f, pistolColours[6].x, pistolColours[6].y, pistolColours[6].z,
+		1.4f, 1.1f, 0.0f, pistolColours[6].x, pistolColours[6].y, pistolColours[6].z,
 		1.4f, 0.6f, 0.5f, pistolColours[6].x, pistolColours[6].y, pistolColours[6].z,
 
 		0.0f, 0.0f, 0.0f, pistolColours[7].x, pistolColours[7].y, pistolColours[7].z,
-		0.0f, 1.0f, 0.0f, pistolColours[7].x, pistolColours[7].y, pistolColours[7].z,
+		0.0f, 1.1f, 0.0f, pistolColours[7].x, pistolColours[7].y, pistolColours[7].z,
 		0.0f, 0.0f, 0.5f, pistolColours[7].x, pistolColours[7].y, pistolColours[7].z,
 
-		0.0f, 1.0f, 0.5f, pistolColours[7].x, pistolColours[7].y, pistolColours[7].z,
-		0.0f, 1.0f, 0.0f, pistolColours[7].x, pistolColours[7].y, pistolColours[7].z,
+		0.0f, 1.1f, 0.5f, pistolColours[7].x, pistolColours[7].y, pistolColours[7].z,
+		0.0f, 1.1f, 0.0f, pistolColours[7].x, pistolColours[7].y, pistolColours[7].z,
 		0.0f, 0.0f, 0.5f, pistolColours[7].x, pistolColours[7].y, pistolColours[7].z,
 
 		0.4f, 0.0f, 0.0f, pistolColours[8].x, pistolColours[8].y, pistolColours[8].z,
@@ -138,30 +139,76 @@ void startWeapons() {
 
 int weaponSelectImage, weaponSelectCornerOne, weaponSelectCornerTwo, weaponSelectCornerThree, weaponSelectCornerFour;
 void startWeaponUI(){
-	weaponSelectImage = createButton();
-	allButtons[weaponSelectImage].interactive = false;
-	allButtons[weaponSelectImage].scale = vec2(0.51f, 0.267f);
-	allButtons[weaponSelectImage].texture = loadTexture("assets/images/weaponSelectImage.png");
 	// select buttons
-
 	button defaultSelect;
-	defaultSelect.texture= loadTexture("assets/images/weaponSelectCorner.png");
-	defaultSelect.position= vec3(-1.5f, -1.5f, 0.0f);
+	defaultSelect.texture = loadTexture("assets/images/weaponSelectCorner.png");
+	defaultSelect.position = vec3(-1.4f, 1.4f, 0.0f);
+	defaultSelect.colour = vec3(0.05f);
+	defaultSelect.alpha = 0.6f;
 
 	weaponSelectCornerOne = createButton();
 	allButtons[weaponSelectCornerOne] = defaultSelect;
 	allButtons[weaponSelectCornerOne].rotation = 90.0f;
+	allButtons[weaponSelectCornerOne].position = vec3(1.4f, -1.4f, 0.0f);
 
 	weaponSelectCornerTwo = createButton();
 	allButtons[weaponSelectCornerTwo] = defaultSelect;
+	allButtons[weaponSelectCornerTwo].position = vec3(-1.4f, -1.4f, 0.0f);
 
 	weaponSelectCornerThree = createButton();
 	allButtons[weaponSelectCornerThree] = defaultSelect;
 	allButtons[weaponSelectCornerThree].rotation = 180.0f;
+	allButtons[weaponSelectCornerThree].position = vec3(1.4f, 1.4f, 0.0f);
 
 	weaponSelectCornerFour = createButton();
 	allButtons[weaponSelectCornerFour] = defaultSelect;
 	allButtons[weaponSelectCornerFour].rotation = 270.0f;
+
+	// middle icon
+	weaponSelectImage = createButton();
+	allButtons[weaponSelectImage].interactive = false;
+	allButtons[weaponSelectImage].scale = vec2(0.51f, 0.267f);
+	allButtons[weaponSelectImage].texture = loadTexture("assets/images/weaponSelectImage.png");
+	allButtons[weaponSelectImage].colour = vec3(0.05f);
+	allButtons[weaponSelectImage].alpha = 0.8f;
+}
+
+bool weaponSelectOpen = false;
+void weaponUI() {
+	int buttons [] = { weaponSelectCornerOne, weaponSelectCornerTwo, 
+		weaponSelectCornerThree, weaponSelectCornerFour, weaponSelectImage };
+	if (!checkKey(interactKey)) {
+		if (weaponSelectOpen) {
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		}
+		weaponSelectOpen = false;
+		mainPlayer.canMoveCamera = true;
+	}
+	if (checkKey(interactKey)) {
+		if (!weaponSelectOpen) {
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
+		weaponSelectOpen = true;
+		mainPlayer.canMoveCamera = false;
+	}
+	for (int b = 0; b < 5; b++) {
+		int index = buttons[b];
+		allButtons[index].active = false;
+		if (!weaponSelectOpen) {
+			continue;
+		}
+		if (!paused && !benchInUse) {
+			allButtons[index].active = true;
+		}
+		if (buttons[b] == weaponSelectImage) {
+			continue;
+		}
+		// interaction
+		allButtons[index].alpha = 0.6f;
+		if (allButtons[index].mouseOver) {
+			allButtons[index].alpha = 0.8f;
+		}
+	}
 }
 
 vector<weapon> allWeapons;
@@ -189,7 +236,7 @@ vector<bullet> allBullets;
 
 void moveBullets() {
 	int count = allBullets.size();
-	float bulletSpeed = 1.0f;
+	float bulletSpeed = 1.1f;
 	for (int i = 0; i < count; i++) {
 		vec3 bulletRot = allBullets[i].rotation;
 

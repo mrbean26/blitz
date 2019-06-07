@@ -36,6 +36,7 @@ void frontendMainloop(){
 	StructuresMainloop();
 	weaponsMainloop();
 	mainPlayer.mainloop();
+	renderButtons(); // called last because of button transparency
 	updateKeys(); // this has to be called last every frame / after last call of getkeydown
 }
 

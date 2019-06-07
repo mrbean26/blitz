@@ -1,7 +1,8 @@
 #version 330 core
 in vec3 aColour;
 uniform float alpha = 1.0f;
+uniform vec3 multiplyColour = vec3(1.0f);
 out vec4 colour;
 void main(){
-    colour = vec4(aColour, alpha);
+    colour = vec4(aColour * multiplyColour, alpha);
 }

@@ -114,4 +114,7 @@ extern bool rightButtonDown, leftButtonDown, middleButtonDown;
 bool checkKeyDown(int key);
 void updateKeys();
 
+extern double mousePosX, mousePosY;
+void updateMousePos();
+
 #endif

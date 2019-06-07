@@ -650,25 +650,21 @@ void buildBenchInteraction(){
 				}
 				currentBuildingPosition = vec2(0.0f);
 				glfwSetCursorPos(window, display_x / 2.0, display_y / 2.0);
-				double newX, newY;
-				glfwGetCursorPos(window, &newX, &newY);
-				lastMouse = vec2(newX, newY);
+
+				lastMouse = vec2(mousePosX, mousePosY);
 			}
 		}
 	}
-	if (benchInUse) {
-		double newX, newY;
-		glfwGetCursorPos(window, &newX, &newY);
-		
-		currentBuildingPosition.x = (((float) -display_x / 2.0f) + (float) newX) /
+	if (benchInUse) {	
+		currentBuildingPosition.x = (((float) -display_x / 2.0f) + (float) mousePosX) /
 			((float) display_x / 2.0f);
-		currentBuildingPosition.y = ((float) (display_y / 2.0f) - (float) newY) / 
+		currentBuildingPosition.y = ((float) (display_y / 2.0f) - (float)mousePosY) /
 			((float) display_y / ((float) aspect_y / 5));
 
 		currentBuildingPosition.x = glm::clamp(currentBuildingPosition.x, -1.0f, 1.0f);
 		currentBuildingPosition.y = glm::clamp(currentBuildingPosition.y, (float) -aspect_y / 10.0f, (float) aspect_y / 10.0f);
 
-		lastMouse = vec2(newX, newY);
+		lastMouse = vec2(mousePosX, mousePosY);
 
 		// clicks
 		if (checkKeyDown(shootButton)) {

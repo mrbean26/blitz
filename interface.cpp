@@ -41,14 +41,11 @@ void renderButtons(){
 			position *= vec3(1.05f, 1.05f, 1.0f);
 		}
 		//rescale the matrix and send position info to shader
-		scaleMat = glm::rotate(scaleMat, radians(currentButton.rotation), vec3(0.0f, 0.0f, 1.0f));
 		scaleMat = glm::scale(scaleMat, vec3(scale, 1.0f));
-		int shaderButtonPosition = glGetUniformLocation(buttonTextureShader, "buttonPos");
-		glUniform3f(shaderButtonPosition, position.x,
-			position.y, position.z);
+		scaleMat = translate(scaleMat, position);
+		scaleMat = glm::rotate(scaleMat, radians(currentButton.rotation), vec3(0.0f, 0.0f, 1.0f));
 		//update position, scale and rotation info ready for the shader to use
-		int matrixLocation = glGetUniformLocation(buttonTextureShader, "modelviewMatrix");
-		glUniformMatrix4fv(matrixLocation, 1, GL_FALSE, value_ptr(scaleMat));
+		setMat4(buttonTextureShader, "modelviewMatrix", scaleMat);
 		//texture color
 		int colourLocation = glGetUniformLocation(buttonTextureShader, "textureColour");
 		vec3 color = currentButton.colour;
@@ -58,9 +55,7 @@ void renderButtons(){
 		enableTexture(currentButton.texture);
 
 		//set texture for shader
-		int shaderTextureLocation = glGetUniformLocation(buttonTextureShader, "texture0");
-		glUniform1i(shaderTextureLocation, i);
-
+		setShaderInt(buttonTextureShader, "texture0", i);
 		glUseProgram(buttonTextureShader);
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); //if an error is being shown here for memory, shapes are being created before backendBegin()
@@ -81,8 +76,6 @@ void registerClicks(){
 		allButtons[i].clickUp = false;
 	}
 	//mouse pos
-	double mouseX, mouseY;
-	glfwGetCursorPos(window, &mouseX, &mouseY);
 	for (int i = 0; i < buttonCount; i++) {
 		if (!allButtons[i].active) {
 			continue;
@@ -117,8 +110,8 @@ void registerClicks(){
 		allButtons[i].maxY = maxY;
 		//check for click
 		allButtons[i].mouseOver = false;
-		if (mouseX >= minX && mouseX <= maxX) {
-			if (mouseY >= minY && mouseY <= maxY) {
+		if (mousePosX >= minX && mousePosX <= maxX) {
+			if (mousePosY >= minY && mousePosY <= maxY) {
 				if (clickedDown) {
 					allButtons[i].clickDown = true;
 				}
@@ -190,12 +183,6 @@ void textsBegin(){
 	int vertShader = createShader("assets/shaders/textVert.txt", GL_VERTEX_SHADER);
 	int fragShader = createShader("assets/shaders/textFrag.txt", GL_FRAGMENT_SHADER);
 	textShader = createProgram({ vertShader, fragShader });
-	//shader details
-	mat4 projectionMatrix = ortho(0.0f, static_cast<GLfloat>(display_x),
-		0.0f, static_cast<GLfloat>(display_y));
-	int projectionLocation = glGetUniformLocation(textShader, "projection");
-	glUseProgram(textShader);
-	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, value_ptr(projectionMatrix));
 	//begin freetype
 	FT_Library ftLibrary;
 	if (FT_Init_FreeType(&ftLibrary)) {
@@ -263,6 +250,11 @@ void renderText(string displayedText, vec2 position, float alpha, float size, ve
 	map<GLchar, Character> Characters){
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDepthFunc(GL_LEQUAL); // allows text over skybox
+
+	mat4 projectionMatrix = ortho(0.0f, static_cast<GLfloat>(display_x),
+		0.0f, static_cast<GLfloat>(display_y));
+	setMat4(textShader, "projection", projectionMatrix);
+
 	glUseProgram(textShader);
 	glActiveTexture(GL_TEXTURE0);
 	int textureLocation = glGetUniformLocation(textShader, "text");
@@ -327,9 +319,14 @@ void interfaceBegin(){
 }
 
 void interfaceMainloop(){
-	renderButtons();
+	updateMousePos();
 	registerClicks();
 	renderTexts();
+}
+
+double mousePosX, mousePosY;
+void updateMousePos() {
+	glfwGetCursorPos(window, &mousePosX, &mousePosY);
 }
 
 bool checkKey(int key){

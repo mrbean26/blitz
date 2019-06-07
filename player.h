@@ -29,7 +29,7 @@ void exitToMenus();
 
 class player {
 public:
-	bool active = false, canMove = true;
+	bool active = false, canMove = true, canMoveCamera = true;
 	void begin();
 	void mainloop();
 

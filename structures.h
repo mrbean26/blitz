@@ -19,6 +19,7 @@ struct placedMiniBuilding {
 	vec3 rotation = vec3(0.0f);
 };
 
+extern int interactKey, shootButton, aimButton;
 void StructuresBegin();
 void StructuresMainloop();
 
