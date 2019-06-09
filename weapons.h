@@ -16,12 +16,15 @@ using namespace glm;
 void weaponsBegin();
 void weaponsMainloop();
 
+extern vector<int> currentWeapons;
 void startWeapons();
+void getCurrentWeapons();
 
 void startWeaponUI();
 void weaponUI();
 extern bool weaponSelectOpen;
-extern int weaponSelectImage, weaponSelectCornerOne, weaponSelectCornerTwo, weaponSelectCornerThree, weaponSelectCornerFour;
+extern int weaponSelectImage, weaponSelectCornerOne, weaponSelectCornerTwo, weaponSelectCornerThree, weaponSelectCornerFour,
+	weaponIconOne, wepaonIconTwo, weaponIconThree, weaponIconFour;
 
 class weapon {
 public:
@@ -45,6 +48,6 @@ int createBullet(vec3 position, vec3 rotation);
 
 void moveBullets();
 
-extern int basicPistol;
+extern int basicPistol, basicRifle;
 
 #endif

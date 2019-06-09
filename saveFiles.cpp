@@ -112,6 +112,187 @@ vec2 getVec2File(const char * fileName, string vec2Name, int pos) {
 		return vec2(-1.0f, -1.0f);
 	}
 	return vec2(floatOne, floatTwo);
+
+}
+
+vec4 getVec4File(const char* fileName, string vec4Name, int pos){
+	float floatOne = -1.0f, floatTwo = -1.0f, floatThree = -1.0f, floatFour = -1.0f;
+	vector<string> lines = readLines(fileName);
+	int lCount = lines.size();
+	if (pos == -1) {
+		for (int l = 0; l < lCount; l++) {
+			if (!contains(lines[l], vec4Name)) {
+				continue;
+			}
+			
+			int firstValuePos = 0, secondValuePos = 0, thirdValuePos = 0;
+			string valueOnly = removeString(lines[l], vec4Name + " ");
+			int valLength = valueOnly.length();
+			for (int c = 0; c < valLength; c++) {
+				char current = valueOnly[c];
+				if (current == ' ') {
+					if (firstValuePos == 0) {
+						firstValuePos = c;
+						continue;
+					}
+					if (secondValuePos == 0) {
+						secondValuePos = c;
+						continue;
+					}
+					if (thirdValuePos == 0) {
+						thirdValuePos = c;
+					}
+				}
+			}
+
+			string valOne, valTwo, valThree, valFour;
+			for (int v1 = 0; v1 < firstValuePos; v1++) {
+				valOne += valueOnly[v1];
+			}
+			for (int v2 = firstValuePos + 1; v2 < secondValuePos; v2++) {
+				valTwo += valueOnly[v2];
+			}
+			for (int v3 = secondValuePos + 1; v3 < thirdValuePos; v3++) {
+				valThree += valueOnly[v3];
+			}
+			for (int v4 = thirdValuePos + 1; v4 < valLength; v4++) {
+				valFour += valueOnly[v4];
+			}
+
+			floatOne = stof(valOne);
+			floatTwo = stof(valTwo);
+			floatThree = stof(valThree);
+			floatFour = stof(valFour);
+		}
+	}
+	if (pos != -1) {
+		if (!contains(lines[pos], vec4Name)) {
+			return vec4(-1.0f);
+		}
+
+		int firstValuePos = 0, secondValuePos = 0, thirdValuePos = 0;
+		string valueOnly = removeString(lines[pos], vec4Name + " ");
+		int valLength = valueOnly.length();
+		for (int c = 0; c < valLength; c++) {
+			char current = valueOnly[c];
+			if (current == ' ') {
+				if (firstValuePos == 0) {
+					firstValuePos = c;
+					continue;
+				}
+				if (secondValuePos == 0) {
+					secondValuePos = c;
+					continue;
+				}
+				if (thirdValuePos == 0) {
+					thirdValuePos = c;
+				}
+			}
+		}
+
+		string valOne, valTwo, valThree, valFour;
+		for (int v1 = 0; v1 < firstValuePos; v1++) {
+			valOne += valueOnly[v1];
+		}
+		for (int v2 = firstValuePos + 1; v2 < secondValuePos; v2++) {
+			valTwo += valueOnly[v2];
+		}
+		for (int v3 = secondValuePos + 1; v3 < thirdValuePos; v3++) {
+			valThree += valueOnly[v3];
+		}
+		for (int v4 = thirdValuePos + 1; v4 < valLength; v4++) {
+			valFour += valueOnly[v4];
+		}
+
+		floatOne = stof(valOne);
+		floatTwo = stof(valTwo);
+		floatThree = stof(valThree);
+		floatFour = stof(valFour);
+	}
+	return vec4(floatOne, floatTwo, floatThree, floatFour);
+}
+
+vec3 getVec3File(const char* fileName, string vec3Name, int pos) {
+	float floatOne = -1.0f, floatTwo = -1.0f, floatThree = -1.0f, floatFour = -1.0f;
+	vector<string> lines = readLines(fileName);
+	int lCount = lines.size();
+	if (pos == -1) {
+		for (int l = 0; l < lCount; l++) {
+			if (!contains(lines[l], vec3Name)) {
+				continue;
+			}
+
+			int firstValuePos = 0, secondValuePos = 0, thirdValuePos = 0;
+			string valueOnly = removeString(lines[l], vec3Name + " ");
+			int valLength = valueOnly.length();
+			for (int c = 0; c < valLength; c++) {
+				char current = valueOnly[c];
+				if (current == ' ') {
+					if (firstValuePos == 0) {
+						firstValuePos = c;
+						continue;
+					}
+					if (secondValuePos == 0) {
+						secondValuePos = c;
+						continue;
+					}
+				}
+			}
+
+			string valOne, valTwo, valThree;
+			for (int v1 = 0; v1 < firstValuePos; v1++) {
+				valOne += valueOnly[v1];
+			}
+			for (int v2 = firstValuePos + 1; v2 < secondValuePos; v2++) {
+				valTwo += valueOnly[v2];
+			}
+			for (int v3 = secondValuePos + 1; v3 < valLength; v3++) {
+				valThree += valueOnly[v3];
+			}
+
+			floatOne = stof(valOne);
+			floatTwo = stof(valTwo);
+			floatThree = stof(valThree);
+		}
+	}
+	if (pos != -1) {
+		if (!contains(lines[pos], vec3Name)) {
+			return vec3(-1.0f);
+		}
+
+		int firstValuePos = 0, secondValuePos = 0;
+		string valueOnly = removeString(lines[pos], vec3Name + " ");
+		int valLength = valueOnly.length();
+		for (int c = 0; c < valLength; c++) {
+			char current = valueOnly[c];
+			if (current == ' ') {
+				if (firstValuePos == 0) {
+					firstValuePos = c;
+					continue;
+				}
+				if (secondValuePos == 0) {
+					secondValuePos = c;
+					continue;
+				}
+			}
+		}
+
+		string valOne, valTwo, valThree;
+		for (int v1 = 0; v1 < firstValuePos; v1++) {
+			valOne += valueOnly[v1];
+		}
+		for (int v2 = firstValuePos + 1; v2 < secondValuePos; v2++) {
+			valTwo += valueOnly[v2];
+		}
+		for (int v3 = secondValuePos + 1; v3 < valLength; v3++) {
+			valThree += valueOnly[v3];
+		}
+
+		floatOne = stof(valOne);
+		floatTwo = stof(valTwo);
+		floatThree = stof(valThree);
+	}
+	return vec3(floatOne, floatTwo, floatThree);
 }
 
 float getFloatFile(const char * fileName, string floatName, int pos){
@@ -157,4 +338,24 @@ int getIntFile(const char* fileName, string intName, int pos){
 	}
 	return -1;
 	return 0;
+}
+
+vector<string> rewriteLine(vector<string> existingLines, string varName, string newValue, int pos) {
+	int lCount = existingLines.size();
+	if (pos != -1) {
+		for (int l = 0; l < lCount; l++) {
+			if (contains(existingLines[l], newValue)) {
+				existingLines[l] = varName + " " + newValue;
+				break;
+			}
+		}
+	}
+	if (pos == -1) {
+		if (pos < lCount) {
+			if (contains(existingLines[pos], varName)) {
+				existingLines[pos] = varName + " " + newValue;
+			}
+		}
+	}
+	return existingLines;
 }

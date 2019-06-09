@@ -109,6 +109,7 @@ void createSave(const char* filePath, int saveType) {
 		//inventory and hotbar with no items (start of world)
 		saveLines[newVectorPos(&saveLines)] = "inventory 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"; //15 slots
 		saveLines[newVectorPos(&saveLines)] = "hotbar 0 0 0 0 0"; //5 slots
+		saveLines[newVectorPos(&saveLines)] = "currentWeapons 0 0 0 0";
 		//"current" data
 		saveLines[newVectorPos(&saveLines)] = "currentPlanet earth"; //basic science base on earth
 		saveLines[newVectorPos(&saveLines)] = "currentPosition 0.0f, 0.0f, 0.0f";

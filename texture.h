@@ -10,6 +10,7 @@ public:
 	int width, height;
 	int channels;
 	unsigned char * data;
+	const char * name;
 };
 
 texture loadTexture(const char * filePath); // load texture from file and return a relevant texture class

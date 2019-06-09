@@ -12,6 +12,7 @@ texture loadTexture(const char * filePath){
 	texture newTexture;
 	glGenTextures(1, &newTexture.textureId);
 	newTexture.data = stbi_load(filePath, &newTexture.width, &newTexture.height, &newTexture.channels, 4);
+	newTexture.name = filePath;
 	if (!newTexture.data)
 		cout << "File cannot be found: " << filePath << endl;
 	return newTexture;

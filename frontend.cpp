@@ -30,13 +30,19 @@ void frontendMainloop(){
 		weaponsBegin();
 		WorldGeneration.startedBegin = true;
 	}
+	
+
+
 	renderSkybox(!WorldGeneration.startedBegin);
+	
 	StartScreen.mainloop();
+	
 	WorldGeneration.mainloop();
+	
 	StructuresMainloop();
 	weaponsMainloop();
 	mainPlayer.mainloop();
-	renderButtons(); // called last because of button transparency
+	interfaceLastcall();
 	updateKeys(); // this has to be called last every frame / after last call of getkeydown
 }
 

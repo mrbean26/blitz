@@ -18,6 +18,7 @@ int createButton(){
 }
 
 void renderButtons(){
+	glDisable(GL_DEPTH_TEST);
 	int buttonCount = allButtons.size();
 	vec2 rescale = vec2(2.0f, 2.0f);
 	vec2 aspectRatio = vec2(aspect_x, aspect_y);
@@ -60,6 +61,7 @@ void renderButtons(){
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); //if an error is being shown here for memory, shapes are being created before backendBegin()
 	}
+	glEnable(GL_DEPTH_TEST);
 }
 
 void registerClicks(){
@@ -128,15 +130,15 @@ void registerClicks(){
 void buttonsBegin(){
 	//vertex data
 	float vertices[] = {
-		// positions then colors then texture coords
-		 1.0f, 1.0f, 0.0f,
-		 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-		 1.0f, -1.0f, 0.0f,
-		 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-		 -1.0f, -1.0f, 0.0f,
-		 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-		 -1.0f, 1.0f, 0.0f,
-		 1.0f, 1.0f, 0.0f, 0.0f, 1.0f
+		// positions then colors then texture coords, they are 0.99f to stop weird lines on edge of textures
+		0.99f, 0.99f, 0.0f,
+		 0.99f, 0.0f, 0.0f, 0.99f, 0.99f,
+		 0.99f, -0.99f, 0.0f,
+		 0.0f, 0.99f, 0.0f, 0.99f, 0.0f,
+		 -0.99f, -0.99f, 0.0f,
+		 0.0f, 0.0f, 0.99f, 0.0f, 0.0f,
+		 -0.99f, 0.99f, 0.0f,
+		 0.99f, 0.99f, 0.0f, 0.0f, 0.99f
 	};
 	unsigned int indices[] = {
 		0, 1, 3, // first triangle
@@ -319,8 +321,13 @@ void interfaceBegin(){
 }
 
 void interfaceMainloop(){
+	renderTexts();
 	updateMousePos();
 	registerClicks();
+}
+
+void interfaceLastcall(){
+	renderButtons();
 	renderTexts();
 }
 

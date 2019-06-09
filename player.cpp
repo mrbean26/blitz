@@ -45,7 +45,7 @@ int continueButton, exitButton;
 bool paused = false;
 void startPauseUI() {
 	continueButton = createButton();
-	allButtons[continueButton].texture = loadTexture("assets/images/exitButton.png");
+	allButtons[continueButton].texture = loadTexture("assets/images/continueButton.png");
 	allButtons[continueButton].scale = vec2(1.2f, 0.45f);
 	allButtons[continueButton].position = vec3(0.0f, 1.2f, 0.0f);
 	allButtons[continueButton].active = false;
@@ -90,6 +90,9 @@ void exitToMenus() {
 	if (lineCount > 0) {
 		vector<string> currentAllLines = readLines(WorldGeneration.worldLinesPath);
 		currentAllLines.insert(currentAllLines.end(), newBuildingLines.begin(), newBuildingLines.end());
+		string newValue = to_string(currentWeapons[0]) + " " + to_string(currentWeapons[1]) + " " +
+			to_string(currentWeapons[2]) + " " + to_string(currentWeapons[3]);
+		currentAllLines = rewriteLine(currentAllLines, "currentWeapons", newValue);
 		writeLines(WorldGeneration.worldLinesPath, currentAllLines);
 	}
 	// structures.h
@@ -760,7 +763,7 @@ void player::renderPlayer(){
 		setShaderVecThree(playerShader, "multiplyColour", laserColour);
 		glBindVertexArray(laserVAO);
 		setShaderFloat(playerShader, "alpha", 0.5f);
-		setMat4(playerShader, "model", modelMatrix(vec3(0.0f, 0.0f, -0.65f), vec3(playerPitch, 90.0f, 0.0f), vec3(250.0f, 0.1f, 0.1f),
+		setMat4(playerShader, "model", modelMatrix(vec3(2.0f, 0.0f, -0.65f), vec3(playerPitch, 90.0f, 0.0f), vec3(250.0f, 0.1f, 0.1f),
 			true, vec3(position.x, position.y + 0.5f, position.z), rotation));
 		glDrawArrays(GL_TRIANGLES, 0, 24);
 		glLinkProgram(playerShader);
@@ -769,6 +772,11 @@ void player::renderPlayer(){
 			allWeapons[currentWeapon].render(modelMatrix(vec3(1.2f, 0.0f, -0.7f), 
 				vec3(playerPitch, 90.0f, 0.0f), vec3(0.4f), true, 
 					vec3(position.x, position.y + 0.25f, position.z), rotation));
+		}
+		if (currentWeapon == 1) {
+			allWeapons[currentWeapon].render(modelMatrix(vec3(0.6f, 0.0f, 1.2f),
+				vec3(playerPitch, 180.0f, 0.0f), vec3(0.8f), true,
+				vec3(position.x, position.y + 0.5f, position.z), rotation));
 		}
 	}
 }
@@ -1279,8 +1287,8 @@ void startPlayerShader(){
 	playerShader = createProgram({ vertShad, fragShad });
 }
 
-float shotDelays[] = { 0.25f };
-float automaticGun[] = { false };
+float shotDelays[] = { 0.25f, 0.1f };
+float automaticGun[] = { false, true };
 
 void player::shoot() {
 	int shootButton = stoi(inputLines[5]);
