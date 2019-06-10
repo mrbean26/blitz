@@ -12,7 +12,7 @@
 To setup an OBJ enable only triangulate faces & enable write normals & enable apply modifiers
 	& enable objects as OBJ objects
 
-Edit OBJ file to only "v" and "f" lines
+Use readyModel to make obj file ok to use in game
 */
 
 model::model(vec4 mainColour, const char* filePath) { // load model (dont use this for main game, only for getting data)

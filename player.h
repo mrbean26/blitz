@@ -42,9 +42,13 @@ public:
 
 	int currentWeapon = 0;
 	bool canShoot = true;
+	bool aiming = false;
 	void shoot();
+
+	bool equippingReloading = false;
 private:
 	void movement();
+	void resetArms();
 
 	void collisions();
 
@@ -54,7 +58,7 @@ private:
 	void cameraMovement();
 	float sensitivity = 0.3f;
 	
-	bool aiming = false;
+	
 	void startLaserForBullets();
 	GLuint laserVAO, laserVBO;
 	vec3 laserColour = vec3(1.0f, 0.0f, 0.0f);
@@ -87,6 +91,12 @@ private:
 	bool finishedFirst = false, finishedSecond = false;
 	float movingMultiplier = 0.0f; // speed at which to move limbs in runAnimation()
 	void runAnimation(float multiplier);
+
+	bool finishedEquipFirst = false;
+	float totalGoneUpEquipping = 0.0f;
+
+	float reloadSpeed = 1.0f;
+	void equipReloadAnimation(float multiplier);
 };
 
 #endif

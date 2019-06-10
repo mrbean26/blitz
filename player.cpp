@@ -39,6 +39,7 @@ void player::mainloop(){
 	collisions();
 	pauseUIInteraction();
 	shoot();
+	resetArms();
 }
 
 int continueButton, exitButton;
@@ -147,6 +148,7 @@ void player::deleteMemory(){
 }
 
 bool lastOnBench = false;
+float lastPitch;
 void player::movement(){
 	if (!canMove) { return; }
 	int forwardKey = stoi(inputLines[0]);
@@ -220,13 +222,20 @@ void player::movement(){
 		if (!aiming) {
 			armRotation.x = 90.0f;
 			armRotationTwo.x = 90.0f;
+			armRotationTwo.z = -45.0f;
+			lastPitch = playerPitch;
+			equippingReloading = true;
 		}
 		aiming = true;
-		armRotationTwo.z = -45.0f;
-		armRotation.x = playerPitch + 90.0f;
-		armRotationTwo.x = playerPitch + 90.0f;
+		if (!equippingReloading) {
+			armRotationTwo.z = -45.0f;
+		}
+		armRotation.x += playerPitch - lastPitch;
+		armRotationTwo.x += playerPitch - lastPitch;
 		armPositionTwo = vec3(0.55f, -0.425f, 0.0f);
 		aimingView = true;
+
+		lastPitch = playerPitch;
 	}
 	if (!checkKey(aimButton)) {
 		if (aiming) {
@@ -237,6 +246,11 @@ void player::movement(){
 		}
 		aiming = false;
 	}
+
+	if (equippingReloading) {
+		equipReloadAnimation(allWeapons[currentWeapon].equipTime);
+	}
+
 	// physical movement
 
 	float xGap = -sin(radians(rotation.y));
@@ -759,23 +773,25 @@ void player::renderPlayer(){
 		glDrawArrays(GL_TRIANGLES, 0, vertCounts[i]);
 	}
 	// laser
+	armRotation.x = clamp(armRotation.x, -1000.0f, 105.0f);
+	armRotationTwo.x = clamp(armRotationTwo.x, -1000.0f, 105.0f);
 	if (aiming) {
 		setShaderVecThree(playerShader, "multiplyColour", laserColour);
 		glBindVertexArray(laserVAO);
 		setShaderFloat(playerShader, "alpha", 0.5f);
-		setMat4(playerShader, "model", modelMatrix(vec3(2.0f, 0.0f, -0.65f), vec3(playerPitch, 90.0f, 0.0f), vec3(250.0f, 0.1f, 0.1f),
+		setMat4(playerShader, "model", modelMatrix(vec3(2.0f, 0.0f, -0.65f), vec3(armRotation.x - 90.0f, 90.0f, 0.0f), vec3(250.0f, 0.1f, 0.1f),
 			true, vec3(position.x, position.y + 0.5f, position.z), rotation));
 		glDrawArrays(GL_TRIANGLES, 0, 24);
 		glLinkProgram(playerShader);
 		// weapon
 		if (currentWeapon == 0) {
 			allWeapons[currentWeapon].render(modelMatrix(vec3(1.2f, 0.0f, -0.7f), 
-				vec3(playerPitch, 90.0f, 0.0f), vec3(0.4f), true, 
+				vec3(armRotation.x - 90.0f, 90.0f, 0.0f), vec3(0.4f), true, 
 					vec3(position.x, position.y + 0.25f, position.z), rotation));
 		}
 		if (currentWeapon == 1) {
 			allWeapons[currentWeapon].render(modelMatrix(vec3(0.6f, 0.0f, 1.2f),
-				vec3(playerPitch, 180.0f, 0.0f), vec3(0.8f), true,
+				vec3(armRotation.x - 90.0f, 180.0f, 0.0f), vec3(0.8f), true,
 				vec3(position.x, position.y + 0.5f, position.z), rotation));
 		}
 	}
@@ -1294,10 +1310,12 @@ void player::shoot() {
 	int shootButton = stoi(inputLines[5]);
 	if (!canShoot) {
 		laserColour = vec3(1.0f, 0.0f, 0.0f);
-		currentDelay -= (float) deltaTime;
-		if (currentDelay < 0) {
-			currentDelay = 0.0f;
-			canShoot = true;
+		if (!equippingReloading) {
+			currentDelay -= (float)deltaTime;
+			if (currentDelay < 0) {
+				currentDelay = 0.0f;
+				canShoot = true;
+			}
 		}
 	}
 	if (canShoot) {
@@ -1330,5 +1348,32 @@ void player::shoot() {
 
 		canShoot = false;
 		currentDelay = shotDelays[currentWeapon];
+	}
+}
+
+void player::equipReloadAnimation(float multiplier) {
+	canShoot = false;
+	if (!finishedEquipFirst) {
+		armRotationTwo.x += deltaTime * multiplier;
+		totalGoneUpEquipping += deltaTime * multiplier;
+		if (totalGoneUpEquipping > 15.0f) {
+			finishedEquipFirst = true;
+		}
+	}
+	if (finishedEquipFirst) {
+		armRotationTwo.x -= deltaTime * multiplier;
+		totalGoneUpEquipping -= deltaTime * multiplier;
+		if (totalGoneUpEquipping < 0.0f) {
+			finishedEquipFirst = false;
+			equippingReloading = false;
+			armRotationTwo.x -= totalGoneUpEquipping;
+			totalGoneUpEquipping = 0.0f;
+		}
+	}
+}
+
+void player::resetArms() {
+	if (!equippingReloading) {
+		armRotationTwo.x = armRotation.x;
 	}
 }

@@ -28,11 +28,13 @@ extern int weaponSelectImage, weaponSelectCornerOne, weaponSelectCornerTwo, weap
 
 class weapon {
 public:
-	weapon(vector<float> vertices = {});
+	weapon(vector<float> vertices = {}, float openTime = 0.0f);
 	void render(mat4 model);
 
 	GLuint VAO, VBO;
 	GLuint vertCount;
+
+	float equipTime;
 };
 
 struct bullet {
@@ -41,7 +43,7 @@ struct bullet {
 };
 
 extern vector<weapon> allWeapons;
-int createWeapon(vector<float> vertices);
+int createWeapon(vector<float> vertices, float activateDelay);
 
 extern vector<bullet> allBullets;
 int createBullet(vec3 position, vec3 rotation);
