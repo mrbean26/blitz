@@ -46,9 +46,11 @@ public:
 	void shoot();
 
 	bool equippingReloading = false;
+	float reloadSpeed;
 private:
 	void movement();
 	void resetArms();
+	void reload();
 
 	void collisions();
 
@@ -95,7 +97,6 @@ private:
 	bool finishedEquipFirst = false;
 	float totalGoneUpEquipping = 0.0f;
 
-	float reloadSpeed = 1.0f;
 	void equipReloadAnimation(float multiplier);
 };
 

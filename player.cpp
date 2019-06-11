@@ -39,7 +39,7 @@ void player::mainloop(){
 	collisions();
 	pauseUIInteraction();
 	shoot();
-	resetArms();
+	reload();
 }
 
 int continueButton, exitButton;
@@ -225,6 +225,7 @@ void player::movement(){
 			armRotationTwo.z = -45.0f;
 			lastPitch = playerPitch;
 			equippingReloading = true;
+			reloadSpeed = allWeapons[currentWeapon].equipTime;
 		}
 		aiming = true;
 		if (!equippingReloading) {
@@ -1307,10 +1308,13 @@ float shotDelays[] = { 0.25f, 0.1f };
 float automaticGun[] = { false, true };
 
 void player::shoot() {
+	if (allWeapons[currentWeapon].currentAmmo < 1) {
+		canShoot = false;
+	}
 	int shootButton = stoi(inputLines[5]);
 	if (!canShoot) {
 		laserColour = vec3(1.0f, 0.0f, 0.0f);
-		if (!equippingReloading) {
+		if (!equippingReloading && !allWeapons[currentWeapon].currentAmmo < 1) {
 			currentDelay -= (float)deltaTime;
 			if (currentDelay < 0) {
 				currentDelay = 0.0f;
@@ -1335,6 +1339,8 @@ void player::shoot() {
 	}
 	// shoot
 	if (keyDown && canShoot && aiming) {
+		allWeapons[currentWeapon].currentAmmo -= 1;
+
 		vec3 bulletRot = vec3(0.0f);
 		bulletRot.y = rotation.y + 90.0f;
 		bulletRot.z = playerPitch;
@@ -1354,18 +1360,19 @@ void player::shoot() {
 void player::equipReloadAnimation(float multiplier) {
 	canShoot = false;
 	if (!finishedEquipFirst) {
-		armRotationTwo.x += deltaTime * multiplier;
-		totalGoneUpEquipping += deltaTime * multiplier;
+		armRotationTwo.x += (float) deltaTime * multiplier;
+		totalGoneUpEquipping += (float) deltaTime * multiplier;
 		if (totalGoneUpEquipping > 15.0f) {
 			finishedEquipFirst = true;
 		}
 	}
 	if (finishedEquipFirst) {
-		armRotationTwo.x -= deltaTime * multiplier;
-		totalGoneUpEquipping -= deltaTime * multiplier;
+		armRotationTwo.x -= (float) deltaTime * multiplier;
+		totalGoneUpEquipping -= (float) deltaTime * multiplier;
 		if (totalGoneUpEquipping < 0.0f) {
 			finishedEquipFirst = false;
 			equippingReloading = false;
+			resetArms();
 			armRotationTwo.x -= totalGoneUpEquipping;
 			totalGoneUpEquipping = 0.0f;
 		}
@@ -1375,5 +1382,19 @@ void player::equipReloadAnimation(float multiplier) {
 void player::resetArms() {
 	if (!equippingReloading) {
 		armRotationTwo.x = armRotation.x;
+	}
+}
+
+void player::reload() {
+	if (allWeapons[currentWeapon].currentAmmo < 1) {
+		if (allWeapons[currentWeapon].shotDelayCurrent == allWeapons[currentWeapon].shotDelay) {
+			equippingReloading = true;
+			reloadSpeed = 30.0f / allWeapons[currentWeapon].shotDelay;
+		}
+		allWeapons[currentWeapon].shotDelayCurrent -= deltaTime;
+		if (allWeapons[currentWeapon].shotDelayCurrent < 0) {
+			allWeapons[currentWeapon].currentAmmo = allWeapons[currentWeapon].maxAmmo;
+			allWeapons[currentWeapon].shotDelayCurrent = allWeapons[currentWeapon].shotDelay;
+		}
 	}
 }

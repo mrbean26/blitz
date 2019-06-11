@@ -34,7 +34,11 @@ public:
 	GLuint VAO, VBO;
 	GLuint vertCount;
 
-	float equipTime;
+	float equipTime, shotDelay;
+
+	float shotDelayCurrent;
+
+	int currentAmmo, maxAmmo;
 };
 
 struct bullet {
@@ -43,7 +47,8 @@ struct bullet {
 };
 
 extern vector<weapon> allWeapons;
-int createWeapon(vector<float> vertices, float activateDelay);
+int createWeapon(vector<float> vertices, float activateDelay,
+	int maxAmmo, float shotDelay);
 
 extern vector<bullet> allBullets;
 int createBullet(vec3 position, vec3 rotation);
