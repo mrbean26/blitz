@@ -611,9 +611,15 @@ void worldGeneration::renderAreaLimits(){
 void worldGeneration::renderTerrain() {
 	if (currentArea == PLANET_WORLD) {
 		glUseProgram(terrainShader);
+
 		setMat4(terrainShader, "model", modelMatrix());
 		setMat4(terrainShader, "projection", projectionMatrix());
 		setMat4(terrainShader, "view", viewMatrix());
+
+		setShaderVecThree(terrainShader, "lightPos", vec3(30.0f, 0.0f, -20.0f));
+		setShaderFloat(terrainShader, "lightIntensity", 1.0f);
+		setShaderFloat(terrainShader, "lightRadius", 20.0f);
+		setShaderInt(terrainShader, "useLight", 1);
 
 		glBindVertexArray(terrainVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3 * total);

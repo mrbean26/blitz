@@ -1,8 +1,25 @@
 #version 330 core
 in vec3 aColour;
+in vec3 position;
+
 uniform float alpha = 1.0f;
 uniform vec3 multiplyColour = vec3(1.0f);
+
+vec3 lightMultiplier = vec3(1.0f);
+uniform vec3 lightPos = vec3(0.0f);
+uniform float lightIntensity = 1.0f;
+uniform float lightRadius = 40.0f;
+uniform bool useLight = true;
+
 out vec4 colour;
 void main(){
+	vec3 usedPosition = vec3(position.x, 0.0f, position.z);
+	float distance = distance(usedPosition, lightPos);
+	float multiply = 1.0f - (distance / lightRadius);
+	
+	if(useLight) { lightMultiplier = vec3(multiply); }
+	if(!useLight) { lightMultiplier = vec3(1.0f); }
+
     colour = vec4(aColour * multiplyColour, alpha);
+	colour = colour * vec4(lightMultiplier, 1.0f);
 }
