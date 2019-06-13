@@ -342,15 +342,15 @@ int getIntFile(const char* fileName, string intName, int pos){
 
 vector<string> rewriteLine(vector<string> existingLines, string varName, string newValue, int pos) {
 	int lCount = existingLines.size();
-	if (pos != -1) {
+	if (pos == -1) {
 		for (int l = 0; l < lCount; l++) {
-			if (contains(existingLines[l], newValue)) {
+			if (contains(existingLines[l], varName)) {
 				existingLines[l] = varName + " " + newValue;
 				break;
 			}
 		}
 	}
-	if (pos == -1) {
+	if (pos != -1) {
 		if (pos < lCount) {
 			if (contains(existingLines[pos], varName)) {
 				existingLines[pos] = varName + " " + newValue;

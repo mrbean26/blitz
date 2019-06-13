@@ -46,6 +46,10 @@ unsigned int loadCubemapTexture(vector<string> faces);
 void startSkybox();
 void renderSkybox(bool startScreen = false);
 
+extern vec3 lightPos;
+extern float lightIntensity, lightRadius, 
+	lowestLight, currentTime, timeMultiplier;
+
 class worldGeneration {
 public:
 	int currentArea = PLANET_WORLD;
@@ -76,6 +80,8 @@ public:
 
 	void renderAreaLimits();
 	void renderTerrain(); // this may take some time
+
+	void daynightCycle();
 
 	//called from other files
 	void begin(); // called before the first frame

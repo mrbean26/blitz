@@ -110,6 +110,7 @@ void createSave(const char* filePath, int saveType) {
 		saveLines[newVectorPos(&saveLines)] = "inventory 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"; //15 slots
 		saveLines[newVectorPos(&saveLines)] = "hotbar 0 0 0 0 0"; //5 slots
 		saveLines[newVectorPos(&saveLines)] = "currentWeapons 0 0 0 0";
+		saveLines[newVectorPos(&saveLines)] = "currentTime 0.0";
 		//"current" data
 		saveLines[newVectorPos(&saveLines)] = "currentPlanet earth"; //basic science base on earth
 		saveLines[newVectorPos(&saveLines)] = "currentPosition 0.0f, 0.0f, 0.0f";
@@ -297,6 +298,10 @@ void renderSkybox(bool startScreen){
 	glBindVertexArray(0);
 	glDepthFunc(GL_LESS);
 }
+
+vec3 lightPos = vec3(30.0f, 0.0f, -20.0f);
+float lightIntensity = 1.0f, lightRadius = 1.0f, lowestLight = 0.6f;
+float currentTime = 0.0f, timeMultiplier = 0.25f; // 0.25f == 3 min daytime
 
 void worldGeneration::reserveMemory() {
 	glGenVertexArrays(1, &terrainVAO);
@@ -616,14 +621,24 @@ void worldGeneration::renderTerrain() {
 		setMat4(terrainShader, "projection", projectionMatrix());
 		setMat4(terrainShader, "view", viewMatrix());
 
-		setShaderVecThree(terrainShader, "lightPos", vec3(30.0f, 0.0f, -20.0f));
-		setShaderFloat(terrainShader, "lightIntensity", 1.0f);
-		setShaderFloat(terrainShader, "lightRadius", 20.0f);
+		setShaderVecThree(terrainShader, "lightPos", lightPos);
+		setShaderFloat(terrainShader, "lightIntensity", lightIntensity);
+		setShaderFloat(terrainShader, "lightRadius", lightRadius);
 		setShaderInt(terrainShader, "useLight", 1);
+		setShaderFloat(terrainShader, "lowestLight", lowestLight);
 
 		glBindVertexArray(terrainVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3 * total);
 	}
+}
+
+void worldGeneration::daynightCycle(){
+	currentTime += deltaTime * timeMultiplier;
+	float valueX = tan(radians(currentTime)) * currentAreaScale.x;
+	lightRadius = currentAreaScale.x * 3.0f;
+	lightPos.x = valueX;
+	lightPos.z = -currentAreaScale.y / 2.0f;
+	// lightPos.z = valueZ;
 }
 
 vec2 worldGeneration::getAreaScale() {
@@ -640,12 +655,14 @@ void worldGeneration::begin() {
 	reserveMemory();
 	beginFlatTerrain();	
 	beginAreaLimits();
+	currentTime = getFloatFile(worldLinesPath, "currentTime");
 }
 
 void worldGeneration::mainloop() {
 	if (!active) { return; }
 	renderTerrain();
 	renderAreaLimits();
+	daynightCycle();
 }
 
 void worldGeneration::beginAreaLimits() {

@@ -324,9 +324,17 @@ weapon::weapon(vector<float> vertices, float openTime){
 
 void weapon::render(mat4 model){
 	glUseProgram(playerShader);
+
 	setMat4(playerShader, "model", model);
 	setMat4(playerShader, "projection", projectionMatrix());
 	setMat4(playerShader, "view", viewMatrix());
+
+	setShaderVecThree(playerShader, "lightPos", lightPos);
+	setShaderFloat(playerShader, "lightIntensity", lightIntensity);
+	setShaderFloat(playerShader, "lightRadius", lightRadius);
+	setShaderInt(playerShader, "useLight", 1);
+	setShaderFloat(playerShader, "lowestLight", lowestLight);
+
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, vertCount);
 }

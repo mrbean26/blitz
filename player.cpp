@@ -88,14 +88,15 @@ void exitToMenus() {
 	WorldGeneration.active = false;
 	// write new buildings to file
 	int lineCount = newBuildingLines.size();
+	vector<string> currentAllLines = readLines(WorldGeneration.worldLinesPath);
 	if (lineCount > 0) {
-		vector<string> currentAllLines = readLines(WorldGeneration.worldLinesPath);
 		currentAllLines.insert(currentAllLines.end(), newBuildingLines.begin(), newBuildingLines.end());
-		string newValue = to_string(currentWeapons[0]) + " " + to_string(currentWeapons[1]) + " " +
-			to_string(currentWeapons[2]) + " " + to_string(currentWeapons[3]);
-		currentAllLines = rewriteLine(currentAllLines, "currentWeapons", newValue);
-		writeLines(WorldGeneration.worldLinesPath, currentAllLines);
 	}
+	string newValue = to_string(currentWeapons[0]) + " " + to_string(currentWeapons[1]) + " " +
+		to_string(currentWeapons[2]) + " " + to_string(currentWeapons[3]);
+	currentAllLines = rewriteLine(currentAllLines, "currentWeapons", newValue);
+	currentAllLines = rewriteLine(currentAllLines, "currentTime", to_string(currentTime));
+	writeLines(WorldGeneration.worldLinesPath, currentAllLines);
 	// structures.h
 	mountainLimits.clear();
 	allMiniBuildings.clear();
@@ -770,6 +771,12 @@ void player::renderPlayer(){
 		setMat4(playerShader, "view", viewMatrix());
 		setMat4(playerShader, "projection", projectionMatrix());
 
+		setShaderVecThree(playerShader, "lightPos", lightPos);
+		setShaderFloat(playerShader, "lightIntensity", lightIntensity);
+		setShaderFloat(playerShader, "lightRadius", lightRadius);
+		setShaderInt(playerShader, "useLight", 1);
+		setShaderFloat(playerShader, "lowestLight", lowestLight);
+
 		glBindVertexArray(vaos[i]);
 		glDrawArrays(GL_TRIANGLES, 0, vertCounts[i]);
 	}
@@ -778,6 +785,7 @@ void player::renderPlayer(){
 	armRotationTwo.x = clamp(armRotationTwo.x, -1000.0f, 105.0f);
 	if (aiming) {
 		setShaderVecThree(playerShader, "multiplyColour", laserColour);
+		setShaderInt(playerShader, "useLight", 0);
 		glBindVertexArray(laserVAO);
 		setShaderFloat(playerShader, "alpha", 0.5f);
 		setMat4(playerShader, "model", modelMatrix(vec3(2.0f, 0.0f, -0.65f), vec3(armRotation.x - 90.0f, 90.0f, 0.0f), vec3(250.0f, 0.1f, 0.1f),
