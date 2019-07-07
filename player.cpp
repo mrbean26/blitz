@@ -6,6 +6,7 @@
 #include "frontend.h"
 #include "structures.h"
 #include "weapons.h"
+#include "monsters.h"
 
 #include <glm/gtc/type_ptr.hpp>
 using namespace glm;
@@ -92,10 +93,33 @@ void exitToMenus() {
 	if (lineCount > 0) {
 		currentAllLines.insert(currentAllLines.end(), newBuildingLines.begin(), newBuildingLines.end());
 	}
+	// time values & weapon values
 	string newValue = to_string(currentWeapons[0]) + " " + to_string(currentWeapons[1]) + " " +
 		to_string(currentWeapons[2]) + " " + to_string(currentWeapons[3]);
 	currentAllLines = rewriteLine(currentAllLines, "currentWeapons", newValue);
 	currentAllLines = rewriteLine(currentAllLines, "currentTime", to_string(currentTime));
+	// monster values
+	auto iterator = currentAllLines.begin();
+	while (iterator != currentAllLines.end()) {
+		if (contains(*iterator, WorldGeneration.currentAreaPrefix + "Monster")) { // delete values
+			iterator = currentAllLines.erase(iterator);
+		}
+		else {
+			++iterator;
+		}
+	}
+	// write monsters
+	int mCount = allMonsters.size();
+	for (int m = 0; m < mCount; m++) {
+		string newLine = WorldGeneration.currentAreaPrefix + "Monster ";
+		newLine += to_string(allMonsters[m].position.x) + " ";
+		newLine += to_string(allMonsters[m].position.y) + " ";
+		newLine += to_string(allMonsters[m].position.z) + " ";
+		newLine += to_string(allMonsters[m].monsterName);
+
+		currentAllLines[newVectorPos(&currentAllLines)] = newLine;
+	}
+	// write
 	writeLines(WorldGeneration.worldLinesPath, currentAllLines);
 	// structures.h
 	mountainLimits.clear();

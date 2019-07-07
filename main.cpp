@@ -2,7 +2,7 @@
 #include "frontend.h"
 
 int main(){
-	if (!openglBegin(window, false, 1600, 900)) {
+	if (!openglBegin(window, false, 1200, 675)) {
 		return -1;
 	}
 	frontendBegin();

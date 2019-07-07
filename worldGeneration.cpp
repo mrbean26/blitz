@@ -284,9 +284,11 @@ void renderSkybox(bool startScreen){
 	mat4 newView = mat4(1.0f);
 	if (startScreen) {
 		newView = rotate(newView, radians((float) glfwGetTime() * 10.0f), vec3(0.0f, 1.0f, 0.0f));
+		setShaderFloat(skyboxShader, "lightBrightness", 1.0f);
 	}
 	if (!startScreen) {
 		newView = mat4(mat3(viewMatrix()));
+		setShaderFloat(skyboxShader, "lightBrightness", lowestLight);
 	}
 	setMat4(skyboxShader, "view", -newView);
 	setMat4(skyboxShader, "projection", projectionMatrix());
@@ -300,8 +302,8 @@ void renderSkybox(bool startScreen){
 }
 
 vec3 lightPos = vec3(30.0f, 0.0f, -20.0f);
-float lightIntensity = 1.0f, lightRadius = 1.0f, lowestLight = 0.6f;
-float currentTime = 0.0f, timeMultiplier = 0.25f; // 0.25f == 3 min daytime
+float lightIntensity = 1.0f, lightRadius = 1.0f, lowestLight = 0.3f;
+float currentTime = 0.0f, timeMultiplier = 0.025f; // 0.25f == 3 min daytime
 
 void worldGeneration::reserveMemory() {
 	glGenVertexArrays(1, &terrainVAO);
@@ -633,12 +635,24 @@ void worldGeneration::renderTerrain() {
 }
 
 void worldGeneration::daynightCycle(){
-	currentTime += deltaTime * timeMultiplier;
+	currentTime += deltaTime * timeMultiplier * 50.0f;
 	float valueX = tan(radians(currentTime)) * currentAreaScale.x;
-	lightRadius = currentAreaScale.x * 3.0f;
+	lightRadius = currentAreaScale.x * 2;
 	lightPos.x = valueX;
 	lightPos.z = -currentAreaScale.y / 2.0f;
 	// lightPos.z = valueZ;
+
+	// lowest brightness
+	float maxBrightness = 0.9f;
+	float meanBrightness = 0.6f;
+	float brightnessDifference = maxBrightness - meanBrightness;
+
+	float xClamped = clamp(valueX, 0.0f, currentAreaScale.x);
+	float newValueX = xClamped - (currentAreaScale.x / 2.0f);
+	float multiplier = (newValueX / (currentAreaScale.x / 2.0f)) * brightnessDifference;
+	if (multiplier < 0) { multiplier *= -1.0f; }
+	lowestLight = meanBrightness + (brightnessDifference - multiplier);
+	
 }
 
 vec2 worldGeneration::getAreaScale() {
@@ -668,7 +682,7 @@ void worldGeneration::mainloop() {
 void worldGeneration::beginAreaLimits() {
 	// generate points
 	vector<float> points;
-	vec3 colour = vec3(0.34f, 0.14f, 0.51f);
+	vec3 colour = vec3(1.0f) - currentAreaColour;
 	float triangleSize = 3.0f;
 	float maxHeight = 30.0f;
 	// left side
@@ -685,7 +699,7 @@ void worldGeneration::beginAreaLimits() {
 				vec3 four = vec3(x + triangleSize, y + triangleSize, whichZ[z]);
 				vector<vec3> whichPoint = { one, four };
 
-				vec3 squareColour = colour + colourDifference(0.2f);
+				vec3 squareColour = colour + colourDifference(0.1f);
 
 				for (int t = 0; t < 2; t++) { // two triangles
 					vector<vec3> allPoints = { whichPoint[t], two, three };

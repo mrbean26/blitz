@@ -47,7 +47,7 @@ string removeString(string currentString, string toRemove){
 }
 
 string removePosition(string currentString, int start, int size){
-	string toReturn = currentString.erase(start, size);
+	string toReturn = currentString.erase(start, start + size);
 	return toReturn;
 }
 
