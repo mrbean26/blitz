@@ -3,6 +3,7 @@
 #include "interface.h"
 #include "frontend.h"
 #include "structures.h"
+#include "monsters.h"
 
 #include <math.h>
 #include <vector>
@@ -147,7 +148,6 @@ mat4 modelMatrix(vec3 position, vec3 rotation, vec3 scale, bool child, vec3 pare
 		newMatrix = rotate(newMatrix, radians(rotation.z), vec3(0.0f, 0.0f, 1.0f));
 		return newMatrix;
 	}
-	
 	newMatrix = translate(newMatrix, parentPosition);
 	newMatrix = rotate(newMatrix, radians(parentRotation.x), vec3(1.0f, 0.0f, 0.0f));
 	newMatrix = rotate(newMatrix, radians(parentRotation.y), vec3(0.0f, 1.0f, 0.0f));
@@ -230,5 +230,7 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	if (aimingView) {
 		
 	}
+	distanceFromCharacter = glm::distance(vec3(mainPlayer.position.x, mainPlayer.headLookAtY, mainPlayer.position.z), cameraThirdPos);
+	distanceFromCharacter = glm::clamp(distanceFromCharacter, 0.0f, 10.0f);
 	return newMatrix;
 }

@@ -19,6 +19,22 @@ using namespace glm;
 #include "worldGeneration.h"
 #include "frontend.h"
 
+vector<float> getTerrainCoords(string line){
+	line = removeString(line, "IN USE");
+	vector<float> returned = {};
+	int lastCommaPos = 0;
+	for(int c = 0; c < line.length(); c++){
+		if(line[c] == ','){
+			string newLine = "";
+			for(int c1 = lastCommaPos; c1 < c; c1++){
+				newLine += line[c1];
+			}
+			lastCommaPos = c + 1;
+		}
+	}
+	return returned;	
+}
+
 bool insideCircle(vec2 circlePos, float radius, vec2 pointPos, bool terrain) {
 	float xSquared = pow(pointPos.x - circlePos.x, 2);
 	float ySquared = pow(pointPos.y - circlePos.y, 2);

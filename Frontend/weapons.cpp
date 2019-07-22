@@ -341,6 +341,10 @@ void weapon::render(mat4 model){
 
 vector<bullet> allBullets;
 
+void removeBullet(int index){
+	allBullets.erase(allBullets.begin() + index);
+}
+
 void moveBullets() {
 	int count = allBullets.size();
 	float bulletSpeed = 1.1f;

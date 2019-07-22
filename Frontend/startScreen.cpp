@@ -229,36 +229,23 @@ void startWorld(const char * linesPath) {
 
 void startScreen::begin(){
 	//title
-	titleImage = createButton();
+	titleImage = createButton(vec2(1.5f, 0.712f), vec3(0.0f, 2.5f, 0.0f), false);
 	allButtons[titleImage].texture = loadTexture("assets/images/blitzTitle.png");
-	allButtons[titleImage].scale = vec2(1.5f, 0.712f);
-	allButtons[titleImage].position = vec3(0.0f, 2.5f, 0.0f);
-	allButtons[titleImage].interactive = false;
 	//save one text
-	saveOneImage = createButton();
+	saveOneImage = createButton(vec2(1.1f, 0.295f), vec3(-3.0f, 0.95f, 0.0f), false);
 	allButtons[saveOneImage].texture = loadTexture("assets/images/saveOneTitle.png");
-	allButtons[saveOneImage].scale = vec2(1.1f, 0.295f);
-	allButtons[saveOneImage].position = vec3(-3.0f, 0.95f, 0.0f);
-	allButtons[saveOneImage].interactive = false;
 	//save two text
-	saveTwoImage = createButton();
+	saveTwoImage = createButton(vec2(1.1f, 0.295f), vec3(-3.0f, -2.5f, 0.0f), false);
 	allButtons[saveTwoImage].texture = loadTexture("assets/images/saveTwoTitle.png");
-	allButtons[saveTwoImage].scale = vec2(1.1f, 0.295f);
-	allButtons[saveTwoImage].position = vec3(-3.0f, -2.5f, 0.0f);
-	allButtons[saveTwoImage].interactive = false;
 	//play buttons
 	playOneButton = createButton();
 	playTwoButton = createButton();
 	//delete buttons
 	texture trashCan = loadTexture("assets/images/trashCan.png");
-	deleteOneButton = createButton();
+	deleteOneButton = createButton(vec2(0.165f, 0.27f), vec3(2.0f, 0.95f, 0.0f));
 	allButtons[deleteOneButton].texture = trashCan;
-	allButtons[deleteOneButton].scale = vec2(0.165f, 0.27f);
-	allButtons[deleteOneButton].position = vec3(2.0f, 0.95f, 0.0f);
-	deleteTwoButton = createButton();
+	deleteTwoButton = createButton(vec2(0.165f, 0.27f), vec3(2.0f, -2.95f, 0.0f));
 	allButtons[deleteTwoButton].texture = trashCan;
-	allButtons[deleteTwoButton].scale = vec2(0.165f, 0.278f);
-	allButtons[deleteTwoButton].position = vec3(2.0f, -2.95f, 0.0f);
 	//INPUT MANAGER
 	texture inputButtonBackground = loadTexture("assets/images/inputButtonBackground.png");
 	vec2 inputButtonScale = vec2(0.4f, 0.175f);
@@ -361,7 +348,7 @@ void startScreen::mainloop(){
 		allButtons[playOneButton].position = vec3(-1.0f, 1.3f, 0.0f);
 		allButtons[deleteOneButton].active = false;
 	}
-	if (saveLinesOne[0] == "IN USE" && playOneTexture != 1) {
+	if (contains(saveLinesOne[0], "IN USE") && playOneTexture != 1) {
 		allButtons[playOneButton].texture =
 			loadTexture("assets/images/playTitle.png");
 		playOneTexture = 1;
@@ -378,7 +365,7 @@ void startScreen::mainloop(){
 		allButtons[playTwoButton].position = vec3(-1.0f, -3.3f, 0.0f);
 		allButtons[deleteTwoButton].active = false;
 	}
-	if (saveLinesTwo[0] == "IN USE" && playTwoTexture != 1) {
+	if (contains(saveLinesTwo[0], "IN USE") && playTwoTexture != 1) {
 		allButtons[playTwoButton].texture =
 			loadTexture("assets/images/playTitle.png");
 		playTwoTexture = 1;

@@ -19,6 +19,8 @@ using namespace glm;
 extern int randomSeedCount;
 int randomInt(int min, int max); // quick maths
 
+vector<float> getTerrainCoords(string line);
+
 bool insideCircle(vec2 circlePos, float radius, vec2 pointPos, bool terrain = false);
 
 vec3 colourDifference(float multiplier);

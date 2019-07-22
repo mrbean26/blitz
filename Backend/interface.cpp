@@ -11,10 +11,14 @@ GLuint buttonVAO, buttonVBO, buttonEBO;
 
 std::vector<button> allButtons;
 
-int createButton(){
+int createButton(vec2 size, vec3 position, bool interactive){
 	button newButton;
 	allButtons[newVectorPos(&allButtons)] = newButton;
-	return allButtons.size() - 1;
+	int index = allButtons.size() - 1;
+	allButtons[index].scale = size;
+	allButtons[index].position = position;
+	allButtons[index].interactive = interactive;
+	return index;
 }
 
 void renderButtons(){

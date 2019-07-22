@@ -119,6 +119,7 @@ void exitToMenus() {
 
 		currentAllLines[newVectorPos(&currentAllLines)] = newLine;
 	}
+	allMonsters.clear();
 	// write
 	writeLines(WorldGeneration.worldLinesPath, currentAllLines);
 	// structures.h

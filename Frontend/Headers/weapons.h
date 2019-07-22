@@ -46,6 +46,8 @@ struct bullet {
 	vec3 rotation;
 };
 
+void removeBullet(int index);
+
 extern vector<weapon> allWeapons;
 int createWeapon(vector<float> vertices, float activateDelay,
 	int maxAmmo, float shotDelay);

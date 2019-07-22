@@ -58,7 +58,7 @@ public:
 
 extern vector<button> allButtons;
 
-int createButton(); // return position in allbuttons vector
+int createButton(vec2 size = vec2(1.0f), vec3 position = vec3(1.0f), bool interactive = true); // return position in allbuttons vector
 
 void renderButtons(); //bind vertexarray and draw with texture
 
