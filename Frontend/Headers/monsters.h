@@ -30,10 +30,15 @@ void monstersMainloop();
 extern vector<monster> allMonsterTemplates;
 extern vector<monster> allMonsters; // need to be written when change planet
 
+float degreesClamp(float degrees);
+double bearingTwo(vec2 xyOne, vec2 xyTwo);
+
 void getMonsters();
 void monsterInteractions();
-float monsterCameraColliders(vec3 cameraPos, vec3 lookAt);
+
+float monsterCameraColliders(vec3 cameraPos, vec3 lookAt, float defaultDistance);
 void monsterMonsterColliders();
+void monsterBuildCollisions();
 
 void monsterDamage();
 

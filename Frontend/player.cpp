@@ -37,6 +37,7 @@ void player::mainloop(){
 	renderPlayer();
 	movement();
 	cameraMovement();
+	monsterColliders();
 	collisions();
 	pauseUIInteraction();
 	shoot();
@@ -344,276 +345,7 @@ void player::collisions(){
 	if (!jumping) { position.y = highestPoint; }
 	lowestY = highestPoint;
 	lowestCameraY = highestPointCamera + 0.5f;
-	// outside of buildings
-	int buildingCount = allColourBuildings.size();
-	float playerDifference = 1.0f;
-	float playerYDifference = 0.5f;
-	bool onBenchCurrent = false;
-	insideBuildingIndex = -1;
-	for (int b = 0; b < buildingCount; b++) {
-		buildingColour current = allColourBuildings[b];
-		vec3 pos = current.position;
-		vec3 sca = current.scale;
-		vec3 rot = current.rotation;
-		rot.y = rot.y - (floor((rot.y / 360.0f)) * 360.0f);
-		if (current.buildingType == 0) { // normal house
-			// check if inside for camera collisions
-			if (position.x >= pos.x - 4.0f * sca.x && position.x <= pos.x + 4.0f * sca.x) {
-				if (position.z >= pos.z - 4.0f * sca.z && position.z <= pos.z + 4.0f * sca.z) {
-					insideBuildingIndex = b;
-				}
-			}
-										 // outside walls
-			if (position.x >= pos.x - 4.0f * sca.x && position.x <= pos.x + 4.0f * sca.x) {
-				if (position.z >= pos.z + 4.0f * sca.z && position.z <= playerDifference + pos.z + 4.0f * sca.z) {
-					// 270 deg
-					if (radians(90.0f) == radians(rot.y)) {
-						if (position.x >= pos.x + 0.5f * sca.x) {
-							position.z = playerDifference + pos.z + 4.0f * sca.z;
-						}
-					}
-					else {
-						position.z = playerDifference + pos.z + 4.0f * sca.z;
-					}
-				}
-				if (position.z <= pos.z - 4.0f * sca.z && position.z >= -playerDifference + pos.z - 4.0f * sca.z) {
-					// 90 deg
-					if (radians(270.0f) == radians(rot.y)) {
-						if (position.x <= pos.x - 0.5f * sca.x) {
-							position.z = -playerDifference + pos.z - 4.0f * sca.z;
-						}
-					}
-					else {
-						position.z = -playerDifference + pos.z - 4.0f * sca.z;
-					}
-				}
-			}
-			if (position.z >= pos.z - 4.0f * sca.z && position.z <= pos.z + 4.0f * sca.z) {
-				if (position.x >= pos.x + 4.0f * sca.x && position.x <= playerDifference + pos.x + 4.0f * sca.x) {
-					// 180 deg
-					if (radians(180.0f) == radians(rot.y)) {
-						if (position.z <= pos.z - 0.5f * sca.z) {
-							position.x = playerDifference + pos.x + 4.0f * sca.x;
-						}
-					}
-					else {
-						position.x = playerDifference + pos.x + 4.0f * sca.x;
-					}
-				}
-				if (position.x <= pos.x - 4.0f * sca.x && position.x >= -playerDifference + pos.x - 4.0f * sca.x) {
-					// 0 deg
-					if (radians(0.0f) == radians(rot.y)) {
-						if (position.z >= pos.z + 0.5f * sca.z) {
-							position.x = -playerDifference + pos.x - 4.0f * sca.x;
-						}
-					}
-					else {
-						position.x = -playerDifference + pos.x - 4.0f * sca.x;
-					}
-				}
-			}
-			// inside walls
-			if (position.x >= pos.x - 4.0f * sca.x && position.x <= pos.x + 4.0f * sca.x) {
-				if (position.z <= pos.z + 4.0f * sca.z && position.z >= -playerDifference + pos.z + 4.0f * sca.z) {
-					// 270 deg
-					if (radians(90.0f) == radians(rot.y)) {
-						if (position.x >= pos.x + 0.5f * sca.x) {
-							position.z = -playerDifference + pos.z + 4.0f * sca.z;
-						}
-					}
-					else {
-						position.z = -playerDifference + pos.z + 4.0f * sca.z;
-					}
-				}
-				if (position.z >= pos.z - 4.0f * sca.z && position.z <= playerDifference + pos.z - 4.0f * sca.z) {
-					// 90 deg
-					if (radians(270.0f) == radians(rot.y)) {
-						if (position.x <= pos.x - 0.5f * sca.x) {
-							position.z = playerDifference + pos.z - 4.0f * sca.z;
-						}
-					}
-					else {
-						position.z = playerDifference + pos.z - 4.0f * sca.z;
-					}
-				}
-			}
-			if (position.z >= pos.z - 4.0f * sca.z && position.z <= pos.z + 4.0f * sca.z) {
-				if (position.x <= pos.x + 4.0f * sca.x && position.x >= -playerDifference + pos.x + 4.0f * sca.x) {
-					// 180 deg
-					if (radians(180.0f) == radians(rot.y)) {
-						if (position.z <= pos.z - 0.5f * sca.z) {
-							position.x = -playerDifference + pos.x + 4.0f * sca.x;
-						}
-					}
-					else {
-						position.x = -playerDifference + pos.x + 4.0f * sca.x;
-					}
-				}
-				if (position.x >= pos.x - 4.0f * sca.x && position.x <= playerDifference + pos.x - 4.0f * sca.x) {
-					// 0 deg
-					if (radians(0.0f) == radians(rot.y)) {
-						if (position.z >= pos.z + 0.5f * sca.z) {
-							position.x = playerDifference + pos.x - 4.0f * sca.x;
-						}
-					}
-					else {
-						position.x = playerDifference + pos.x - 4.0f * sca.x;
-					}
-				}
-			}
-		}
-		if (current.buildingType == 1) { // pointy house
-			// outside walls
-			if (position.x >= pos.x - 4.0f * sca.x && position.x <= pos.x + 4.0f * sca.x) {
-				if (position.z >= pos.z + 4.0f * sca.z && position.z <= playerDifference + pos.z + 4.0f * sca.z) {
-					// 270 deg
-					if (radians(90.0f) == radians(rot.y)) {
-						if (position.x >= pos.x - playerDifference + 2.0f * sca.x || position.x <= pos.x + playerDifference - 2.0f * sca.x) {
-							position.z = playerDifference + pos.z + 4.0f * sca.z;
-						}
-					}
-					else {
-						position.z = playerDifference + pos.z + 4.0f * sca.z;
-					}
-				}
-				if (position.z <= pos.z - 4.0f * sca.z && position.z >= -playerDifference + pos.z - 4.0f * sca.z) {
-					// 90 deg
-					if (radians(270.0f) == radians(rot.y)) {
-						if (position.x <= pos.x + playerDifference - 2.0f * sca.x || position.x >= pos.x - playerDifference + 2.0f * sca.x) {
-							position.z = -playerDifference + pos.z - 4.0f * sca.z;
-						}
-					}
-					else {
-						position.z = -playerDifference + pos.z - 4.0f * sca.z;
-					}
-				}
-			}
-			if (position.z >= pos.z - 4.0f * sca.z && position.z <= pos.z + 4.0f * sca.z) {
-				if (position.x >= pos.x + 4.0f * sca.x && position.x <= playerDifference + pos.x + 4.0f * sca.x) {
-					// 180 deg
-					if (radians(180.0f) == radians(rot.y)) {
-						if (position.z <= pos.z + playerDifference - 2.0f * sca.z || position.z >= pos.z - playerDifference + 2.0f * sca.z) {
-							position.x = playerDifference + pos.x + 4.0f * sca.x;
-						}
-					}
-					else {
-						position.x = playerDifference + pos.x + 4.0f * sca.x;
-					}
-				}
-				if (position.x <= pos.x - 4.0f * sca.x && position.x >= -playerDifference + pos.x - 4.0f * sca.x) {
-					// 0 deg
-					if (radians(0.0f) == radians(rot.y)) {
-						if (position.z >= pos.z - playerDifference + 2.0f * sca.z || position.z <= pos.z + playerDifference - 2.0f * sca.z) {
-							position.x = -playerDifference + pos.x - 4.0f * sca.x;
-						}
-					}
-					else {
-						position.x = -playerDifference + pos.x - 4.0f * sca.x;
-					}
-				}
-			}
-			if (position.x >= pos.x - 4.0f * sca.x && position.x <= pos.x + 4.0f * sca.x) {
-				if (position.z <= pos.z + 4.0f * sca.z && position.z >= pos.z - 4.0f * sca.z) {
-					insideBuildingIndex = b;
-				}
-			}
-			// inside walls
-			if (position.x >= pos.x - 4.0f * sca.x && position.x <= pos.x + 4.0f * sca.x) {
-				if (position.z <= pos.z + 4.0f * sca.z && position.z >= -playerDifference + pos.z + 4.0f * sca.z) {
-					// 270 deg
-					if (radians(90.0f) == radians(rot.y)) {
-						if (position.x >= pos.x - playerDifference + 2.0f * sca.x || position.x <= pos.x + playerDifference - 2.0f * sca.x) {
-							position.z = -playerDifference + pos.z + 4.0f * sca.z;
-						}
-					}
-					else {
-						position.z = -playerDifference + pos.z + 4.0f * sca.z;
-					}
-				}
-				if (position.z >= pos.z - 4.0f * sca.z && position.z <= playerDifference + pos.z - 4.0f * sca.z) {
-					// 90 deg
-					if (radians(270.0f) == radians(rot.y)) {
-						if (position.x <= pos.x + playerDifference - 2.0f * sca.x || position.x >= pos.x - playerDifference + 2.0f * sca.x) {
-							position.z = playerDifference + pos.z - 4.0f * sca.z;
-						}
-					}
-					else {
-						position.z = playerDifference + pos.z - 4.0f * sca.z;
-					}
-				}
-			}
-			if (position.z >= pos.z - 4.0f * sca.z && position.z <= pos.z + 4.0f * sca.z) {
-				if (position.x <= pos.x + 4.0f * sca.x && position.x >= -playerDifference + pos.x + 4.0f * sca.x) {
-					// 180 deg
-					if (radians(180.0f) == radians(rot.y)) {
-						if (position.z <= pos.z + playerDifference - 2.0f * sca.z || position.z >= pos.z - playerDifference + 2.0f * sca.z) {
-							position.x = -playerDifference + pos.x + 4.0f * sca.x;
-						}
-					}
-					else {
-						position.x = -playerDifference + pos.x + 4.0f * sca.x;
-					}
-				}
-				if (position.x >= pos.x - 4.0f * sca.x && position.x <= playerDifference + pos.x - 4.0f * sca.x) {
-					// 0 deg
-					if (radians(0.0f) == radians(rot.y)) {
-						if (position.z >= pos.z - playerDifference + 2.0f * sca.z || position.z <= pos.z + playerDifference - 2.0f * sca.z) {
-							position.x = playerDifference + pos.x - 4.0f * sca.x;
-						}
-					}
-					else {
-						position.x = playerDifference + pos.x - 4.0f * sca.x;
-					}
-				}
-			}
-			// ceiling colliders
-			if (position.x >= pos.x - 6.0f * sca.x && position.x <= pos.x + 6.0f * sca.x) {
-				if (position.z >= pos.z - 6.0f * sca.z && position.z <= pos.z + 6.0f * sca.z) {
-					if (position.y + 2.3f >= playerYDifference + pos.y + 6.0f * sca.y) {
-						position.y = playerYDifference + -2.3f + pos.y + 6.0f * sca.y;
-					}
-				}
-			}
-		}
-		if (current.buildingType == 2) { // bench
-			if (position.y - 2.3f <= pos.y + 2.25f * sca.y) {
-				if (position.x >= pos.x - 0.5f * sca.x && position.x <= pos.x + 1.5f * sca.x) {
-					// on top
-					if (position.z >= pos.z - 2.0f * sca.z && position.z <= pos.z + 3.0f * sca.z) {
-						if (position.y - 2.3f <= pos.y + 2.25f * sca.y) {
-							position.y = 2.3f + pos.y + 2.25f * sca.y;
-							if (jumpVelocity < 0) { jumpVelocity = 0.0f; }
-							int jumpKey = stoi(inputLines[9]);
-							float jumpHeight = 8.0f;
-							if (checkKeyDown(jumpKey)) {
-								jumpVelocity = jumpHeight;
-							}
-							onBenchCurrent = true;
-							lastOnBench = true;
-						}
-					}
-					// sides
-					if (position.z >= pos.z + 3.0f * sca.z && position.z <= playerDifference + pos.z + 3.0f * sca.z) {
-						position.z = playerDifference + pos.z + 3.0f * sca.z;
-					}
-					if (position.z <= pos.z - 2.0f * sca.z && position.z >= -playerDifference + pos.z - 2.0f * sca.z) {
-						position.z = -playerDifference + pos.z - 2.0f * sca.z;
-					}
-				}
-				if (position.z >= pos.z - 2.0f * sca.z && position.z <= pos.z + 3.0f * sca.z) {
-					if (position.x >= pos.x + 1.5f * sca.x && position.x <= playerDifference + pos.x + 1.5f * sca.x) {
-						position.x = playerDifference + pos.x + 1.5f * sca.x;
-					}
-					if (position.x <= pos.x - 0.5f * sca.x && position.x >= -playerDifference + pos.x - 0.5f * sca.x) {
-						position.x = -playerDifference + pos.x - 0.5f * sca.x;
-					}
-				}
-			}
-			if (!onBenchCurrent && lastOnBench) {
-				lastOnBench = false;
-			}
-		}
-	}
+	buildCollisions(position, insideBuildingIndex, jumpVelocity, lastOnBench);
 	// flat terrain collisions
 	float legPos = position.y - 2.3f;
 	if (legPos < 0 && !inMountain && !jumping) { position.y += -legPos; }
@@ -1428,6 +1160,26 @@ void player::reload() {
 		if (allWeapons[currentWeapon].shotDelayCurrent < 0) {
 			allWeapons[currentWeapon].currentAmmo = allWeapons[currentWeapon].maxAmmo;
 			allWeapons[currentWeapon].shotDelayCurrent = allWeapons[currentWeapon].shotDelay;
+		}
+	}
+}
+
+void player::monsterColliders(){
+	vec2 playerFloorPos = vec2(position.x, position.z);
+	float colliderDistance = 2.5f;
+
+	int mCount = allMonsters.size();
+	for(int m = 0; m < mCount; m++){
+		vec3 pos = allMonsters[m].position;
+		vec2 floorPos = vec2(pos.x, pos.z);
+
+		float bearing = bearingTwo(playerFloorPos, floorPos);
+		float distance = glm::distance(playerFloorPos, floorPos);
+		
+		if(distance < colliderDistance){
+			pos.x = position.x + sin(radians(bearing)) * colliderDistance;
+			pos.z = position.z + cos(radians(bearing)) * colliderDistance;
+			allMonsters[m].position = pos;
 		}
 	}
 }

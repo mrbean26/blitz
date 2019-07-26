@@ -166,12 +166,13 @@ float playerYaw = 0.0f;
 float playerPitch = 0.0f;
 float lowestCameraY = 0.0f;
 float distanceFromCharacter = 0.0f;
+float defaultDistance = 10.0f;
 vec3 cameraThirdPos;
 
 mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	mat4 newMatrix = mat4(1.0f);
 	// third person camera
-	distanceFromCharacter = 10.0f;
+	distanceFromCharacter = defaultDistance;
 	float distanceAboveCharacter = 0.5f;
 	// camera positions
 	float cameraXPos = -(distanceFromCharacter * (-sin(radians(playerYaw)) * 
@@ -179,6 +180,20 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	float cameraZPos = -(distanceFromCharacter * (-cos(radians(playerYaw)) * 
 		cos(radians(playerPitch)))) + mainPlayer.position.z;
 	float cameraYPos = (-sin(radians(playerPitch)) * distanceFromCharacter) + 
+		mainPlayer.position.y + distanceAboveCharacter;
+	vec3 lookAtPos = vec3(mainPlayer.position.x, mainPlayer.headLookAtY, mainPlayer.position.z);
+	// monster colliders
+	cameraXPos = glm::clamp(cameraXPos, 0.1f, currentPlanetScale.x);
+	cameraZPos = glm::clamp(cameraZPos, -currentPlanetScale.y, 0.1f);
+	cameraYPos = glm::clamp(cameraYPos, lowestCameraY, 10000.0f);
+	cameraThirdPos = vec3(cameraXPos, cameraYPos, cameraZPos);
+	float newDistance = monsterCameraColliders(cameraThirdPos, lookAtPos,
+		defaultDistance);
+	 cameraXPos = -(newDistance * (-sin(radians(playerYaw)) * 
+		cos(radians(playerPitch)))) + mainPlayer.position.x;
+	 cameraZPos = -(newDistance * (-cos(radians(playerYaw)) * 
+		cos(radians(playerPitch)))) + mainPlayer.position.z;
+	 cameraYPos = (-sin(radians(playerPitch)) * newDistance) + 
 		mainPlayer.position.y + distanceAboveCharacter;
 	// clamp values
 	cameraXPos = glm::clamp(cameraXPos, 0.1f, currentPlanetScale.x);
@@ -188,7 +203,7 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	cameraThirdPos = cameraBuildingCollisions(cameraThirdPos);
 	// matrix
 	newMatrix = glm::lookAt(cameraThirdPos, 
-		vec3(mainPlayer.position.x, mainPlayer.headLookAtY, mainPlayer.position.z), vec3(0.0f, 1.0f, 0.0f));
+		lookAtPos, vec3(0.0f, 1.0f, 0.0f));
 	// not 3rd person
 	if (!playerView) {
 		// clamp 0-360

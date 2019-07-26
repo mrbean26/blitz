@@ -37,18 +37,56 @@ void monstersBegin() {
 }
 
 void monsterMonsterColliders(){
-	
+	float distanceFromMonster = 1.75f;
+	int mCount = allMonsters.size();
+	for(int m = 0; m < mCount; m++){
+		vec3 positionOne = allMonsters[m].position;
+		vec2 positionOneFloor = vec2(positionOne.x, positionOne.z);
+		for(int m2 = 0; m2 < mCount; m2++){
+			if(m2==m){
+				continue;
+			}
+			vec3 positionTwo = allMonsters[m2].position;
+			vec2 positionTwoFloor = vec2(positionTwo.x, positionTwo.z);
+			
+			if(positionOne.z >= positionTwo.z - distanceFromMonster && positionOne.z <= positionTwo.z + distanceFromMonster){
+				if(positionOne.x >= positionTwo.x && positionOne.x < positionTwo.x + distanceFromMonster){
+					allMonsters[m].position.x = positionTwo.x + distanceFromMonster;
+				}
+				if(positionOne.x < positionTwo.x && positionOne.x > positionTwo.x - distanceFromMonster){
+					allMonsters[m].position.x = positionTwo.x - distanceFromMonster;
+				}
+			}
+			if(positionOne.x >= positionTwo.x - distanceFromMonster && positionOne.x <= positionTwo.x + distanceFromMonster){
+				if(positionOne.z >= positionTwo.z && positionOne.z < positionTwo.z + distanceFromMonster){
+					allMonsters[m].position.z = positionTwo.z + distanceFromMonster;
+				}
+				if(positionOne.z < positionTwo.z && positionOne.z > positionTwo.z - distanceFromMonster){
+					allMonsters[m].position.z = positionTwo.z - distanceFromMonster;
+				}
+			}
+		}
+	}
 }
 
 void monstersMainloop() {
 	if (!WorldGeneration.startedBegin) {
 		return;
 	}
-	renderMonsters();
 	monsterSpawning();
 	monsterInteractions();
 	monsterMonsterColliders();
+	monsterBuildCollisions();
 	monsterDamage();
+	renderMonsters();
+}
+
+void monsterBuildCollisions(){
+	int mCount = allMonsters.size();
+	for(int m = 0; m < mCount; m++){
+		int waste = 0; float wasteF = 0.0f; bool wasteB = false;
+		buildCollisions(allMonsters[m].position, waste, wasteF, wasteB);
+	}
 }
 
 vector<monster> allMonsterTemplates, allMonsters;
@@ -92,7 +130,7 @@ void monsterSpawning() {
 		}
 		int monsterCount = allMonsters.size();
 		// can spawn
-		if (monsterCount < 13) {
+		if (monsterCount < 2) {
 			int random = randomInt(1, 1000);
 			if (random == 1) {
 				int type = randomInt(0, 1);
@@ -175,13 +213,20 @@ float degreesClamp(float degrees) {
 	return returned;
 }
 
-float monsterCameraColliders(vec3 cameraPos, vec3 lookAt) {
-	float returned;
+float monsterCameraColliders(vec3 cameraPos, vec3 lookAt, float defaultDistance) {
+	float returned = defaultDistance;
 	float angleAllowanceDefault = 17.5f;
 	float monsterAddSize = 1.0f;
 
 	vec3 playerPos = mainPlayer.position;
 	vec2 playerX = vec2(playerPos.x, playerPos.z);
+
+	float changedYaw = degreesClamp(bearingTwo(playerX, vec2(cameraPos.x, cameraPos.z)));
+	
+	float cameraDistance = glm::distance(playerX, vec2(cameraPos.x, cameraPos.z));
+	float yCameraDistance = playerPos.y - cameraPos.y;
+	float yCameraAngle = degrees(atan(yCameraDistance / cameraDistance));
+	float changedPitch = degreesClamp(yCameraAngle);
 
 	int mCount = allMonsters.size();
 	for (int m = 0; m < mCount; m++) {
@@ -193,13 +238,21 @@ float monsterCameraColliders(vec3 cameraPos, vec3 lookAt) {
 		float yAngle = degreesClamp(degrees(atan(yDistance / floorLength)));
 			
 		float floorAngle = degreesClamp(bearingTwo(playerX, positionX));
-		float compareYaw = degreesClamp(playerYaw); // x
-		float comparePitch = degreesClamp(playerPitch); // y
+		float compareYaw = degreesClamp(changedYaw); // x
+		float comparePitch = degreesClamp(changedPitch); // y
 
 		float angleAllowance = angleAllowanceDefault / (distanceFromCharacter / 10.0f);
 		if(glm::distance(yAngle, comparePitch) < angleAllowance){
 			if(glm::distance(floorAngle, compareYaw) < angleAllowance){
-				
+				float cameraDistance = glm::distance(cameraPos, lookAt);
+				float monsterDistance = glm::distance(position, lookAt);
+
+				if (monsterDistance < cameraDistance + monsterAddSize){
+					float newDistance = monsterDistance - monsterAddSize;
+					if(newDistance < returned){
+						returned = newDistance;
+					}
+				}
 			}
 		}
 	}

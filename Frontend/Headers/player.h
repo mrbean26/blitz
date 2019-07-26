@@ -53,6 +53,7 @@ private:
 	void reload();
 
 	void collisions();
+	void monsterColliders();
 
 	bool jumping = false;
 	float jumpVelocity;
