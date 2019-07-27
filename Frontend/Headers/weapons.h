@@ -28,7 +28,7 @@ extern int weaponSelectImage, weaponSelectCornerOne, weaponSelectCornerTwo, weap
 
 class weapon {
 public:
-	weapon(vector<float> vertices = {}, float openTime = 0.0f);
+	weapon(vector<float> vertices = {}, float openTime = 0.0f, float damage = 0.0f);
 	void render(mat4 model);
 
 	GLuint VAO, VBO;
@@ -39,21 +39,23 @@ public:
 	float shotDelayCurrent;
 
 	int currentAmmo, maxAmmo;
+	float bulletDamage = 0.0f;
 };
 
 struct bullet {
 	vec3 position;
 	vec3 rotation;
+	float damage;
 };
 
 void removeBullet(int index);
 
 extern vector<weapon> allWeapons;
 int createWeapon(vector<float> vertices, float activateDelay,
-	int maxAmmo, float shotDelay);
+	int maxAmmo, float shotDelay, float damage);
 
 extern vector<bullet> allBullets;
-int createBullet(vec3 position, vec3 rotation);
+int createBullet(vec3 position, vec3 rotation, float damage);
 
 void moveBullets();
 

@@ -258,8 +258,8 @@ void player::movement(){
 		if (!equippingReloading) {
 			armRotationTwo.z = -45.0f;
 		}
-		armRotation.x += playerPitch - lastPitch;
-		armRotationTwo.x += playerPitch - lastPitch;
+		armRotation.x = playerPitch + 90.0f;
+		armRotationTwo.x = playerPitch + 90.0f;
 		armPositionTwo = vec3(0.55f, -0.425f, 0.0f);
 		aimingView = true;
 
@@ -545,19 +545,19 @@ void player::renderPlayer(){
 		setShaderInt(playerShader, "useLight", 0);
 		glBindVertexArray(laserVAO);
 		setShaderFloat(playerShader, "alpha", 0.5f);
-		setMat4(playerShader, "model", modelMatrix(vec3(2.0f, 0.0f, -0.65f), vec3(armRotation.x - 90.0f, 90.0f, 0.0f), vec3(250.0f, 0.1f, 0.1f),
+		setMat4(playerShader, "model", modelMatrix(vec3(2.0f, 0.0f, -0.65f), vec3(playerPitch, 90.0f, 0.0f), vec3(250.0f, 0.1f, 0.1f),
 			true, vec3(position.x, position.y + 0.5f, position.z), rotation));
 		glDrawArrays(GL_TRIANGLES, 0, 24);
 		glLinkProgram(playerShader);
 		// weapon
 		if (currentWeapon == 0) {
 			allWeapons[currentWeapon].render(modelMatrix(vec3(1.2f, 0.0f, -0.7f), 
-				vec3(armRotation.x - 90.0f, 90.0f, 0.0f), vec3(0.4f), true, 
+				vec3(playerPitch, 90.0f, 0.0f), vec3(0.4f), true, 
 					vec3(position.x, position.y + 0.25f, position.z), rotation));
 		}
 		if (currentWeapon == 1) {
 			allWeapons[currentWeapon].render(modelMatrix(vec3(0.6f, 0.0f, 1.2f),
-				vec3(armRotation.x - 90.0f, 180.0f, 0.0f), vec3(0.8f), true,
+				vec3(playerPitch, 180.0f, 0.0f), vec3(0.8f), true,
 				vec3(position.x, position.y + 0.5f, position.z), rotation));
 		}
 	}
@@ -1115,7 +1115,7 @@ void player::shoot() {
 		bulletPos.y += 0.25f;
 		bulletPos.x += 0.7f * -cos(radians(rotation.y));
 
-		createBullet(bulletPos, bulletRot);
+		createBullet(bulletPos, bulletRot, allWeapons[currentWeapon].bulletDamage);
 
 		canShoot = false;
 		currentDelay = shotDelays[currentWeapon];

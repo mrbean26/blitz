@@ -22,6 +22,9 @@ public:
 
 	void render();
 	GLuint VAO, VBO, size;
+
+	vec3 multiplyColour = vec3(1.0f);
+	float changeBackDelay = -1.0f;
 };
 
 void monstersBegin();
