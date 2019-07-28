@@ -19,6 +19,7 @@ extern GLFWwindow * window;
 #include "interface.h"
 #include "saveFiles.h"
 #include "model.h"
+#include "debug.h"
 
 void backendMainloop(); // run every frame
 

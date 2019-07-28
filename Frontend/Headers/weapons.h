@@ -34,11 +34,11 @@ public:
 	GLuint VAO, VBO;
 	GLuint vertCount;
 
-	float equipTime, shotDelay;
+	float equipTime, shotDelay = 0.0f;
 
-	float shotDelayCurrent;
+	float shotDelayCurrent = 0.0f;
 
-	int currentAmmo, maxAmmo;
+	int currentAmmo = 0, maxAmmo = 0;
 	float bulletDamage = 0.0f;
 };
 

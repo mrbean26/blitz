@@ -51,6 +51,10 @@ string removePosition(string currentString, int start, int size){
 	return toReturn;
 }
 
+string removeAfterCharacter(string currentString, string character){
+	return currentString.substr(0, currentString.find(character));
+}
+
 vec2 getVec2File(const char * fileName, string vec2Name, int pos) {
 	vec2Name += " "; //clear ready for float values
 

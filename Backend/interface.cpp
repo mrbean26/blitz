@@ -183,63 +183,72 @@ int createText(){
 	return allTexts.size() - 1;
 }
 
+map<GLchar, Character> getFont(const char * path, int fontsize){
+	map<GLchar, Character> returned;
+
+	FT_Library ftLibrary;
+	if (FT_Init_FreeType(&ftLibrary)) {
+		cout << "Couldn't Init Freetype" << endl;
+		return returned;
+	}
+	FT_Face newFont;
+	if (FT_New_Face(ftLibrary, path, 0, &newFont)) {
+		cout << "Couldn't load font: " << path << endl;
+		return returned;
+	}
+	FT_Set_Pixel_Sizes(newFont, 0, fontsize);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	for (GLubyte c = 0; c < 128; c++) { //load first 128 of ASCII
+		if (FT_Load_Char(newFont, c, FT_LOAD_RENDER)) {
+			cout << "Couldn't Load Character" << c << endl;
+			continue;
+		}
+		// Generate texture
+		GLuint texture;
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(
+			GL_TEXTURE_2D, 0, GL_RED,
+			newFont->glyph->bitmap.width,
+			newFont->glyph->bitmap.rows,
+			0, GL_RED, GL_UNSIGNED_BYTE,
+			newFont->glyph->bitmap.buffer
+		);
+		// Set texture options
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		// Now store character for later use
+		Character character = {
+			texture,
+			glm::ivec2(newFont->glyph->bitmap.width, newFont->glyph->bitmap.rows),
+			glm::ivec2(newFont->glyph->bitmap_left, newFont->glyph->bitmap_top),
+			(GLuint) newFont->glyph->advance.x
+		};
+		returned.insert(std::pair<GLchar, Character>(c, character));
+	}
+	FT_Done_Face(newFont);
+	FT_Done_FreeType(ftLibrary);
+	return returned;
+}
+
 void textsBegin(){
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	int vertShader = createShader("assets/shaders/textVert.txt", GL_VERTEX_SHADER);
 	int fragShader = createShader("assets/shaders/textFrag.txt", GL_FRAGMENT_SHADER);
 	textShader = createProgram({ vertShader, fragShader });
-	//begin freetype
-	FT_Library ftLibrary;
-	if (FT_Init_FreeType(&ftLibrary)) {
-		cout << "Couldn't Init Freetype" << endl;
-		return;
-	}
 	//load fonts
 	int textCount = allTexts.size();
 	for (int i = 0; i < textCount; i++) {
 		text currentText = allTexts[i];
-		FT_Face newFont;
-		if (FT_New_Face(ftLibrary, currentText.fontPath, 0, &newFont)) {
-			cout << "Couldn't load font: " << currentText.fontPath << endl;
+		if(!currentText.loadFonts){
 			continue;
 		}
-		FT_Set_Pixel_Sizes(newFont, 0, currentText.fontSize);
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		for (GLubyte c = 0; c < 128; c++) { //load first 128 of ASCII
-			if (FT_Load_Char(newFont, c, FT_LOAD_RENDER)) {
-				cout << "Couldn't Load Character" << c << endl;
-				continue;
-			}
-			// Generate texture
-			GLuint texture;
-			glGenTextures(1, &texture);
-			glBindTexture(GL_TEXTURE_2D, texture);
-			glTexImage2D(
-				GL_TEXTURE_2D, 0, GL_RED,
-				newFont->glyph->bitmap.width,
-				newFont->glyph->bitmap.rows,
-				0, GL_RED, GL_UNSIGNED_BYTE,
-				newFont->glyph->bitmap.buffer
-			);
-			// Set texture options
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			// Now store character for later use
-			Character character = {
-				texture,
-				glm::ivec2(newFont->glyph->bitmap.width, newFont->glyph->bitmap.rows),
-				glm::ivec2(newFont->glyph->bitmap_left, newFont->glyph->bitmap_top),
-				(GLuint) newFont->glyph->advance.x
-			};
-			allTexts[i].fontCharacters.insert(std::pair<GLchar, Character>(c, character));
-		}
-		FT_Done_Face(newFont);
+		allTexts[i].fontCharacters = getFont(currentText.fontPath, currentText.fontSize);
 	}
 	glBindTexture(GL_TEXTURE_2D, 0);
-	FT_Done_FreeType(ftLibrary);
 	//ready vbo & vao
 	glGenVertexArrays(1, &textVAO);
 	glGenBuffers(1, &textVBO);

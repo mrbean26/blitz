@@ -15,6 +15,16 @@ using namespace glm;
 #include <vector>
 using namespace std;
 
+#define WALK_SPEED 8.0f
+#define RUN_SPEED 12.0f
+#define BACKWARD_SPEED -0.75f
+#define JUMP_SPEED 12.0f
+#define JUMP_HEIGHT 8.0f
+#define PLAYER_ROTATE_SPEED 140.0f
+#define LEG_LENGTH 2.3f
+#define PITCH_MIN -80.0f
+#define PITCH_MAX 80.0f
+
 vector<vec3> colourVector(int size, vec3 colour, float multiplier) {
 	vector<vec3> newVector;
 	for (int i = 0; i < size; i++) {
@@ -76,6 +86,7 @@ void exitToMenus() {
 	StartScreen.active = true;
 	allButtons = previousAllButtons;
 	allTexts = previousAllTexts;
+	debugText = debugTextPlaceholder;
 	loading = false;
 	mainPlayer.canMove = true;
 	paused = false;
@@ -187,34 +198,27 @@ void player::movement(){
 	int jumpKey = stoi(inputLines[9]);
 	int aimButton = stoi(inputLines[4]);
 
-	float walkSpeed = 8.0f;
-	float runSpeed = 12.0f;
-	float backwardSpeed = -0.75f;
-
-	float jumpSpeed = 12.0f;
-	float jumpHeight = 8.0f;
-
 	movingMultiplier = 0.0f;
 	velocity = vec3(0.0f);
 	if (checkKey(backKey) && !checkKey(forwardKey)) {
 		movingMultiplier = 25.0f;
-		velocity = vec3(backwardSpeed);
+		velocity = vec3(BACKWARD_SPEED);
 	}
 	if (checkKey(forwardKey) && !checkKey(backKey)) {
-		velocity = vec3(walkSpeed);
+		velocity = vec3(WALK_SPEED);
 		movingMultiplier = 30.0f;
 		if (checkKey(sprintKey)) {
 			movingMultiplier = 50.0f;
-			velocity = vec3(runSpeed);
+			velocity = vec3(RUN_SPEED);
 		}
 	}
 	if (checkKeyDown(jumpKey) && !jumping) {
 		jumping = true;
 		startedLowestY = lowestY;
-		jumpVelocity = jumpHeight;
+		jumpVelocity = JUMP_HEIGHT;
 	}
 	if (jumping) {
-		jumpVelocity -= (float) deltaTime * jumpSpeed;
+		jumpVelocity -= (float) deltaTime * JUMP_SPEED;
 		if (position.y < lowestY + 0.02f && jumpVelocity < 0) {
 			jumpVelocity = 0.0f;
 			jumping = false;
@@ -237,12 +241,11 @@ void player::movement(){
 	}
 	velocity.y = jumpVelocity;
 	// rotations
-	float spinMultiplier = 140.0f;
 	if (checkKey(rightKey)) { 
-		rotation.y -= (float) deltaTime * spinMultiplier;
+		rotation.y -= (float) deltaTime * PLAYER_ROTATE_SPEED;
 	}
 	if (checkKey(leftKey)) {
-		rotation.y += (float) deltaTime * spinMultiplier;
+		rotation.y += (float) deltaTime * PLAYER_ROTATE_SPEED;
 	}
 	runAnimation(movingMultiplier);
 	if (checkKey(aimButton)) {
@@ -329,7 +332,7 @@ void player::collisions(){
 			float pointY = distance*currentAllMountainScales[i].y;
 			if (crater) { pointY = -pointY; }
 
-			pointY += 2.3f; // feet on floor
+			pointY += LEG_LENGTH; // feet on floor
 			if (pointY > highestPoint) { highestPoint = pointY; } // assign
 		}
 		if (distanceCamera > 0) {
@@ -347,7 +350,7 @@ void player::collisions(){
 	lowestCameraY = highestPointCamera + 0.5f;
 	buildCollisions(position, insideBuildingIndex, jumpVelocity, lastOnBench);
 	// flat terrain collisions
-	float legPos = position.y - 2.3f;
+	float legPos = position.y - LEG_LENGTH;
 	if (legPos < 0 && !inMountain && !jumping) { position.y += -legPos; }
 	if (!inMountain) { lowestY = 2.2f; }
 	if (!cameraInMountain) { lowestCameraY = 0.5f; }

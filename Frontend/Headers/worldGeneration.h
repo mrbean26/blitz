@@ -59,6 +59,7 @@ public:
 	vec3 currentAreaColour;
 	string currentAreaPrefix;
 	vec2 getAreaScale();
+	int terrainVerts = 0;
 
 	bool active = false;
 	bool startedBegin = false;

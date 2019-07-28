@@ -24,6 +24,9 @@ string removeString(string currentString,
 string removePosition(string currentString,
 	int start, int size); //remove string in a positon
 
+string removeAfterCharacter(string currentString, 
+	string character);
+
 vec2 getVec2File(const char * fileName, string vec2Name, int pos = -1);
 
 vec4 getVec4File(const char* fileName, string vec4Name, int pos = -1);

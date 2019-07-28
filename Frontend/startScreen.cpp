@@ -9,6 +9,7 @@ using namespace std;
 #include "interface.h"
 #include "worldGeneration.h"
 #include "frontend.h"
+#include "debug.h"
 
 int lastKey = -1;
 void keyInput(GLFWwindow * window, int key, 
@@ -212,7 +213,9 @@ void loadWorld(const char * linesPath) {
 	allTexts[StartScreen.loadingText].active = true;
 	for (int i = 0; i < textCount; i++) {
 		if (i != StartScreen.loadingText) {
-			allTexts[i].active = false;
+			if(i != debugText){
+				allTexts[i].active = false;
+			}
 		}
 	}
 	linesPathHold = linesPath;
@@ -223,7 +226,10 @@ void startWorld(const char * linesPath) {
 	StartScreen.active = false;
 	WorldGeneration.active = true;
 	WorldGeneration.worldLinesPath = linesPath;
+	text debugTextHolder = allTexts[debugText];
 	allTexts.clear();
+	allTexts = {debugTextHolder};
+	debugText = 0;
 	mainPlayer.active = true;
 }
 

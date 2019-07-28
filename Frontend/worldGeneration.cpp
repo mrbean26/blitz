@@ -469,8 +469,8 @@ void worldGeneration::beginMountains() {
 					centralYPos = -centralYPos;
 					innerYPos = -innerYPos;
 				}
-				innerYPos = clamp(innerYPos, -1.0f, 1.0f);
-				centralYPos = clamp(centralYPos, -1.0f, 1.0f);
+				innerYPos = glm::clamp(innerYPos, -1.0f, 1.0f);
+				centralYPos = glm::clamp(centralYPos, -1.0f, 1.0f);
 				if (radius == radiuses[0]) {
 					centralYPos = 0.0f;
 				}
@@ -591,6 +591,7 @@ void worldGeneration::beginTerrrain() {
 			triangleSize = triangleSize + 1;
 		}
 	}
+	terrainVerts = triangleSize * 3;
 	// vector to array
 	int floatCount = triangleSize * 12;
 	glBindVertexArray(terrainVAO);
@@ -663,7 +664,7 @@ void worldGeneration::daynightCycle(){
 	float meanBrightness = 0.6f;
 	float brightnessDifference = maxBrightness - meanBrightness;
 
-	float xClamped = clamp(valueX, 0.0f, currentAreaScale.x);
+	float xClamped = glm::clamp(valueX, 0.0f, currentAreaScale.x);
 	float newValueX = xClamped - (currentAreaScale.x / 2.0f);
 	float multiplier = (newValueX / (currentAreaScale.x / 2.0f)) * brightnessDifference;
 	if (multiplier < 0) { multiplier *= -1.0f; }

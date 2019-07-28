@@ -15,8 +15,9 @@
 using namespace std;
 using namespace glm;
 
-double aspect_x, aspect_y;
+#define DEFAULT_CAMERA_DISTANCE 10
 
+double aspect_x, aspect_y;
 int display_x, display_y;
 
 double frames, frameTime;
@@ -166,7 +167,7 @@ float playerYaw = 0.0f;
 float playerPitch = 0.0f;
 float lowestCameraY = 0.0f;
 float distanceFromCharacter = 0.0f;
-float defaultDistance = 10.0f;
+float defaultDistance = DEFAULT_CAMERA_DISTANCE;
 vec3 cameraThirdPos;
 
 mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
@@ -242,10 +243,7 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 		// currently not possible to rotate more than one axis
 		newMatrix = lookAt(cameraPosition, cameraPosition + cameraFront, vec3(0.0f, 1.0f, 0.0f));
 	}
-	if (aimingView) {
-		
-	}
 	distanceFromCharacter = glm::distance(vec3(mainPlayer.position.x, mainPlayer.headLookAtY, mainPlayer.position.z), cameraThirdPos);
-	distanceFromCharacter = glm::clamp(distanceFromCharacter, 0.0f, 10.0f);
+	distanceFromCharacter = glm::clamp(distanceFromCharacter, 0.0f, defaultDistance);
 	return newMatrix;
 }

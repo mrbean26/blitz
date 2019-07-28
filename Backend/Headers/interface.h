@@ -22,6 +22,8 @@ using namespace glm;
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+#define DEFAULT_FONT_SIZE 11
+
 template<class T>
 int newVectorPos(vector<T> * used) {
 	int size = used->size();
@@ -81,7 +83,7 @@ public:
 
 	vec2 position = vec2(1.2f, 0.0f); //center of screen
 	float size = 1.0f;
-	int fontSize = 11;
+	int fontSize = DEFAULT_FONT_SIZE;
 
 	const char * fontPath;
 	map<GLchar, Character> fontCharacters;
@@ -89,7 +91,10 @@ public:
 	float alpha = 1.0f;
 
 	bool active = true;
+	bool loadFonts = true;
 };
+
+map<GLchar, Character> getFont(const char * path, int fontsize);
 
 extern vector<text> allTexts;
 

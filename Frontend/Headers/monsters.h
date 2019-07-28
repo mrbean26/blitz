@@ -42,6 +42,7 @@ void monsterInteractions();
 float monsterCameraColliders(vec3 cameraPos, vec3 lookAt, float defaultDistance);
 void monsterMonsterColliders();
 void monsterBuildCollisions();
+void monsterTerrainCollisions();
 
 void monsterDamage();
 

@@ -7,9 +7,11 @@ GLFWwindow * window;
 void backendMainloop() {
 	interfaceMainloop();
 	displayMainloop();
+	debugMainloop();
 }
 
 void backendBegin() {
+	debugBegin();
 	interfaceBegin();
 }
 
