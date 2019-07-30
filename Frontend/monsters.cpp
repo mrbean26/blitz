@@ -9,7 +9,7 @@
 #define MONSTER_LIGHT_SPAWN_MAX 0.7f
 #define MONSTER_MAX_COUNT 11
 #define MONSTER_SPAWN_RATE 1000
-#define DAMAGE_SHOW_RED_TIME 2.5f
+#define DAMAGE_SHOW_RED_TIME 0.75f
 #define EARTH_ONE_BULLET_DISTANCE 0.5f
 #define EARTH_TWO_BULLET_DISTANCE_CENTER 0.65f
 #define EARTH_TWO_ARM_LENGTH 1.0f
@@ -19,6 +19,10 @@
 #define MONSTER_MOVE_ROTATE_DISTANCE_MIN 3.0f
 #define MONSTER_CAMERA_ANGLE 17.5f
 #define MONSTER_CAMERA_DISTANCE 1.0f
+#define DYING_X_COLOUR 2.5f
+#define DYING_Y_COLOUR 0.2f
+#define DYING_Z_COLOUR 0.2f
+#define DYING_ROTATE_SPEED 240.0f
 
 double bearingOne(float one, float two) {
 	double angle = atan(one - two);
@@ -102,8 +106,8 @@ void monstersMainloop() {
 void monsterBuildCollisions(){
 	int mCount = allMonsters.size();
 	for(int m = 0; m < mCount; m++){
-		int waste = 0; float wasteF = 0.0f; bool wasteB = false;
-		buildCollisions(allMonsters[m].position, waste, wasteF, wasteB);
+		int waste = 0; float wasteF = 0.0f; bool wasteB = false; bool wasteB2 = false;
+		buildCollisions(allMonsters[m].position, waste, wasteF, wasteB, wasteB2);
 	}
 }
 
@@ -320,6 +324,8 @@ void renderMonsters() {
 
 void monsterInteractions() {
 	vec2 playerPos = vec2(mainPlayer.position.x, mainPlayer.position.z);
+	vector<int> deadMonsters;
+
 	int mCount = allMonsters.size();
 	for (int m = 0; m < mCount; m++) {
 		vec3 monsterPos = allMonsters[m].position;
@@ -335,6 +341,18 @@ void monsterInteractions() {
 			vec3 gap = vec3(xGap, 0.0f, zGap) * vec3((float)deltaTime) * vec3(allMonsters[m].speed);
 			allMonsters[m].position += gap;
 		}
+		if(allMonsters[m].health < 0){
+			allMonsters[m].multiplyColour = vec3(2.5f, 0.2f, 0.2f);
+			allMonsters[m].rotation.x += deltaTime * DYING_ROTATE_SPEED;
+			if(allMonsters[m].rotation.x > 90.0f){
+				deadMonsters[newVectorPos(&deadMonsters)] = m;
+			}
+		}
+	}
+
+	int deadMonstersCount = deadMonsters.size();
+	for(int dm = 0; dm < deadMonstersCount; dm++){
+		allMonsters.erase(allMonsters.begin() + deadMonsters[dm]);
 	}
 }
 

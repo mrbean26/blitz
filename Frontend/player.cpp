@@ -348,7 +348,8 @@ void player::collisions(){
 	if (!jumping) { position.y = highestPoint; }
 	lowestY = highestPoint;
 	lowestCameraY = highestPointCamera + 0.5f;
-	buildCollisions(position, insideBuildingIndex, jumpVelocity, lastOnBench);
+	bool useless = false;
+	buildCollisions(position, insideBuildingIndex, jumpVelocity, lastOnBench, useless);
 	// flat terrain collisions
 	float legPos = position.y - LEG_LENGTH;
 	if (legPos < 0 && !inMountain && !jumping) { position.y += -legPos; }
@@ -1169,7 +1170,7 @@ void player::reload() {
 
 void player::monsterColliders(){
 	vec2 playerFloorPos = vec2(position.x, position.z);
-	float colliderDistance = 2.5f;
+	float colliderDistance = 3.0f;
 
 	int mCount = allMonsters.size();
 	for(int m = 0; m < mCount; m++){

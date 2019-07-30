@@ -144,8 +144,8 @@ mat4 modelMatrix(vec3 position, vec3 rotation, vec3 scale, bool child, vec3 pare
 	if (!child) {
 		newMatrix = translate(newMatrix, position);
 		newMatrix = glm::scale(newMatrix, scale);
-		newMatrix = rotate(newMatrix, radians(rotation.x), vec3(1.0f, 0.0f, 0.0f));
 		newMatrix = rotate(newMatrix, radians(rotation.y), vec3(0.0f, 1.0f, 0.0f));
+		newMatrix = rotate(newMatrix, radians(rotation.x), vec3(1.0f, 0.0f, 0.0f));
 		newMatrix = rotate(newMatrix, radians(rotation.z), vec3(0.0f, 0.0f, 1.0f));
 		return newMatrix;
 	}

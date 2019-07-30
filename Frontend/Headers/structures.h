@@ -40,7 +40,7 @@ bool insideOtherBuilding();
 bool insideAreaScale();
 bool insideMountain();
 bool okToBuild();
-void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVelocity, bool &lastOnBench);
+void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVelocity, bool &lastOnBench, bool &hitBuilding);
 
 void changeBuildings();
 void startBuildings();

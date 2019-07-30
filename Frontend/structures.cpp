@@ -712,7 +712,7 @@ void startBuildings() {
 	allColourBuildings = { mainBench, mainBlueprint };
 }
 
-void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVelocity, bool &lastOnBench){
+void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVelocity, bool &lastOnBench, bool &hitBuilding){
 	// outside of buildings
 	int buildingCount = allColourBuildings.size();
 	float playerDifference = 1.0f;
@@ -739,10 +739,12 @@ void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVeloci
 					if (radians(90.0f) == radians(rot.y)) {
 						if (position.x >= pos.x + 0.5f * sca.x) {
 							position.z = playerDifference + pos.z + 4.0f * sca.z;
+							hitBuilding = true;
 						}
 					}
 					else {
 						position.z = playerDifference + pos.z + 4.0f * sca.z;
+						hitBuilding = true;
 					}
 				}
 				if (position.z <= pos.z - 4.0f * sca.z && position.z >= -playerDifference + pos.z - 4.0f * sca.z) {
@@ -750,10 +752,12 @@ void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVeloci
 					if (radians(270.0f) == radians(rot.y)) {
 						if (position.x <= pos.x - 0.5f * sca.x) {
 							position.z = -playerDifference + pos.z - 4.0f * sca.z;
+							hitBuilding = true;
 						}
 					}
 					else {
 						position.z = -playerDifference + pos.z - 4.0f * sca.z;
+						hitBuilding = true;
 					}
 				}
 			}
@@ -763,10 +767,12 @@ void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVeloci
 					if (radians(180.0f) == radians(rot.y)) {
 						if (position.z <= pos.z - 0.5f * sca.z) {
 							position.x = playerDifference + pos.x + 4.0f * sca.x;
+							hitBuilding = true;
 						}
 					}
 					else {
 						position.x = playerDifference + pos.x + 4.0f * sca.x;
+						hitBuilding = true;
 					}
 				}
 				if (position.x <= pos.x - 4.0f * sca.x && position.x >= -playerDifference + pos.x - 4.0f * sca.x) {
@@ -774,10 +780,12 @@ void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVeloci
 					if (radians(0.0f) == radians(rot.y)) {
 						if (position.z >= pos.z + 0.5f * sca.z) {
 							position.x = -playerDifference + pos.x - 4.0f * sca.x;
+							hitBuilding = true;
 						}
 					}
 					else {
 						position.x = -playerDifference + pos.x - 4.0f * sca.x;
+						hitBuilding = true;
 					}
 				}
 			}
@@ -788,10 +796,12 @@ void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVeloci
 					if (radians(90.0f) == radians(rot.y)) {
 						if (position.x >= pos.x + 0.5f * sca.x) {
 							position.z = -playerDifference + pos.z + 4.0f * sca.z;
+							hitBuilding = true;
 						}
 					}
 					else {
 						position.z = -playerDifference + pos.z + 4.0f * sca.z;
+						hitBuilding = true;
 					}
 				}
 				if (position.z >= pos.z - 4.0f * sca.z && position.z <= playerDifference + pos.z - 4.0f * sca.z) {
@@ -799,10 +809,12 @@ void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVeloci
 					if (radians(270.0f) == radians(rot.y)) {
 						if (position.x <= pos.x - 0.5f * sca.x) {
 							position.z = playerDifference + pos.z - 4.0f * sca.z;
+							hitBuilding = true;
 						}
 					}
 					else {
 						position.z = playerDifference + pos.z - 4.0f * sca.z;
+						hitBuilding = true;
 					}
 				}
 			}
@@ -812,10 +824,12 @@ void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVeloci
 					if (radians(180.0f) == radians(rot.y)) {
 						if (position.z <= pos.z - 0.5f * sca.z) {
 							position.x = -playerDifference + pos.x + 4.0f * sca.x;
+							hitBuilding = true;
 						}
 					}
 					else {
 						position.x = -playerDifference + pos.x + 4.0f * sca.x;
+						hitBuilding = true;
 					}
 				}
 				if (position.x >= pos.x - 4.0f * sca.x && position.x <= playerDifference + pos.x - 4.0f * sca.x) {
@@ -823,10 +837,12 @@ void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVeloci
 					if (radians(0.0f) == radians(rot.y)) {
 						if (position.z >= pos.z + 0.5f * sca.z) {
 							position.x = playerDifference + pos.x - 4.0f * sca.x;
+							hitBuilding = true;
 						}
 					}
 					else {
 						position.x = playerDifference + pos.x - 4.0f * sca.x;
+						hitBuilding = true;
 					}
 				}
 			}
@@ -839,10 +855,12 @@ void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVeloci
 					if (radians(90.0f) == radians(rot.y)) {
 						if (position.x >= pos.x - playerDifference + 2.0f * sca.x || position.x <= pos.x + playerDifference - 2.0f * sca.x) {
 							position.z = playerDifference + pos.z + 4.0f * sca.z;
+							hitBuilding = true;
 						}
 					}
 					else {
 						position.z = playerDifference + pos.z + 4.0f * sca.z;
+						hitBuilding = true;
 					}
 				}
 				if (position.z <= pos.z - 4.0f * sca.z && position.z >= -playerDifference + pos.z - 4.0f * sca.z) {
@@ -850,10 +868,12 @@ void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVeloci
 					if (radians(270.0f) == radians(rot.y)) {
 						if (position.x <= pos.x + playerDifference - 2.0f * sca.x || position.x >= pos.x - playerDifference + 2.0f * sca.x) {
 							position.z = -playerDifference + pos.z - 4.0f * sca.z;
+							hitBuilding = true;
 						}
 					}
 					else {
 						position.z = -playerDifference + pos.z - 4.0f * sca.z;
+						hitBuilding = true;
 					}
 				}
 			}
@@ -863,10 +883,12 @@ void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVeloci
 					if (radians(180.0f) == radians(rot.y)) {
 						if (position.z <= pos.z + playerDifference - 2.0f * sca.z || position.z >= pos.z - playerDifference + 2.0f * sca.z) {
 							position.x = playerDifference + pos.x + 4.0f * sca.x;
+							hitBuilding = true;
 						}
 					}
 					else {
 						position.x = playerDifference + pos.x + 4.0f * sca.x;
+						hitBuilding = true;
 					}
 				}
 				if (position.x <= pos.x - 4.0f * sca.x && position.x >= -playerDifference + pos.x - 4.0f * sca.x) {
@@ -874,10 +896,12 @@ void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVeloci
 					if (radians(0.0f) == radians(rot.y)) {
 						if (position.z >= pos.z - playerDifference + 2.0f * sca.z || position.z <= pos.z + playerDifference - 2.0f * sca.z) {
 							position.x = -playerDifference + pos.x - 4.0f * sca.x;
+							hitBuilding = true;
 						}
 					}
 					else {
 						position.x = -playerDifference + pos.x - 4.0f * sca.x;
+						hitBuilding = true;
 					}
 				}
 			}
@@ -893,10 +917,12 @@ void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVeloci
 					if (radians(90.0f) == radians(rot.y)) {
 						if (position.x >= pos.x - playerDifference + 2.0f * sca.x || position.x <= pos.x + playerDifference - 2.0f * sca.x) {
 							position.z = -playerDifference + pos.z + 4.0f * sca.z;
+							hitBuilding = true;
 						}
 					}
 					else {
 						position.z = -playerDifference + pos.z + 4.0f * sca.z;
+						hitBuilding = true;
 					}
 				}
 				if (position.z >= pos.z - 4.0f * sca.z && position.z <= playerDifference + pos.z - 4.0f * sca.z) {
@@ -904,10 +930,12 @@ void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVeloci
 					if (radians(270.0f) == radians(rot.y)) {
 						if (position.x <= pos.x + playerDifference - 2.0f * sca.x || position.x >= pos.x - playerDifference + 2.0f * sca.x) {
 							position.z = playerDifference + pos.z - 4.0f * sca.z;
+							hitBuilding = true;
 						}
 					}
 					else {
 						position.z = playerDifference + pos.z - 4.0f * sca.z;
+						hitBuilding = true;
 					}
 				}
 			}
@@ -917,10 +945,12 @@ void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVeloci
 					if (radians(180.0f) == radians(rot.y)) {
 						if (position.z <= pos.z + playerDifference - 2.0f * sca.z || position.z >= pos.z - playerDifference + 2.0f * sca.z) {
 							position.x = -playerDifference + pos.x + 4.0f * sca.x;
+							hitBuilding = true;
 						}
 					}
 					else {
 						position.x = -playerDifference + pos.x + 4.0f * sca.x;
+						hitBuilding = true;
 					}
 				}
 				if (position.x >= pos.x - 4.0f * sca.x && position.x <= playerDifference + pos.x - 4.0f * sca.x) {
@@ -928,10 +958,12 @@ void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVeloci
 					if (radians(0.0f) == radians(rot.y)) {
 						if (position.z >= pos.z - playerDifference + 2.0f * sca.z || position.z <= pos.z + playerDifference - 2.0f * sca.z) {
 							position.x = playerDifference + pos.x - 4.0f * sca.x;
+							hitBuilding = true;
 						}
 					}
 					else {
 						position.x = playerDifference + pos.x - 4.0f * sca.x;
+						hitBuilding = true;
 					}
 				}
 			}
@@ -940,6 +972,7 @@ void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVeloci
 				if (position.z >= pos.z - 6.0f * sca.z && position.z <= pos.z + 6.0f * sca.z) {
 					if (position.y + 2.3f >= playerYDifference + pos.y + 6.0f * sca.y) {
 						position.y = playerYDifference + -2.3f + pos.y + 6.0f * sca.y;
+						hitBuilding = true;
 					}
 				}
 			}
@@ -964,17 +997,21 @@ void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVeloci
 					// sides
 					if (position.z >= pos.z + 3.0f * sca.z && position.z <= playerDifference + pos.z + 3.0f * sca.z) {
 						position.z = playerDifference + pos.z + 3.0f * sca.z;
+						hitBuilding = true;
 					}
 					if (position.z <= pos.z - 2.0f * sca.z && position.z >= -playerDifference + pos.z - 2.0f * sca.z) {
 						position.z = -playerDifference + pos.z - 2.0f * sca.z;
+						hitBuilding = true;
 					}
 				}
 				if (position.z >= pos.z - 2.0f * sca.z && position.z <= pos.z + 3.0f * sca.z) {
 					if (position.x >= pos.x + 1.5f * sca.x && position.x <= playerDifference + pos.x + 1.5f * sca.x) {
 						position.x = playerDifference + pos.x + 1.5f * sca.x;
+						hitBuilding = true;
 					}
 					if (position.x <= pos.x - 0.5f * sca.x && position.x >= -playerDifference + pos.x - 0.5f * sca.x) {
 						position.x = -playerDifference + pos.x - 0.5f * sca.x;
+						hitBuilding = true;
 					}
 				}
 			}
