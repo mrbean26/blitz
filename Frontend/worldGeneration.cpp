@@ -343,13 +343,13 @@ void worldGeneration::startShader() {
 #include <time.h>
 vector<triangle> flatTerrainTriangles, mountainTriangles;
 vector<float> flatXPoints, flatZPoints;
+float triangleSize = 1.0f;
 void worldGeneration::beginFlatTerrain() {
 	vec2 areaScale = vec2(0.0f);
 	if (currentArea == PLANET_WORLD) {
 		currentAreaColour = vec3(0.35f, 0.78f, 0.31f);
 		areaScale = getVec2File(worldLinesPath, "planetEarthSize");
 	}
-	float triangleSize = 1.0f;
 	for (int x = -50; x < (areaScale.x + 50) / triangleSize; x++) {
 		for (int y = -50; y < (areaScale.y + 50) / triangleSize; y++) {
 			// draw triangle
@@ -369,15 +369,31 @@ void worldGeneration::beginFlatTerrain() {
 				triangle newTriangle;
 				newTriangle.allPoints = { whichPoint[t], pointTwo, pointThree };
 				newTriangle.colour = triangleColour;
+
+				int insideMountainCount = 0;
 				for (vec3 v : newTriangle.allPoints) {
 					flatXPoints[newVectorPos(&flatXPoints)] = v.x;
 					flatZPoints[newVectorPos(&flatZPoints)] = -v.z;
+
+					int mountainCount = currentAllMountainPositions.size();
+					for(int m = 0; m < mountainCount; m++){
+						vec2 positionMountain = currentAllMountainPositions[m];
+						vec3 scaleMountain = currentAllMountainScales[m];
+						float mountainRadius = scaleMountain.x * 100.0f * 0.025f;
+
+						if(insideCircle(positionMountain, mountainRadius, vec2(v.x, -v.z), true)){
+							insideMountainCount++;
+						}
+					}
 				}
+
+				if(insideMountainCount == 3){ continue; }
+
 				flatTerrainTriangles[newVectorPos(&flatTerrainTriangles)] = newTriangle;
 			}
 		}
 	}
-	beginMountains();
+	beginTerrrain();
 }
 
 vector<vec2> currentAllMountainPositions;
@@ -391,6 +407,7 @@ void worldGeneration::beginMountains() {
 	if (currentArea == PLANET_WORLD) {
 		mountainName = "earthMountain";
 		currentAreaPrefix = "earth";
+		currentAreaColour = vec3(0.35f, 0.78f, 0.31f);
 	}
 	// get all mountain stats
 	vector<vec2> mountainPositions;
@@ -439,10 +456,6 @@ void worldGeneration::beginMountains() {
 		}
 		// reverse radiuses so 1st is highest
 		reverse(radiuses.begin(), radiuses.end());
-		// remove triangles over craters / under mountains
-		if (radiuses.size() > 0) {
-			removeUselessTriangle(radiuses[0], pos, defaultScale, mtn);
-		}
 		// create circles & triangles here
 		for (int radius : radiuses) {
 			int currentPointCount = (int)std::round(radius / 4) * 2;
@@ -478,27 +491,26 @@ void worldGeneration::beginMountains() {
 				float yPos = (centralYPos * sca.y) - 0.01f;
 				vec3 pointOne = vec3(currentCircle[pointIndex].x, yPos, -currentCircle[pointIndex].y);
 				vec3 pointTwo = vec3(currentCircle[nextIndex].x, yPos, -currentCircle[nextIndex].y);
-				// connect to grid
-				if (radiuses[0] == radius) {
+				if(radiuses[0] == radius){
 					vector<vec3> bothPoints = { pointOne, pointTwo };
-					for (int i = 0; i < 2; i++) {
-						vector<float>::iterator xPosition = lower_bound(flatXPoints.begin(), flatXPoints.end(), bothPoints[i].x);
-						int indexX = xPosition - flatXPoints.begin();
-						if (indexX == flatXPoints.size()) {
-							indexX = indexX - 1;
+					for(int v = 0; v < 2; v++){
+						vec3 current = bothPoints[v];
+						if(current.x > pos.x){
+							current.x = glm::ceil(current.x);
 						}
-						float newX = flatXPoints[indexX];
-						// z
-						vector<float>::iterator zPosition = upper_bound(flatZPoints.begin(), flatZPoints.end(), -bothPoints[i].z); // z positions are positive needed to be chaneged back
-						int indexZ = zPosition - flatZPoints.begin();
-						if (indexZ == flatZPoints.size()) {
-							indexZ = indexZ - 1;
+						if(current.x <= pos.x){
+							current.x = glm::floor(current.x);
 						}
-						float newZ = -flatZPoints[indexZ];
-						// assign
-						bothPoints[i] = vec3(newX, bothPoints[i].y, newZ);
+						if(current.z > -pos.y){
+							current.z = ceil(current.z);
+						}
+						if(current.z < -pos.y){
+							current.z = floor(current.z);
+						}
+						bothPoints[v] = current;
 					}
-					pointOne = bothPoints[0]; pointTwo = bothPoints[1];
+					pointOne = bothPoints[0];
+					pointTwo = bothPoints[1];
 				}
 				// line going up & to the right
 				int nextCircleIndex = (int)(floor(pointIndex / (currentPointCount / nextPointCount)));
@@ -533,35 +545,20 @@ void worldGeneration::beginMountains() {
 					newTriangle.allPoints = { pointOne, whichPointTwo[t], whichPoint[t] };
 					newTriangle.colour = triangleColour;
 
+					if(radiuses[0] == radius){
+						newTriangle.edgeVectorIndexes = {0};
+						if(t==0){
+							newTriangle.edgeVectorIndexes[newVectorPos(&newTriangle.edgeVectorIndexes)] = 1;
+						}
+					}
+
 					mountainTriangles[newVectorPos(&mountainTriangles)] = newTriangle;
 				}
 				pointIndex++;
 			}
 		}
 	}
-	beginTerrrain();
-}
-
-void worldGeneration::removeUselessTriangle(int radius, vec2 position, float circleMultiplier, bool mountain) {
-	// collect triangles over craters / under mountains
-	float newRadius = radius * circleMultiplier;
-	if (!mountain) { newRadius += 0.0f; }
-	if (mountain) { newRadius -= 0.3f; } // this doesnt properly matter as it only affects render
-	int triangleIndex = 0;
-	for (triangle t : flatTerrainTriangles) {
-		vector<vec3> allPoints = t.allPoints;
-		int insideCount = 0;
-		for (vec3 v : allPoints) {
-			if (insideCircle(position, newRadius, vec2(v.x, -v.z), true)) {
-				insideCount = insideCount + 1;
-			}
-		}
-		if (insideCount == 3) {
-			flatTerrainTriangles[triangleIndex].colour = vec3(0.0f, 0.0f, 1.0f);
-			flatTerrainTriangles[triangleIndex].active = false;
-		}
-		triangleIndex++;
-	}
+	beginFlatTerrain();
 }
 
 int total = 0;
@@ -578,6 +575,28 @@ void worldGeneration::beginTerrrain() {
 				continue;
 			}
 			vector<vec3> points = currentVector[f].allPoints;
+			vector<int> edgeIndexes = currentVector[f].edgeVectorIndexes;
+			int edgeVertexCount = edgeIndexes.size();
+			for(int e = 0; e < edgeVertexCount; e++){
+				break;
+				vec3 currentVertex = points[edgeIndexes[e]];
+
+				vector<float>::iterator xPosition = lower_bound(flatXPoints.begin(), flatXPoints.end(), currentVertex.x);
+				int indexX = xPosition - flatXPoints.begin();
+				if (indexX == flatXPoints.size()) {
+					indexX = indexX - 1;
+				}
+				currentVertex.x = flatXPoints[indexX];
+
+				vector<float>::iterator zPosition = upper_bound(flatZPoints.begin(), flatZPoints.end(), currentVertex.z); // z positions are positive needed to be chaneged back
+				int indexZ = zPosition - flatZPoints.begin();
+				if (indexZ == flatZPoints.size()) {
+					indexZ = indexZ - 1;
+				}
+				currentVertex.z = flatZPoints[indexZ];
+
+				//points[edgeIndexes[e]] = currentVertex;
+			}
 			for (vec3 point : points) {
 				for (int v = 0; v < 3; v++) {
 					allVertices[newVectorPos(&allVertices)] = point[v];
@@ -682,9 +701,10 @@ vec2 worldGeneration::getAreaScale() {
 void worldGeneration::begin() {
 	currentPlanetScale = currentAreaScale = getAreaScale();
 	allWorldLines = readLines(worldLinesPath);
+	float time1 = clock();
 	startShader();
 	reserveMemory();
-	beginFlatTerrain();	
+	beginMountains();
 	beginAreaLimits();
 	currentTime = getFloatFile(worldLinesPath, "currentTime");
 }

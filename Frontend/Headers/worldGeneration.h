@@ -35,6 +35,8 @@ public:
 	vec3 colour = vec3(1.0f, 1.0f, 1.0f);
 	float alpha = 1.0f;
 	bool active = true;
+
+	vector<int> edgeVectorIndexes;
 };
 
 extern vector<triangle> flatTerrainTriangles, mountainTriangles;
@@ -75,7 +77,6 @@ public:
 
 	void beginFlatTerrain();
 	void beginMountains();
-	void removeUselessTriangle(int radius, vec2 position, float circleMultiplier, bool mountain);
 
 	GLuint areaLimitVAO, areaLimitVBO, areaLimitCount;
 	void beginAreaLimits();
