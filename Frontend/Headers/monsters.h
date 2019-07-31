@@ -20,6 +20,12 @@ public:
 		scale = vec3(1.0f);
 	float speed = 3.0f;
 
+	bool attacking = false;
+	bool finishedAttackOne = false;
+	float damage = 0.0f;
+	float defaultAttackDelay = 3.0f;
+	float attackChanceDelay = 3.0f;
+
 	void render();
 	GLuint VAO, VBO, size;
 
@@ -47,7 +53,7 @@ void monsterTerrainCollisions();
 void monsterDamage();
 
 int createMonster(int monsterType);
-int createMonsterTemplate(int name, vector<float> vertices, float health,
+int createMonsterTemplate(int name, vector<float> vertices, float health, float damage, float attackDelayChance,
 	vec3 scale = vec3(1.0f));
 
 void monsterSpawning();

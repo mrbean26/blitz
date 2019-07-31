@@ -39,7 +39,7 @@ void player::begin(){
 	startCharacterVertices();
 	playerView = true;
 	inputLines = readLines("assets/saves/inputs.save");
-	startPauseUI();
+	startPlayerUI();
 }
 
 void player::mainloop(){
@@ -52,11 +52,15 @@ void player::mainloop(){
 	pauseUIInteraction();
 	shoot();
 	reload();
+	if(redDelay < 0.0f){ multiplyColour=vec3(1.0f); }
+	redDelay -= deltaTime;
 }
 
 int continueButton, exitButton;
+int ammoIcon, healthIcon;
+int ammoText, healthText;
 bool paused = false;
-void startPauseUI() {
+void startPlayerUI() {
 	continueButton = createButton();
 	allButtons[continueButton].texture = loadTexture("assets/images/continueButton.png");
 	allButtons[continueButton].scale = vec2(1.2f, 0.45f);
@@ -67,6 +71,20 @@ void startPauseUI() {
 	allButtons[exitButton].scale = vec2(1.2f, 0.45f);
 	allButtons[exitButton].position = vec3(0.0f, -1.2f, 0.0f);
 	allButtons[exitButton].active = false;
+	ammoIcon = createButton();
+	allButtons[ammoIcon].texture = loadTexture("assets/images/ammoIcon.png");
+	allButtons[ammoIcon].scale = vec2(0.3f);
+	allButtons[ammoIcon].interactive = false;
+	allButtons[ammoIcon].position = vec3(-11.0f, -8.3f, 0.0f);
+	healthIcon = createButton();
+	allButtons[healthIcon].texture = loadTexture("assets/images/healthIcon.png");
+	allButtons[healthIcon].scale = vec2(0.25f);
+	allButtons[healthIcon].interactive = false;
+	allButtons[healthIcon].position = vec3(-18.5f, -10.0f, 0.0f);
+	ammoText = createText();
+	allTexts[ammoText].fontCharacters = getFont("assets/fonts/zekton.ttf", 40);
+	healthText = createText();
+	allTexts[healthText].fontCharacters = getFont("assets/fonts/zekton.ttf", 40);
 }
 
 void exitToMenus() {
@@ -141,6 +159,16 @@ void exitToMenus() {
 }
 
 void pauseUIInteraction() {
+	button ammoButtonVar = allButtons[ammoIcon];
+	allTexts[ammoText].position = vec2(ammoButtonVar.maxX * 1.03f, display_y - (ammoButtonVar.maxY * 0.965f));
+	weapon playerCurrentWeapon = allWeapons[mainPlayer.currentWeapon];
+	allTexts[ammoText].displayedText = to_string(playerCurrentWeapon.currentAmmo) + "/" + to_string(playerCurrentWeapon.maxAmmo);
+
+	button healthButtonVar = allButtons[healthIcon];
+	allTexts[healthText].position = vec2(healthButtonVar.maxX * 1.04f, display_y - (healthButtonVar.maxY * 0.97f));
+	string healthTextDisplay = removeAfterCharacter(to_string(mainPlayer.health), ".");
+	allTexts[healthText].displayedText = healthTextDisplay;
+
 	bool changePaused = false;
 	if (paused) {
 		if (allButtons[continueButton].clickUp) {
@@ -532,6 +560,7 @@ void player::renderPlayer(){
 		setMat4(playerShader, "view", viewMatrix());
 		setMat4(playerShader, "projection", projectionMatrix());
 
+		setShaderVecThree(playerShader, "multiplyColour", multiplyColour);
 		setShaderVecThree(playerShader, "lightPos", lightPos);
 		setShaderFloat(playerShader, "lightIntensity", lightIntensity);
 		setShaderFloat(playerShader, "lightRadius", lightRadius);
@@ -1180,10 +1209,12 @@ void player::monsterColliders(){
 		float bearing = bearingTwo(playerFloorPos, floorPos);
 		float distance = glm::distance(playerFloorPos, floorPos);
 		
-		if(distance < colliderDistance){
-			pos.x = position.x + sin(radians(bearing)) * colliderDistance;
-			pos.z = position.z + cos(radians(bearing)) * colliderDistance;
-			allMonsters[m].position = pos;
+		if(!allMonsters[m].attacking){
+			if(distance < colliderDistance){
+				pos.x = position.x + sin(radians(bearing)) * colliderDistance;
+				pos.z = position.z + cos(radians(bearing)) * colliderDistance;
+				allMonsters[m].position = pos;
+			}
 		}
 	}
 }

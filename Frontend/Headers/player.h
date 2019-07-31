@@ -21,7 +21,7 @@ extern vector<string> inputLines;
 
 extern int continueButton, exitButton;
 extern bool paused;
-void startPauseUI();
+void startPlayerUI();
 void pauseUIInteraction();
 
 vec3 cameraBuildingCollisions(vec3 original);
@@ -44,6 +44,10 @@ public:
 	bool canShoot = true;
 	bool aiming = false;
 	void shoot();
+
+	float health = 100.0f;
+	vec3 multiplyColour = vec3(1.0f);
+	float redDelay = 0.0f;
 
 	bool equippingReloading = false;
 	float reloadSpeed;

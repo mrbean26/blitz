@@ -47,6 +47,7 @@ public:
 	bool mouseOver = false;
 
 	int minX = 0;
+	int maxX = 0;
 	int minY = 0;
 	int maxY = 0;
 

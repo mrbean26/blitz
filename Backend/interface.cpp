@@ -112,6 +112,7 @@ void registerClicks(){
 		maxY = (int)(midY + (yDivided * buttonScale.y));
 		//add to class
 		allButtons[i].minX = minX;
+		allButtons[i].maxX = maxX;
 		allButtons[i].minY = minY;
 		allButtons[i].maxY = maxY;
 		//check for click

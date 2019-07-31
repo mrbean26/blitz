@@ -340,7 +340,7 @@ void worldGeneration::startShader() {
 	int fragShader = createShader("assets/shaders/terrainFrag.txt", GL_FRAGMENT_SHADER);
 	terrainShader = createProgram({ vertShader, fragShader });
 }
-
+#include <time.h>
 vector<triangle> flatTerrainTriangles, mountainTriangles;
 vector<float> flatXPoints, flatZPoints;
 void worldGeneration::beginFlatTerrain() {

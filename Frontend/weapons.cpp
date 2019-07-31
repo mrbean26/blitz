@@ -189,6 +189,7 @@ void startWeaponUI(){
 	weaponSelectImage = createButton();
 	allButtons[weaponSelectImage].interactive = false;
 	allButtons[weaponSelectImage].scale = vec2(0.51f, 0.267f);
+	allButtons[weaponSelectImage].position = vec3(0.0f, -0.267f / 2.0f, 0.0);
 	allButtons[weaponSelectImage].texture = loadTexture("assets/images/weaponSelectImage.png");
 	allButtons[weaponSelectImage].colour = vec3(0.05f);
 	allButtons[weaponSelectImage].alpha = 0.9f;
@@ -376,7 +377,7 @@ void bulletColliders(){
 			}
 		}
 
-		if(bulletPos.y < yLowest){
+		if(bulletPos.y + 1.0f < yLowest){
 			badBullets[newVectorPos(&badBullets)] = b;
 			continue;
 		}
