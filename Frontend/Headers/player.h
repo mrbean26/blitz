@@ -46,6 +46,7 @@ public:
 	void shoot();
 
 	float health = 100.0f;
+	bool dead = false;
 	vec3 multiplyColour = vec3(1.0f);
 	float redDelay = 0.0f;
 

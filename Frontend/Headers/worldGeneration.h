@@ -14,6 +14,7 @@ using namespace std;
 using namespace glm;
 
 #define DEFAULT_SAVE 0
+#define LARGE_WORLD 1
 #define PLANET_WORLD 0
 
 extern int randomSeedCount;

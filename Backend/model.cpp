@@ -28,11 +28,13 @@ model::model(vec4 mainColour, const char* filePath) { // load model (dont use th
 		if (contains(line, "v")) {
 			vec3 point = getVec3File(filePath, "v", i);
 			points[newVectorPos(&points)] = point;
+			cout << "v" << endl;
 		}
 		if (contains(line, "f")) {
 			vec3 index = getVec3File(filePath, "f", i);
 			faceIndexes[newVectorPos(&faceIndexes)] = index;
-		}
+			cout << "f" << endl;
+		}//
 	}
 
 	// add colours
@@ -40,9 +42,9 @@ model::model(vec4 mainColour, const char* filePath) { // load model (dont use th
 	vector<vec3> allColours = colourVector(fCount, mainColour, mainColour.w);
 
 	for (int f = 0; f < fCount; f++) {
-		int xIndex = faceIndexes[f].x;
-		int yIndex = faceIndexes[f].y;
-		int zIndex = faceIndexes[f].z;
+		int xIndex = (int) faceIndexes[f].x;
+		int yIndex = (int) faceIndexes[f].y;
+		int zIndex = (int) faceIndexes[f].z;
 
 		int indexes[] = { xIndex, yIndex, zIndex };
 
@@ -75,7 +77,7 @@ void model::outputVertices() { // used for getting verts used for main game
 
 	int vCount = vertices.size();
 	for (int v = 0; v < vCount; v++) {
-		cout << vertices[v] << ", ";
+		cout << vertices[v] << "f" << ", ";
 	}
 
 	cout << "}" << endl;

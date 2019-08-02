@@ -216,11 +216,12 @@ int currentBuildingType = 0;
 void getAllBuildingPositions(){
 	vector<string> allLines = readLines(WorldGeneration.worldLinesPath);
 	int lineCount = allLines.size();
+	int saveType = getIntFile(WorldGeneration.worldLinesPath, "saveType");
 	for (int l = 0; l < lineCount; l++) {
 		int buildType = getIntFile(WorldGeneration.worldLinesPath,
 			WorldGeneration.currentAreaPrefix + "BuildingType", l);
 		if (buildType != -1) {
-			vec2 areaScaleMax = vec2((currentPlanetScale.x) / 65.0f, (currentPlanetScale.y) / 65.0f);
+			vec2 areaScaleMax = vec2((currentPlanetScale.x) / divider, (currentPlanetScale.y) / divider);
 
 			vec2 buildPos = getVec2File(WorldGeneration.worldLinesPath,
 				WorldGeneration.currentAreaPrefix + "BuildingPosition", l + 1);
@@ -233,6 +234,9 @@ void getAllBuildingPositions(){
 			placedMiniBuilding newBuilding;
 			newBuilding.position = buildUIPos;
 			newBuilding.scale = buildingScales[buildType];
+			if(saveType == 1){
+				newBuilding.scale = buildingScales[buildType] * vec2(65.0f / 200.0f);
+			}
 			newBuilding.rotation = vec3(0.0f, buildRot, 0.0f);
 			allMiniBuildings[newVectorPos(&allMiniBuildings)] = newBuilding;
 
@@ -408,8 +412,14 @@ bool benchInUse = false;
 GLuint benchUIVAO, benchUIVBO, benchUIShader, benchUITotal;
 GLuint currentBuildingVAO, currentBuildingVBO, currentBuildingTotal;
 vector<vec2> mountainLimits;
+int saveType = 0;
+float divider = 65.0f;
 void startBuildBenchUI() {
 	float mountainDisplaySizeScale = 0.034f;
+	saveType = getIntFile(WorldGeneration.worldLinesPath, "saveType");
+	if(saveType == 1){
+		mountainDisplaySizeScale = mountainDisplaySizeScale * (65.0f / 200.0f);
+	}
 
 	vec2 area = currentPlanetScale / vec2(2.0f);
 	vec3 areaColourOne = WorldGeneration.currentAreaColour;
@@ -417,6 +427,11 @@ void startBuildBenchUI() {
 
 	float blueprintX = ((float) aspect_x / 10.0f) * 0.95f;
 	float blueprintY = ((float) aspect_y / 10.0f) * 0.95f;
+
+	float divider = 65.0f;
+	if(saveType == 1){
+		divider = 200.0f;
+	}
 
 	vector<float> vertices = {
 		// blueprint
@@ -428,25 +443,25 @@ void startBuildBenchUI() {
 		blueprintX, blueprintY, 0.0f, 0.19f, 0.46f, 0.89f,
 		blueprintX, -blueprintY, 0.0f, 0.19f, 0.46f, 0.89f,
 		// area
-		-area.x / 65.0f, -area.y / 65.0f, 0.1f,
+		-area.x / divider, -area.y / divider, 0.1f,
 		areaColourOne.x, areaColourOne.y, areaColourOne.z,
-		-area.x / 65.0f, area.y / 65.0f, 0.1f,
+		-area.x / divider, area.y / divider, 0.1f,
 		areaColourOne.x, areaColourOne.y, areaColourOne.z,
-		area.x / 65.0f, -area.y / 65.0f, 0.1f,
+		area.x / divider, -area.y / divider, 0.1f,
 		areaColourOne.x, areaColourOne.y, areaColourOne.z,
 
-		area.x / 65.0f, area.y / 65.0f, 0.1f,
+		area.x / divider, area.y / divider, 0.1f,
 		areaColourTwo.x, areaColourTwo.y, areaColourTwo.z,
-		-area.x / 65.0f, area.y / 65.0f, 0.1f,
+		-area.x / divider, area.y / divider, 0.1f,
 		areaColourTwo.x, areaColourTwo.y, areaColourTwo.z,
-		area.x / 65.0f, -area.y / 65.0f, 0.1f,
+		area.x / divider, -area.y / divider, 0.1f,
 		areaColourTwo.x, areaColourTwo.y, areaColourTwo.z,
 	};
 	// add to mountains to vertices
 	int mCount = currentAllMountainPositions.size();
 	for (int m = 0; m < mCount; m++) {
 		vec2 pos = currentAllMountainPositions[m];
-		pos = pos / vec2(65.0f);
+		pos = pos / vec2(divider);
 		vec3 scale = currentAllMountainScales[m];
 
 		float scaleX = scale.x * mountainDisplaySizeScale;
@@ -467,8 +482,8 @@ void startBuildBenchUI() {
 			vec3 points[] = { whichPoint[t], two, four };
 			vec3 usedColour = whichColour[t];
 			for (int v = 0; v < 3; v++) {
-				points[v].x = points[v].x - area.x / 65.0f;
-				points[v].y = points[v].y - area.y / 65.0f;
+				points[v].x = points[v].x - area.x / divider;
+				points[v].y = points[v].y - area.y / divider;
 				for (int p = 0; p < 3; p++) {
 					vertices[newVectorPos(&vertices)] = points[v][p];
 					mountainVertices[newVectorPos(&mountainVertices)] = points[v][p];
@@ -634,6 +649,9 @@ vector<string> newBuildingLines;
 
 void buildBenchInteraction(){
 	currentBuildingScale = buildingScales[currentBuildingType];
+	if(saveType == 1){
+		currentBuildingScale = buildingScales[currentBuildingType] * (65.0f / 200.0f);
+	}
 	float distanceNeeded = 10.0f;
 	float distance = glm::distance(mainPlayer.position, mainBench.position);
 	if (distance < distanceNeeded) {
@@ -678,12 +696,22 @@ void buildBenchInteraction(){
 				newMiniBuilding.scale = currentBuildingScale;
 
 				allMiniBuildings[newVectorPos(&allMiniBuildings)] = newMiniBuilding;
-
 				// lines to save
-				vec2 areaScaleMax = vec2((currentPlanetScale.x) / 65.0f, (currentPlanetScale.y) / 65.0f);
+				if(saveType == LARGE_WORLD){
+					divider = 200.0f;
+				}
+				vec2 areaScaleMax = vec2(currentPlanetScale.x / divider, currentPlanetScale.y / divider);
 				vec2 buildWorldPos = vec2(((currentBuildingPosition.x / areaScaleMax.x) * currentPlanetScale.x) + currentPlanetScale.x / 2.0f,
 					((currentBuildingPosition.y / areaScaleMax.y) * currentPlanetScale.y) + currentPlanetScale.y / 2.0f);
-				
+
+				if(saveType == LARGE_WORLD){
+					float x = (currentBuildingPosition.x + (currentPlanetScale.x / 200.0f) / 2.0f) / areaScaleMax.x;
+					float y = (currentBuildingPosition.y + (currentPlanetScale.y / 200.0f) / 2.0f) / areaScaleMax.y;
+
+					buildWorldPos.x = x * currentPlanetScale.x;
+					buildWorldPos.y = y * currentPlanetScale.y;
+				}
+
 				string buildTypeLine = WorldGeneration.currentAreaPrefix + "BuildingType " + 
 					to_string(currentBuildingType);
 				string buildPosLine = WorldGeneration.currentAreaPrefix + "BuildingPosition " +

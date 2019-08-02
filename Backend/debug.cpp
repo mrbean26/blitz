@@ -47,5 +47,5 @@ void debugMainloop(){
         allTexts[debugText].displayedText = displayedText;
         updateTimer = DEBUG_UPDATE_TIME_MS / 1000.0f;
     }
-    updateTimer -= deltaTime;
+    updateTimer -= (float) deltaTime;
 }

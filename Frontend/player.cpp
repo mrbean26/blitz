@@ -24,6 +24,7 @@ using namespace std;
 #define LEG_LENGTH 2.3f
 #define PITCH_MIN -80.0f
 #define PITCH_MAX 80.0f
+#define DYING_ROTATE_SPEED 240.0f
 
 vector<vec3> colourVector(int size, vec3 colour, float multiplier) {
 	vector<vec3> newVector;
@@ -53,7 +54,8 @@ void player::mainloop(){
 	shoot();
 	reload();
 	if(redDelay < 0.0f){ multiplyColour=vec3(1.0f); }
-	redDelay -= deltaTime;
+	if(health < 1){ multiplyColour = vec3(2.5f, 0.2f, 0.2f); }
+	redDelay -= (float) deltaTime;
 }
 
 int continueButton, exitButton;
@@ -89,14 +91,12 @@ void startPlayerUI() {
 
 void exitToMenus() {
 	// exit to main menu
-			// world generation
+	// world generation
 	glDeleteVertexArrays(1, &WorldGeneration.terrainVAO);
 	glDeleteVertexArrays(1, &WorldGeneration.areaLimitVAO);
 	glDeleteBuffers(1, &WorldGeneration.terrainVBO);
 	glDeleteBuffers(1, &WorldGeneration.areaLimitVBO);
 	WorldGeneration.areaLimitCount = 0;
-	// player
-	mainPlayer.deleteMemory();
 	// bools
 	mainPlayer.active = false;
 	allButtons.clear();
@@ -128,6 +128,11 @@ void exitToMenus() {
 		to_string(currentWeapons[2]) + " " + to_string(currentWeapons[3]);
 	currentAllLines = rewriteLine(currentAllLines, "currentWeapons", newValue);
 	currentAllLines = rewriteLine(currentAllLines, "currentTime", to_string(currentTime));
+	// player values
+	string posLine = to_string(mainPlayer.position.x) + " " + to_string(mainPlayer.position.y) + " " + to_string(mainPlayer.position.z);
+	currentAllLines = rewriteLine(currentAllLines, "playerPos", posLine);
+	currentAllLines = rewriteLine(currentAllLines, "playerHealth", to_string(mainPlayer.health));
+	mainPlayer.deleteMemory();
 	// monster values
 	auto iterator = currentAllLines.begin();
 	while (iterator != currentAllLines.end()) {
@@ -166,7 +171,8 @@ void pauseUIInteraction() {
 
 	button healthButtonVar = allButtons[healthIcon];
 	allTexts[healthText].position = vec2(healthButtonVar.maxX * 1.04f, display_y - (healthButtonVar.maxY * 0.97f));
-	string healthTextDisplay = removeAfterCharacter(to_string(mainPlayer.health), ".");
+	float displayedHealth = glm::clamp(mainPlayer.health, 0.0f, 100000.0f);
+	string healthTextDisplay = removeAfterCharacter(to_string(displayedHealth), ".");
 	allTexts[healthText].displayedText = healthTextDisplay;
 
 	bool changePaused = false;
@@ -211,12 +217,20 @@ void player::deleteMemory(){
 	glDeleteBuffers(1, &legVBO);
 
 	position = vec3(0.0f);
+	health = 100;
 }
 
 bool lastOnBench = false;
 float lastPitch;
 void player::movement(){
-	if (!canMove) { return; }
+	if(health < 1){
+		rotation.x += (float) deltaTime * DYING_ROTATE_SPEED;
+		if(rotation.x > 90.0f){
+			rotation.x = glm::clamp(rotation.x, 0.0f, 90.0f);
+			dead = true;
+		}
+	}
+	if (!canMove || health < 1) { return; }
 	int forwardKey = stoi(inputLines[0]);
 	int leftKey = stoi(inputLines[1]);
 	int backKey = stoi(inputLines[2]);
@@ -525,7 +539,7 @@ void player::cameraMovement(){
 		return; 
 	}
 	vec2 mouseDiffer = mouseDifferences();
-	if (lastFrameMove) {
+	if (lastFrameMove && health > 0) {
 		playerYaw -= mouseDiffer.x * sensitivity;
 		playerPitch += mouseDiffer.y * sensitivity;
 		if (aiming) {
@@ -546,10 +560,15 @@ void player::renderPlayer(){
 	vector<GLuint> vaos = { headVAO, torsoVAO, armVAO, legVAO, armVAO, legVAO };
 	vector<int> vertCounts = { 48, 36, 60, 60, 60, 60 };
 
-	vec3 legParentPos = position - vec3(0.0f, 0.775f, 0.0f);
-	vec3 armParentPos = position + vec3(0.0f, 0.5f, 0.0f);
+	vec3 legParentPos = position - vec3(
+		sin(radians(rotation.y)) * sin(radians(rotation.x)) * 0.775f, 
+		0.775f * cos(radians(rotation.x)),
+		cos(radians(rotation.y)) * sin(radians(rotation.x)) * 0.775f);
+	vec3 armParentPos = position + vec3(
+		0.55f * sin(radians(rotation.x)) * sin(radians(rotation.y)), 
+		0.55f * cos(radians(rotation.x)), 
+		0.55f * sin(radians(rotation.x)) * cos(radians(rotation.y)));
 	vector<vec3> parentPositions = { position, position, armParentPos, legParentPos, armParentPos, legParentPos };
-	setShaderVecThree(playerShader, "multiplyColour", vec3(1.0f));
 	glUseProgram(playerShader);
 	for (int i = 0; i < 6; i++) {
 		
@@ -1112,7 +1131,7 @@ void player::shoot() {
 	int shootButton = stoi(inputLines[5]);
 	if (!canShoot) {
 		laserColour = vec3(1.0f, 0.0f, 0.0f);
-		if (!equippingReloading && !allWeapons[currentWeapon].currentAmmo < 1) {
+		if (!equippingReloading && allWeapons[currentWeapon].currentAmmo > 0) {
 			currentDelay -= (float)deltaTime;
 			if (currentDelay < 0) {
 				currentDelay = 0.0f;
@@ -1189,7 +1208,7 @@ void player::reload() {
 			equippingReloading = true;
 			reloadSpeed = 30.0f / allWeapons[currentWeapon].shotDelay;
 		}
-		allWeapons[currentWeapon].shotDelayCurrent -= deltaTime;
+		allWeapons[currentWeapon].shotDelayCurrent -= (float) deltaTime;
 		if (allWeapons[currentWeapon].shotDelayCurrent < 0) {
 			allWeapons[currentWeapon].currentAmmo = allWeapons[currentWeapon].maxAmmo;
 			allWeapons[currentWeapon].shotDelayCurrent = allWeapons[currentWeapon].shotDelay;
@@ -1206,7 +1225,7 @@ void player::monsterColliders(){
 		vec3 pos = allMonsters[m].position;
 		vec2 floorPos = vec2(pos.x, pos.z);
 
-		float bearing = bearingTwo(playerFloorPos, floorPos);
+		float bearing = (float) bearingTwo(playerFloorPos, floorPos);
 		float distance = glm::distance(playerFloorPos, floorPos);
 		
 		if(!allMonsters[m].attacking){

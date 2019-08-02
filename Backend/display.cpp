@@ -150,8 +150,8 @@ mat4 modelMatrix(vec3 position, vec3 rotation, vec3 scale, bool child, vec3 pare
 		return newMatrix;
 	}
 	newMatrix = translate(newMatrix, parentPosition);
-	newMatrix = rotate(newMatrix, radians(parentRotation.x), vec3(1.0f, 0.0f, 0.0f));
 	newMatrix = rotate(newMatrix, radians(parentRotation.y), vec3(0.0f, 1.0f, 0.0f));
+	newMatrix = rotate(newMatrix, radians(parentRotation.x), vec3(1.0f, 0.0f, 0.0f));
 	newMatrix = rotate(newMatrix, radians(parentRotation.z), vec3(0.0f, 0.0f, 1.0f));
 	newMatrix = rotate(newMatrix, radians(rotation.x), vec3(1.0f, 0.0f, 0.0f));
 	newMatrix = rotate(newMatrix, radians(rotation.y), vec3(0.0f, 1.0f, 0.0f));

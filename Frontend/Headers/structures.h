@@ -23,6 +23,7 @@ extern int interactKey, shootButton, aimButton;
 void StructuresBegin();
 void StructuresMainloop();
 
+extern float divider;
 extern vector<buildingColour> allColourBuildings;
 void startColorBuilding(vector<float> vertices, buildingColour* usedBuilding);
 void startIrregularColorBuilding(vector<float> vertices, GLuint& VAO, GLuint& VBO, GLuint& size);

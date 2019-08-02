@@ -320,6 +320,18 @@ void startScreen::begin(){
 		allTexts[i].fontSize = display_x / 55;
 		allTexts[i].displayedText = asciiToString(stoi(inputLines[i - forwardKey]));
 	}
+	// world size text
+	int worldSizeText = createText();
+	allTexts[worldSizeText].fontPath = "assets/fonts/zekton.ttf";
+	allTexts[worldSizeText].fontSize = display_x / 30;
+	allTexts[worldSizeText].position = vec2(display_x / 4, display_y / 5);
+	allTexts[worldSizeText].displayedText = "World 1 : Small Worlds";
+
+	int worldSizeTextLarge = createText();
+	allTexts[worldSizeTextLarge].fontPath = "assets/fonts/zekton.ttf";
+	allTexts[worldSizeTextLarge].fontSize = display_x / 30;
+	allTexts[worldSizeTextLarge].position = vec2(display_x / 4, display_y / 10);
+	allTexts[worldSizeTextLarge].displayedText = "World 2 : Large Worlds";
 	// loading text
 	loadingText = createText();
 	allTexts[loadingText].fontPath = "assets/fonts/zekton.ttf";
@@ -446,7 +458,7 @@ void startScreen::mainloop(){
 	}
 	if (allButtons[playTwoButton].clickUp) {
 		if (playTwoTexture == 0) {
-			createSave("assets/saves/saveTwo.save", DEFAULT_SAVE);
+			createSave("assets/saves/saveTwo.save", LARGE_WORLD);
 		}
 		if (playTwoTexture == 1) {
 			loadWorld("assets/saves/saveTwo.save");

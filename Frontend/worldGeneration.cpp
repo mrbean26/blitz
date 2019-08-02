@@ -23,7 +23,8 @@ vector<float> getTerrainCoords(string line){
 	line = removeString(line, "IN USE");
 	vector<float> returned = {};
 	int lastCommaPos = 0;
-	for(int c = 0; c < line.length(); c++){
+	int length = line.length();
+	for(int c = 0; c < length; c++){
 		if(line[c] == ','){
 			string newLine = "";
 			for(int c1 = lastCommaPos; c1 < c; c1++){
@@ -121,25 +122,40 @@ bool insideMountain(vector<vec2> allPositions, vector<float> allScales,
 
 void createSave(const char* filePath, int saveType) {
 	vector<string> saveLines = { "IN USE" };
-	if (saveType == DEFAULT_SAVE) {
+	if (saveType == DEFAULT_SAVE || LARGE_WORLD) {
 		//inventory and hotbar with no items (start of world)
+		saveLines[newVectorPos(&saveLines)] = "saveType " + to_string(saveType);
 		saveLines[newVectorPos(&saveLines)] = "inventory 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"; //15 slots
 		saveLines[newVectorPos(&saveLines)] = "hotbar 0 0 0 0 0"; //5 slots
 		saveLines[newVectorPos(&saveLines)] = "currentWeapons 0 0 0 0";
 		saveLines[newVectorPos(&saveLines)] = "currentTime 0.0";
+		saveLines[newVectorPos(&saveLines)] = "playerPos 0 0 0";
+		saveLines[newVectorPos(&saveLines)] = "playerHealth 100";
 		//"current" data
 		saveLines[newVectorPos(&saveLines)] = "currentPlanet earth"; //basic science base on earth
 		saveLines[newVectorPos(&saveLines)] = "currentPosition 0.0f, 0.0f, 0.0f";
 		//EARTH SAVED DATA----------------------------------------------------------------------
 		//land scale
 		int earthScaleX = randomInt(35, 65);
+		if(saveType == LARGE_WORLD){
+			earthScaleX = randomInt(100, 200);
+		}
 		int earthScaleY = 100 - earthScaleX;
+		if(saveType == LARGE_WORLD){
+			earthScaleY = 300 - earthScaleX;
+		}
 		saveLines[newVectorPos(&saveLines)] = "planetEarthSize " + to_string(earthScaleX) + " " + to_string(earthScaleY);
 		// lists to check if inside each other
 		vector<vec2> craterPositions;
 		vector<float> craterScales;
 		int earthMountainCount = randomInt(1, 8);
+		if(saveType == LARGE_WORLD){
+			earthMountainCount = randomInt(1, 20);
+		}
 		int earthCraterCount = 10 - earthMountainCount;
+		if(saveType == LARGE_WORLD){
+			earthCraterCount = 22 - earthMountainCount;
+		}
 		int failedCraterAttempts = 0;
 		// create and write to file
 		for (int i = 0; i < earthMountainCount + earthCraterCount; i++) {
@@ -150,6 +166,9 @@ void createSave(const char* filePath, int saveType) {
 			}
 			//mountain scale
 			float mountainScaleX = (randomInt(20, earthScaleX) * 0.1f);
+			if(saveType == LARGE_WORLD){
+				mountainScaleX = (randomInt(20, 100) * 0.1f);
+			}
 			float mountainScaleZ = (randomInt(20, 60) * 0.1f);
 			//mountain position
 			float mountainPositionX = (randomInt(0, earthScaleX * 10) * 0.1f);
@@ -340,7 +359,7 @@ void worldGeneration::startShader() {
 	int fragShader = createShader("assets/shaders/terrainFrag.txt", GL_FRAGMENT_SHADER);
 	terrainShader = createProgram({ vertShader, fragShader });
 }
-#include <time.h>
+
 vector<triangle> flatTerrainTriangles, mountainTriangles;
 vector<float> flatXPoints, flatZPoints;
 float triangleSize = 1.0f;
@@ -671,7 +690,7 @@ void worldGeneration::renderTerrain() {
 }
 
 void worldGeneration::daynightCycle(){
-	currentTime += deltaTime * timeMultiplier * 50.0f;
+	currentTime += (float) deltaTime * timeMultiplier * 50.0f;
 	float valueX = tan(radians(currentTime)) * currentAreaScale.x;
 	lightRadius = currentAreaScale.x * 2;
 	lightPos.x = valueX;
@@ -701,12 +720,13 @@ vec2 worldGeneration::getAreaScale() {
 void worldGeneration::begin() {
 	currentPlanetScale = currentAreaScale = getAreaScale();
 	allWorldLines = readLines(worldLinesPath);
-	float time1 = clock();
 	startShader();
 	reserveMemory();
 	beginMountains();
 	beginAreaLimits();
 	currentTime = getFloatFile(worldLinesPath, "currentTime");
+	mainPlayer.health = getFloatFile(WorldGeneration.worldLinesPath, "playerHealth");
+	mainPlayer.position = getVec3File(WorldGeneration.worldLinesPath, "playerPos");
 }
 
 void worldGeneration::mainloop() {
