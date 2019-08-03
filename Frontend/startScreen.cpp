@@ -337,7 +337,8 @@ void startScreen::begin(){
 	allTexts[loadingText].fontPath = "assets/fonts/zekton.ttf";
 	allTexts[loadingText].fontSize = (int)((float)display_x / 30.0f);
 	allTexts[loadingText].displayedText = "Loading...";
-	allTexts[loadingText].position = vec2(display_x * 0.425f, display_y * 0.45f);
+	allTexts[loadingText].position = vec2(display_x / 2.0f, display_y / 2.0f);
+	allTexts[loadingText].centered = true;
 	allTexts[loadingText].active = false;
 }
 

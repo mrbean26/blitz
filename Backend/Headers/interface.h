@@ -93,6 +93,10 @@ public:
 
 	bool active = true;
 	bool loadFonts = true;
+
+	float totalWidth = 0.0f;
+	float totalHeight = 0.0f;
+	bool centered = false;
 };
 
 map<GLchar, Character> getFont(const char * path, int fontsize);
@@ -103,8 +107,8 @@ int createText(); // return position in alltexts vector
 
 void textsBegin(); // reserve memory size for quads and load in fonts
 
-void renderText(string displayedText, vec2 position, float alpha,
-	float size, vec3 colour, map<GLchar, Character> Characters); //draw text on screen
+vec2 renderText(string displayedText, vec2 position, float alpha,
+	float size, vec3 colour, map<GLchar, Character> Characters); //draw text on screen and return height and width of entire text
 
 void renderTexts(); //bind vertex array and pass to shader alongside colour
 

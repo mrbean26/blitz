@@ -47,12 +47,14 @@ public:
 
 	float health = 100.0f;
 	bool dead = false;
+	bool respawning = false;
 	vec3 multiplyColour = vec3(1.0f);
 	float redDelay = 0.0f;
 
 	bool equippingReloading = false;
 	float reloadSpeed;
 private:
+	void respawn();
 	void movement();
 	void resetArms();
 	void reload();

@@ -25,6 +25,7 @@ using namespace std;
 #define PITCH_MIN -80.0f
 #define PITCH_MAX 80.0f
 #define DYING_ROTATE_SPEED 240.0f
+#define PLAYER_RESPAWN_KILL_RADIUS 10.0f
 
 vector<vec3> colourVector(int size, vec3 colour, float multiplier) {
 	vector<vec3> newVector;
@@ -36,11 +37,26 @@ vector<vec3> colourVector(int size, vec3 colour, float multiplier) {
 
 GLuint playerShader;
 vector<string> inputLines;
+
+int diedText, respawnButton;
 void player::begin(){
 	startCharacterVertices();
 	playerView = true;
 	inputLines = readLines("assets/saves/inputs.save");
 	startPlayerUI();
+
+	diedText = createText();
+	allTexts[diedText].fontCharacters = getFont("assets/fonts/zekton.ttf", 40);
+	allTexts[diedText].displayedText = "You Died!";
+	allTexts[diedText].position = vec2(display_x / 2, display_y / 2 + display_y / 10);
+	allTexts[diedText].centered = true;
+	allTexts[diedText].active = false;
+	allTexts[diedText].fontSize = display_x / 40;
+	respawnButton = createButton();
+	allButtons[respawnButton].texture = loadTexture("assets/images/respawnButton.png");
+	allButtons[respawnButton].scale = vec2(0.5f);
+	allButtons[respawnButton].position = vec3(0.0f, -1.0f, 0.0f);
+	allButtons[respawnButton].active = false;
 }
 
 void player::mainloop(){
@@ -53,9 +69,38 @@ void player::mainloop(){
 	pauseUIInteraction();
 	shoot();
 	reload();
-	if(redDelay < 0.0f){ multiplyColour=vec3(1.0f); }
+	respawn();
+	if(allButtons[respawnButton].clickUp){ respawning=true; }
+	if(redDelay < 0.0f && !respawning){ multiplyColour=vec3(1.0f); }
 	if(health < 1){ multiplyColour = vec3(2.5f, 0.2f, 0.2f); }
 	redDelay -= (float) deltaTime;
+}
+
+void player::respawn(){
+	if(!respawning){
+		return;
+	}
+	multiplyColour = vec3(0.2f, 2.5f, 0.2f);
+	health = 100;
+	dead = false;
+	allTexts[diedText].active = false;
+	allButtons[respawnButton].active = false;
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	rotation.x -= (float) deltaTime * DYING_ROTATE_SPEED / 4.0f;
+	if(rotation.x < 0.0f){
+		rotation.x = 0.0f;
+		respawning = false;
+		
+		// kill monstyers within radius
+		int monsterCount = allMonsters.size();
+		for(int m = 0; m < monsterCount; m++){
+			vec3 pos = allMonsters[m].position;
+			float distance = glm::distance(pos, position);
+			if(distance < PLAYER_RESPAWN_KILL_RADIUS){
+				allMonsters[m].health = -10.0f;
+			}
+		}
+	}
 }
 
 int continueButton, exitButton;
@@ -85,8 +130,10 @@ void startPlayerUI() {
 	allButtons[healthIcon].position = vec3(-18.5f, -10.0f, 0.0f);
 	ammoText = createText();
 	allTexts[ammoText].fontCharacters = getFont("assets/fonts/zekton.ttf", 40);
+	allTexts[ammoText].fontSize = display_x / 50;
 	healthText = createText();
 	allTexts[healthText].fontCharacters = getFont("assets/fonts/zekton.ttf", 40);
+	allTexts[healthText].fontSize = display_x / 50;
 }
 
 void exitToMenus() {
@@ -188,6 +235,8 @@ void pauseUIInteraction() {
 	if ((checkKeyDown(GLFW_KEY_ESCAPE) && !benchInUse) || changePaused) {
 		if (!paused) {
 			paused = true;
+			allTexts[diedText].active = false;
+			allButtons[respawnButton].active = false;
 			allButtons[exitButton].active = true;
 			allButtons[continueButton].active = true;
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -196,6 +245,10 @@ void pauseUIInteraction() {
 		}
 		if (paused) {
 			paused = false;
+			if(mainPlayer.health < 1){
+				allTexts[diedText].active = true;
+				allButtons[respawnButton].active = true;
+			}
 			allButtons[exitButton].active = false;
 			allButtons[continueButton].active = false;
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -217,14 +270,18 @@ void player::deleteMemory(){
 	glDeleteBuffers(1, &legVBO);
 
 	position = vec3(0.0f);
+	rotation = vec3(0.0f);
 	health = 100;
 }
 
 bool lastOnBench = false;
 float lastPitch;
 void player::movement(){
-	if(health < 1){
+	if(health < 1 && !paused){
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		rotation.x += (float) deltaTime * DYING_ROTATE_SPEED;
+		allTexts[diedText].active = true;
+		allButtons[respawnButton].active = true;
 		if(rotation.x > 90.0f){
 			rotation.x = glm::clamp(rotation.x, 0.0f, 90.0f);
 			dead = true;

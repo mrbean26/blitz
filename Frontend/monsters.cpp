@@ -241,7 +241,7 @@ void monsterDamage(){
 		int type = allMonsters[m].monsterName;
 		
 		float delay = allMonsters[m].changeBackDelay;
-		if(delay < 0){
+		if(delay < 0 && allMonsters[m].health > 0){
 			allMonsters[m].multiplyColour = vec3(1.0f);
 		}
 		allMonsters[m].changeBackDelay -= (float) deltaTime;
@@ -363,7 +363,7 @@ void monsterInteractions() {
 				deadMonsters[newVectorPos(&deadMonsters)] = m;
 			}
 		}
-		if(allMonsters[m].attacking && mainPlayer.health > 0){
+		if(allMonsters[m].attacking && mainPlayer.health > 0 && !mainPlayer.respawning){
 			vec2 monsterTwo = vec2(monsterPos.x, monsterPos.z);
 			float bearing = (float) bearingTwo(playerPos, monsterTwo);
 
@@ -395,6 +395,11 @@ void monsterInteractions() {
 	int deadMonstersCount = deadMonsters.size();
 	for(int dm = 0; dm < deadMonstersCount; dm++){
 		allMonsters.erase(allMonsters.begin() + deadMonsters[dm]);
+
+		int deadCount = deadMonsters.size();
+		for(int i = 0; i < deadCount; i++){
+			deadMonsters[i] -= 1;
+		}
 	}
 }
 

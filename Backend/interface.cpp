@@ -262,7 +262,7 @@ void textsBegin(){
 	glBindVertexArray(0);
 }
 
-void renderText(string displayedText, vec2 position, float alpha, float size, vec3 colour, 
+vec2 renderText(string displayedText, vec2 position, float alpha, float size, vec3 colour, 
 	map<GLchar, Character> Characters){
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDepthFunc(GL_LEQUAL); // allows text over skybox
@@ -280,6 +280,9 @@ void renderText(string displayedText, vec2 position, float alpha, float size, ve
 
 	glBindVertexArray(textVAO);
 
+	float totalWidth = 0.0f;
+	float totalHeight = 0.0f;
+
 	// Iterate through all characters
 	std::string::const_iterator c;
 	for (c = displayedText.begin(); c != displayedText.end(); c++)
@@ -291,6 +294,12 @@ void renderText(string displayedText, vec2 position, float alpha, float size, ve
 
 		GLfloat w = ch.Size.x * size;
 		GLfloat h = ch.Size.y * size;
+
+		totalWidth += ((ch.Advance >> 6) * size) + ((ch.Size.x >> 6) * size);
+		if(h > totalHeight){
+			totalHeight = h;
+		}
+
 		// Update VBO for each character
 		GLfloat vertices[6][4] = {
 			{ xpos,     ypos + h,   0.0, 0.0 },
@@ -315,6 +324,7 @@ void renderText(string displayedText, vec2 position, float alpha, float size, ve
 	}
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
+	return vec2(totalWidth, totalHeight);
 }
 
 void renderTexts(){
@@ -324,8 +334,15 @@ void renderTexts(){
 		if (!currentText.active) {
 			continue;
 		}
-		renderText(currentText.displayedText, currentText.position, currentText.alpha,
+		vec2 usedTextPosition = currentText.position;
+		if(currentText.centered){
+			usedTextPosition.x -= currentText.totalWidth / 2.0f;
+			usedTextPosition.y -= currentText.totalHeight / 2.0f;
+		}
+		vec2 widthHeight = renderText(currentText.displayedText, usedTextPosition, currentText.alpha,
 			currentText.size, currentText.colour, currentText.fontCharacters);
+		allTexts[i].totalWidth = widthHeight.x;
+		allTexts[i].totalHeight = widthHeight.y;
 	}
 }
 
