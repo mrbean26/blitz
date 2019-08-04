@@ -77,7 +77,11 @@ void model::outputVertices() { // used for getting verts used for main game
 
 	int vCount = vertices.size();
 	for (int v = 0; v < vCount; v++) {
-		cout << vertices[v] << "f" << ", ";
+		string output = to_string(vertices[v]) + "f" + ", ";
+		if(!contains(output, ".")){
+			output = to_string(vertices[v]) + ".0" + "f" + ", ";
+		}
+		cout << output;
 	}
 
 	cout << "}" << endl;

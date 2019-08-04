@@ -3,11 +3,13 @@
 #include "structures.h"
 
 int basicPistol, basicRifle;
-
+int weaponKey;
 void weaponsBegin(){
 	startWeapons();
 	startWeaponUI();
 	getCurrentWeapons();
+	vector<string> inputLines = readLines("assets/saves/inputs.save");
+	weaponKey = stoi(inputLines[11]);
 }
 
 void weaponsMainloop(){
@@ -233,16 +235,16 @@ void weaponUI() {
 		weaponSelectCornerThree, weaponSelectCornerFour, weaponSelectImage,
 			weaponIconOne, weaponIconTwo, weaponIconThree, weaponIconFour };
 	int icons[] = { weaponIconOne, weaponIconTwo, weaponIconThree, weaponIconFour };
-	if (!checkKey(interactKey)) {
+	if (!checkKey(weaponKey)) {
 		if (weaponSelectOpen) {
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
 		weaponSelectOpen = false;
 		mainPlayer.canMoveCamera = true;
 	}
-	if (checkKey(interactKey)) {
+	if (checkKey(weaponKey)) {
 		if (!weaponSelectOpen) {
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
 		weaponSelectOpen = true;
 		mainPlayer.canMoveCamera = false;

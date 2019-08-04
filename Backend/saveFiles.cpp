@@ -1,4 +1,5 @@
 #include "saveFiles.h"
+#include "interface.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
@@ -342,6 +343,45 @@ int getIntFile(const char* fileName, string intName, int pos){
 	}
 	return -1;
 	return 0;
+}
+
+vector<float> getVectorFile(const char * fileName, string vectorName, int pos){
+	string usedLine = "";
+
+	vector<string> allLines = readLines(fileName);
+	if(pos == -1){
+		int lCount = allLines.size();
+		for(int l = 0; l < lCount; l++){
+			if(contains(allLines[l], vectorName)){
+				usedLine = removeString(allLines[l], vectorName);
+				break;
+			}
+		}
+	}
+	if(pos != -1){
+		if(contains(allLines[pos], vectorName)){
+			usedLine = removeString(allLines[pos], vectorName);
+		}
+		else{
+			return {};
+		}
+	}
+
+	// get vector
+	vector<float> returned;
+	int lineSize = usedLine.size();
+	int lastCommaPos = 0;
+	for(int c = 0; c < lineSize; c++){
+		if(usedLine[c] == ','){
+			string currentLine = "";
+			for(int c1 = lastCommaPos + 1; c1 < c; c1++){
+				currentLine += usedLine[c1];
+			}
+			lastCommaPos = c;
+			returned[newVectorPos(&returned)] = stof(currentLine);
+		}
+	}
+	return returned;
 }
 
 vector<string> rewriteLine(vector<string> existingLines, string varName, string newValue, int pos) {

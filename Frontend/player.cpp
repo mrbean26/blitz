@@ -7,6 +7,7 @@
 #include "structures.h"
 #include "weapons.h"
 #include "monsters.h"
+#include "inventory.h"
 
 #include <glm/gtc/type_ptr.hpp>
 using namespace glm;
@@ -39,10 +40,12 @@ GLuint playerShader;
 vector<string> inputLines;
 
 int diedText, respawnButton;
+int pauseKey;
 void player::begin(){
 	startCharacterVertices();
 	playerView = true;
 	inputLines = readLines("assets/saves/inputs.save");
+	pauseKey = stoi(inputLines[10]);
 	startPlayerUI();
 
 	diedText = createText();
@@ -164,6 +167,7 @@ void exitToMenus() {
 	flatZPoints.clear();
 	WorldGeneration.startedBegin = false;
 	WorldGeneration.active = false;
+	allSlots.clear();
 	// write new buildings to file
 	int lineCount = newBuildingLines.size();
 	vector<string> currentAllLines = readLines(WorldGeneration.worldLinesPath);
@@ -232,7 +236,7 @@ void pauseUIInteraction() {
 			return;
 		}
 	}
-	if ((checkKeyDown(GLFW_KEY_ESCAPE) && !benchInUse) || changePaused) {
+	if ((checkKeyDown(pauseKey) && !benchInUse) || changePaused) {
 		if (!paused) {
 			paused = true;
 			allTexts[diedText].active = false;

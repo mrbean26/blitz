@@ -112,6 +112,9 @@ string startScreen::asciiToString(int ascii){
 	if (ascii == 345) {
 		return "RCtrl";
 	}
+	if(ascii == 256){
+		return "Escape";
+	}
 	if (ascii == 257) {
 		return "Enter";
 	}
@@ -155,8 +158,8 @@ string startScreen::asciiToString(int ascii){
 
 void startScreen::changeInputs(){
 	vector<int> keyTextsInts = { forwardKey, leftKey, backKey, rightKey, aimKey,
-			shootKey, interactKey, sprintKey, crouchKey, jumpKey };
-	for (int i = forwardButton; i <= jumpButton; i++) {
+			shootKey, interactKey, sprintKey, crouchKey, jumpKey, pauseKey, weaponKey };
+	for (int i = forwardButton; i <= weaponButton; i++) {
 		//check for key
 		if (allButtons[i].clickUp && !checkKey) {
 			checkKey = true;
@@ -269,17 +272,19 @@ void startScreen::begin(){
 	sprintButton = createButton();
 	crouchButton = createButton();
 	jumpButton = createButton();
-	for (int i = forwardButton; i <= jumpButton; i++) {
+	pauseButton = createButton();
+	weaponButton = createButton();
+	for (int i = forwardButton; i <= weaponButton; i++) {
 		allButtons[i] = defaultInputButton;
 		float xPosition = 0.0f;
 		float yPosition = 0.0f;
-		if (i < shootButton) {
+		if (i < interactButton) {
 			xPosition = 5.5f;
 			yPosition = -13.5f + (((float)i - forwardButton)*3.5f);
 		}
-		if (i > aimButton) {
+		if (i > shootButton) {
 			xPosition = 9.5f;
-			yPosition = -13.5f + (((float)i - shootButton)*3.5f);
+			yPosition = -13.5f + (((float)i - interactButton)*3.5f);
 		}
 		allButtons[i].position = vec3(xPosition, yPosition, 0.0f);
 	}
@@ -294,10 +299,12 @@ void startScreen::begin(){
 	sprintText = createText();
 	crouchText = createText();
 	jumpText = createText();
+	pauseText = createText();
+	weaponText = createText();
 	vector<string> displayedTexts = { "Forward", "Left",
 		"Backward", "Right", "Aim", "Shoot", "Interact", "Sprint",
-			"Crouch", "Jump" };
-	for (int i = forwardText; i <= jumpText; i++) {
+			"Crouch", "Jump", "Pause", "Weapon" };
+	for (int i = forwardText; i <= weaponText; i++) {
 		allTexts[i].fontPath = "assets/fonts/zekton.ttf";
 		allTexts[i].displayedText = displayedTexts[i - forwardText];
 		allTexts[i].fontSize = display_x / 50;
@@ -313,8 +320,10 @@ void startScreen::begin(){
 	sprintKey = createText();
 	crouchKey = createText();
 	jumpKey = createText();
+	pauseKey = createText();
+	weaponKey = createText();
 	inputLines = readLines("assets/saves/inputs.save");
-	for (int i = forwardKey; i <= jumpKey; i++) {
+	for (int i = forwardKey; i <= weaponKey; i++) {
 		allTexts[i].fontPath = "assets/fonts/zekton.ttf";
 		allTexts[i].colour = vec3(0.0f, 0.0f, 1.0f);
 		allTexts[i].fontSize = display_x / 55;
@@ -394,8 +403,8 @@ void startScreen::mainloop(){
 	}
 	//INPUT MANAGER
 	vector<int> buttonInts = { forwardButton, leftButton, backButton, rightButton,
-		aimButton, shootButton, interactButton, sprintButton, crouchButton, jumpButton };
-	for (int i = forwardText; i <= jumpText; i++) {
+		aimButton, shootButton, interactButton, sprintButton, crouchButton, jumpButton, pauseButton, weaponButton };
+	for (int i = forwardText; i <= weaponText; i++) {
 		int index = buttonInts[i - forwardText];
 		float positionX = allButtons[index].minX * 1.005f;
 		float positionY = ((float)display_y - allButtons[index].minY) + (display_y*0.01f);
@@ -403,7 +412,7 @@ void startScreen::mainloop(){
 		allTexts[i].fontSize = display_x / 45;
 		allTexts[i].position = vec2(positionX, positionY);
 	}
-	for (int i = forwardKey; i <= jumpKey; i++) {
+	for (int i = forwardKey; i <= weaponKey; i++) {
 		int index = buttonInts[i - forwardKey];
 		float positionX = allButtons[index].minX * 1.005f;
 		float positionY = ((float)display_y - allButtons[index].maxY) + (display_y*0.015f);

@@ -15,6 +15,7 @@ player mainPlayer;
 #include "weapons.h"
 #include "monsters.h"
 #include "display.h"
+#include "inventory.h"
 
 void frontendBegin(){
 	int emptyButton = createButton(); //first button does not show if this is not used, also allows texts to show with skybox
@@ -30,11 +31,13 @@ void frontendMainloop(){
 		StructuresBegin();
 		weaponsBegin();
 		monstersBegin();
+		inventoryBegin();
 		WorldGeneration.startedBegin = true;
 	}
 	renderSkybox(!WorldGeneration.startedBegin);
 	StartScreen.mainloop();
 	WorldGeneration.mainloop();
+	inventoryMainloop();
 	StructuresMainloop();
 	weaponsMainloop();
 	mainPlayer.mainloop();

@@ -37,6 +37,8 @@ float getFloatFile(const char * fileName, string floatName, int pos = -1);
 
 int getIntFile(const char* fileName, string intName, int pos = -1);
 
+vector<float> getVectorFile(const char * fileName, string vectorName, int pos = -1);
+
 vector<string> rewriteLine(vector<string> existingLines, string varName, string newValue, int pos = -1);
 
 #endif

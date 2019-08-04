@@ -39,6 +39,8 @@ public:
 	int sprintButton, sprintText;
 	int crouchButton, crouchText;
 	int jumpButton, jumpText;
+	int pauseButton, pauseText; 
+	int weaponButton, weaponText;
 
 	int forwardKey;
 	int leftKey;
@@ -50,6 +52,8 @@ public:
 	int sprintKey;
 	int crouchKey;
 	int jumpKey;
+	int pauseKey;
+	int weaponKey;
 
 	int playOneTexture=2, playTwoTexture=2; //0=create, 1=play
 	int loadingText;

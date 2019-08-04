@@ -19,23 +19,6 @@ using namespace glm;
 #include "worldGeneration.h"
 #include "frontend.h"
 
-vector<float> getTerrainCoords(string line){
-	line = removeString(line, "IN USE");
-	vector<float> returned = {};
-	int lastCommaPos = 0;
-	int length = line.length();
-	for(int c = 0; c < length; c++){
-		if(line[c] == ','){
-			string newLine = "";
-			for(int c1 = lastCommaPos; c1 < c; c1++){
-				newLine += line[c1];
-			}
-			lastCommaPos = c + 1;
-		}
-	}
-	return returned;	
-}
-
 bool insideCircle(vec2 circlePos, float radius, vec2 pointPos, bool terrain) {
 	float xSquared = pow(pointPos.x - circlePos.x, 2);
 	float ySquared = pow(pointPos.y - circlePos.y, 2);
@@ -125,8 +108,7 @@ void createSave(const char* filePath, int saveType) {
 	if (saveType == DEFAULT_SAVE || LARGE_WORLD) {
 		//inventory and hotbar with no items (start of world)
 		saveLines[newVectorPos(&saveLines)] = "saveType " + to_string(saveType);
-		saveLines[newVectorPos(&saveLines)] = "inventory 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"; //15 slots
-		saveLines[newVectorPos(&saveLines)] = "hotbar 0 0 0 0 0"; //5 slots
+		saveLines[newVectorPos(&saveLines)] = "inventory 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,"; //15 slots
 		saveLines[newVectorPos(&saveLines)] = "currentWeapons 0 0 0 0";
 		saveLines[newVectorPos(&saveLines)] = "currentTime 0.0";
 		saveLines[newVectorPos(&saveLines)] = "playerPos 0 0 0";
