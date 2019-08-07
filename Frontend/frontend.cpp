@@ -37,11 +37,11 @@ void frontendMainloop(){
 	renderSkybox(!WorldGeneration.startedBegin);
 	StartScreen.mainloop();
 	WorldGeneration.mainloop();
-	inventoryMainloop();
 	StructuresMainloop();
 	weaponsMainloop();
 	mainPlayer.mainloop();
 	monstersMainloop();
+	inventoryMainloop();
 	interfaceLastcall();
 	updateKeys(); // this has to be called last every frame / after last call of getkeydown
 }

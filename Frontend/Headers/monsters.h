@@ -26,6 +26,10 @@ public:
 	float defaultAttackDelay = 3.0f;
 	float attackChanceDelay = 3.0f;
 
+	bool droppedItem = false;
+	int itemIndex = 0;
+	int itemDropChance = 1;
+
 	void render();
 	GLuint VAO, VBO, size;
 
@@ -53,7 +57,7 @@ void monsterTerrainCollisions();
 void monsterDamage();
 
 int createMonster(int monsterType);
-int createMonsterTemplate(int name, vector<float> vertices, float health, float damage, float attackDelayChance,
+int createMonsterTemplate(int name, vector<float> vertices, float health, float damage, float attackDelayChance, int dropIndex, int dropChance,
 	vec3 scale = vec3(1.0f));
 
 void monsterSpawning();
