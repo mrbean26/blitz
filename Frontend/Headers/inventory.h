@@ -51,7 +51,11 @@ extern vector<inventorySlot> allSlots;
 extern vector<item> allItems;
 extern vector<item> allEntities;
 extern vector<int> allSlotTexts;
+extern int currentSwappingIndex;
 
+vector<string> entitySaveLines();
+vector<string> inventorySaveLine();
+void getEntities();
 void swapItems();
 void givePlayerEntity();
 void entityColliders();

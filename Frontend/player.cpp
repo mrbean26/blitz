@@ -167,7 +167,6 @@ void exitToMenus() {
 	flatZPoints.clear();
 	WorldGeneration.startedBegin = false;
 	WorldGeneration.active = false;
-	allSlots.clear();
 	// write new buildings to file
 	int lineCount = newBuildingLines.size();
 	vector<string> currentAllLines = readLines(WorldGeneration.worldLinesPath);
@@ -183,7 +182,13 @@ void exitToMenus() {
 	string posLine = to_string(mainPlayer.position.x) + " " + to_string(mainPlayer.position.y) + " " + to_string(mainPlayer.position.z);
 	currentAllLines = rewriteLine(currentAllLines, "playerPos", posLine);
 	currentAllLines = rewriteLine(currentAllLines, "playerHealth", to_string(mainPlayer.health));
+	currentAllLines = rewriteLine(currentAllLines, "inventory", inventorySaveLine()[0]);
+	currentAllLines = rewriteLine(currentAllLines, "inventoryQuantity", inventorySaveLine()[1]);
 	mainPlayer.deleteMemory();
+	allSlots.clear();
+	allItems.clear();
+	allSlotTexts.clear();
+	currentSwappingIndex = -1;
 	// monster values
 	auto iterator = currentAllLines.begin();
 	while (iterator != currentAllLines.end()) {
@@ -206,6 +211,24 @@ void exitToMenus() {
 		currentAllLines[newVectorPos(&currentAllLines)] = newLine;
 	}
 	allMonsters.clear();
+	// all entities
+	// erase
+	iterator = currentAllLines.begin();
+	while (iterator != currentAllLines.end()) {
+		if (contains(*iterator, WorldGeneration.currentAreaPrefix + "Entity")) { // delete values
+			iterator = currentAllLines.erase(iterator);
+		}
+		else {
+			++iterator;
+		}
+	}
+	// write
+	vector<string> newEntityLines = entitySaveLines();
+	int eLines = newEntityLines.size();
+	for(int e = 0; e < eLines; e++){
+		currentAllLines[newVectorPos(&currentAllLines)] = newEntityLines[e];
+	}
+	allEntities.clear();
 	// write
 	writeLines(WorldGeneration.worldLinesPath, currentAllLines);
 	// structures.h

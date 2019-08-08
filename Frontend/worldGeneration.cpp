@@ -108,7 +108,8 @@ void createSave(const char* filePath, int saveType) {
 	if (saveType == DEFAULT_SAVE || LARGE_WORLD) {
 		//inventory and hotbar with no items (start of world)
 		saveLines[newVectorPos(&saveLines)] = "saveType " + to_string(saveType);
-		saveLines[newVectorPos(&saveLines)] = "inventory 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,"; //15 slots
+		saveLines[newVectorPos(&saveLines)] = "inventory -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,"; //15 slots
+		saveLines[newVectorPos(&saveLines)] = "inventoryQuantity 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,";
 		saveLines[newVectorPos(&saveLines)] = "currentWeapons 0 0 0 0";
 		saveLines[newVectorPos(&saveLines)] = "currentTime 0.0";
 		saveLines[newVectorPos(&saveLines)] = "playerPos 0 0 0";

@@ -16,6 +16,7 @@ using namespace std;
 #define ITEM_COLLECT_RADIUS 5
 #define PLAYER_PICKUP_RADIUS 5
 #define SLOT_MAX_COUNT 8
+#define DROP_DISTANCE_CHARACTER 8
 
 bool inventoryOpen = false;
 int interactKeyInv = 0;
@@ -25,12 +26,15 @@ int currentSwappingIndex = -1;
 void getInventory(){
     vector<float> currentInventory = getVectorFile(
         WorldGeneration.worldLinesPath, "inventory");
+    vector<float> currentInventoryQuantity = getVectorFile(
+        WorldGeneration.worldLinesPath, "inventoryQuantity");
     for(int s = 0; s < SLOT_COUNT; s++){
         inventorySlot newSlot;
         if(s < HOTBAR_COUNT){
             newSlot.hotbar = true;
         }
-        newSlot.itemType = (int) currentInventory[s] - 1;
+        newSlot.itemType = (int) currentInventory[s];
+        newSlot.itemQuantity = (int) currentInventoryQuantity[s];
         allSlots[newVectorPos(&allSlots)] = newSlot;
     }
 }
@@ -39,6 +43,7 @@ vector<int> allSlotTexts;
 void startInventoryUI(){
     texture slotTexture = loadTexture("assets/images/inventorySlot.png");
     vec3 startPos = vec3(-18.5f, 10.0f, 0.0f);
+    vector<int> itemIconCreations; // have to be created after slots
     for(int s = 0; s < SLOT_COUNT; s++){
         int newSlotButton = createButton();
         allButtons[newSlotButton].interactive = false;
@@ -59,6 +64,17 @@ void startInventoryUI(){
 
         allSlots[s].buttonIndex = newSlotButton;
         allSlots[s].buttonPos = pos;
+
+        // icons
+        if(allSlots[s].itemType != -1){
+            itemIconCreations[newVectorPos(&itemIconCreations)] = s;
+        }
+    }
+    // create icons
+    int iconCount = itemIconCreations.size();
+    for(int i = 0; i < iconCount; i++){
+        int index = itemIconCreations[i];
+        allItems[allSlots[index].itemType].createButtonIcon(index);
     }
     // texts
     map<GLchar, Character> zekton = getFont("assets/fonts/zekton.ttf", 20);
@@ -72,9 +88,10 @@ void startInventoryUI(){
 }
 
 void inventoryBegin(){
-    getInventory();
-    startInventoryUI();
     startItems();
+    getInventory();
+    getEntities();
+    startInventoryUI();
     vector<string> inputLines = readLines("assets/saves/inputs.save");
     interactKeyInv = stoi(inputLines[6]);
 }
@@ -227,7 +244,7 @@ void monsterItemDrops(monster &usedMonster){
         // dropped
         item newEntity = allItems[usedMonster.itemIndex];
         newEntity.modelPosition = usedMonster.position;
-        newEntity.itemType = usedMonster.itemIndex + 1;
+        newEntity.itemType = usedMonster.itemIndex;
         allEntities[newVectorPos(&allEntities)] = newEntity;
     }
     usedMonster.droppedItem = true;
@@ -339,6 +356,59 @@ void entityColliders(){
     }
 }
 
+vector<string> inventorySaveLine(){
+    // return value only
+    string invLine = "";
+    string quantityLine = "";
+    for(int s = 0; s < SLOT_COUNT; s++){
+        invLine += to_string(allSlots[s].itemType);
+        invLine += ",";
+        
+        quantityLine += to_string(allSlots[s].itemQuantity);
+        quantityLine += ",";
+
+        if(s != SLOT_COUNT - 1){
+            invLine += " ";
+            quantityLine += " ";
+        }
+    }
+    return {invLine, quantityLine};
+}
+
+vector<string> entitySaveLines(){
+    vector<string> returned;
+    int eCount = allEntities.size();
+    for(int e = 0; e < eCount; e++){
+        string newLine = WorldGeneration.currentAreaPrefix + "Entity ";
+        newLine += to_string(allEntities[e].modelPosition.x) + ", ";
+        newLine += to_string(allEntities[e].modelPosition.y) + ", ";
+        newLine += to_string(allEntities[e].modelPosition.z) + ", ";
+        newLine += to_string(allEntities[e].itemType) + ", ";
+        newLine += to_string(allEntities[e].quantity) + ",";
+        returned[newVectorPos(&returned)] = newLine;
+    }
+    return returned;
+}
+
+void getEntities(){
+    vector<string> allLines = readLines(WorldGeneration.worldLinesPath);
+    int lCount = allLines.size();
+    for(int l = 0; l < lCount; l++){
+        string currentLine = allLines[l];
+        if(contains(currentLine, WorldGeneration.currentAreaPrefix + "Entity")){
+            vector<float> eInfo = getVectorFile(WorldGeneration.worldLinesPath, WorldGeneration.currentAreaPrefix + "Entity", l);
+            item newEntity = allItems[(int) eInfo[3]];
+
+            newEntity.modelPosition.x = eInfo[0];
+            newEntity.modelPosition.y = eInfo[1];
+            newEntity.modelPosition.z = eInfo[2];
+            newEntity.quantity = (int) eInfo[4];
+
+            allEntities[newVectorPos(&allEntities)] = newEntity;
+        }
+    }
+}
+
 void swapItems(){
     if(!inventoryOpen){ 
         currentSwappingIndex = -1;
@@ -355,6 +425,13 @@ void swapItems(){
         if(currentSwappingIndex > -1){
             if(allButtons[allSlots[s].buttonIndex].clickUp){
                 // swap
+
+                if(s == currentSwappingIndex){
+                    // dropping
+                    
+                    return;
+                }
+
                 int firstSwappedItemType = allSlots[currentSwappingIndex].itemType;
                 int firstSwappedItemAmmount = allSlots[currentSwappingIndex].itemQuantity;
                 int firstSwappedButtonIndex = allSlots[currentSwappingIndex].buttonIconIndex;
@@ -387,22 +464,34 @@ void givePlayerEntity(){
         float distance = glm::distance(pPos, ePos);
 
         if(distance < PLAYER_PICKUP_RADIUS){
-            int slotIndex = 0;
+            int slotIndex = -1;
+            int firstEmptySlot = -1;
+            bool fillingSlot = false;
             for(int s = 0; s < SLOT_COUNT; s++){
-                if(allSlots[s].itemType == allEntities[e].itemType + 1){
+                if(allSlots[s].itemType == allEntities[e].itemType){
                     if(allSlots[s].itemQuantity < SLOT_MAX_COUNT){
                         slotIndex = s;
+                        fillingSlot = true;
                         break;
                     }
                 }
                 if(allSlots[s].itemType == -1){
-                    slotIndex = s;
-                    allItems[allEntities[e].itemType - 1].createButtonIcon(slotIndex);
-                    break;
+                    if(firstEmptySlot == -1){
+                        firstEmptySlot = s;
+                    }
                 }
             }
+            if(slotIndex == -1){
+                slotIndex = firstEmptySlot;
+                if(firstEmptySlot == -1){
+                    return;
+                }
+            }
+            if(!fillingSlot){
+                allItems[allEntities[e].itemType].createButtonIcon(slotIndex);
+            }
             allSlots[slotIndex].itemQuantity += 1;
-            allSlots[slotIndex].itemType = allEntities[e].itemType + 1;
+            allSlots[slotIndex].itemType = allEntities[e].itemType;
             deletedEntities[newVectorPos(&deletedEntities)] = e;
         }
     }
