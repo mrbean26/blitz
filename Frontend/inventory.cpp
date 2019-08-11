@@ -17,6 +17,7 @@ using namespace std;
 #define PLAYER_PICKUP_RADIUS 5
 #define SLOT_MAX_COUNT 8
 #define DROP_DISTANCE_CHARACTER 8
+#define ENTITY_COLLIDER_DISTANCE 1.0f
 
 bool inventoryOpen = false;
 int interactKeyInv = 0;
@@ -157,7 +158,6 @@ void inventoryMainloop(){
     inventoryUIMainloop();
     entityInteractions();
     collectItems();
-    entityColliders();
     givePlayerEntity();
     givePlayerEntity();
     swapItems();
@@ -281,7 +281,7 @@ void collectItems(){
             if(e1 == e){
                 continue;
             }
-            if(allEntities[e].itemType == allEntities[e1].itemType){
+            if(allEntities[e].itemType != allEntities[e1].itemType){
                 continue;
             }
             vec3 e1Pos = allEntities[e1].modelPosition;
@@ -303,57 +303,83 @@ void entityInteractions(){
     int eCount = allEntities.size();
     for(int e = 0; e < eCount; e++){
         allEntities[e].render();
+        allEntities[e].droppingInteraction();
+        allEntities[e].modelPosition = entityColliders(allEntities[e].modelPosition);
     }
 }
 
-void entityColliders(){
-    int eCount = allEntities.size();
-    for(int e = 0; e < eCount; e++){
-        vec3 ePos = allEntities[e].modelPosition;
-        vec3 floorPos = vec3(ePos.x, 0.0f, ePos.z);
-        float yLowest = 0.0f;
+void item::droppingInteraction(){
+    if(!dropping){
+        return;
+    }
+    vec2 floorCurrent = vec2(modelPosition.x, modelPosition.z);
+    vec2 floorEnd = vec2(droppingEnd.x, droppingEnd.z);
+    float bearing = radians(bearingTwo(floorCurrent, floorEnd));
 
-        int mCount = currentAllMountainPositions.size();
-        for(int m = 0; m < mCount; m++){
-            vec2 mPos = currentAllMountainPositions[m];
-            mPos.y *= -1.0f;
-            vec3 mThree = vec3(mPos.x, 0.0f, mPos.y);
-            vec3 mSca = currentAllMountainScales[m];
-            float mRad = (mSca.x * 100.0f) * 0.025f;
-            bool crater = mSca.z < 0.0f;
-            float distance = glm::distance(floorPos, mThree);
-            if(distance > 0){
-                distance = distance / mRad;
-                distance = glm::clamp(distance, -1.0f, 1.0f);
-                float pointY = distance * mSca.y;
-                if(crater){
-                    pointY *= -1.0f;
-                }
-                if(pointY > yLowest){
-                    yLowest = pointY;
-                }
+    modelPosition.x += sin(bearing) * 1.0f;
+    modelPosition.z += cos(bearing) * 1.0f;
+
+    float distance = glm::distance(floorCurrent, floorEnd);
+    if(distance < 0.1f){
+        dropping = false;
+    }
+}
+
+vec3 entityColliders(vec3 start){
+    vec3 ePos = start;
+
+    float y = 0.0f;
+    int mCount = currentAllMountainPositions.size();
+    bool inMountain = false;
+    for(int m = 0; m < mCount; m++){
+        vec2 pos = currentAllMountainPositions[m];
+        pos.y *= -1.0f;
+        vec3 sca = currentAllMountainScales[m];
+        float currentRad = (sca.x * 100.0f) * 0.025f;
+        bool crater = sca.z < 0.0f;
+
+        vec3 mThree = vec3(pos.x, 0.0f, pos.y);
+        vec3 eThree = vec3(ePos.x, 0.0f, ePos.z);
+        float distance = currentRad - glm::distance(mThree, eThree);
+
+        if(distance > 0){
+            inMountain = true;
+            distance = distance / currentRad;
+            distance = glm::clamp(distance, -1.0f, 1.0f);
+            float pointY = distance * sca.y;
+            if(crater){
+                pointY = -pointY;
+            }
+            pointY += ENTITY_COLLIDER_DISTANCE;
+            if(ePos.y < pointY){
+                ePos.y = pointY;
             }
         }
-        ePos.y = glm::clamp(ePos.y, yLowest, ePos.y);
-
-        if(ePos.x < 0.0f){
-		    ePos.x = 0.0f;
-	    }
-	    if(ePos.x > currentPlanetScale.x){
-		    ePos.x = currentPlanetScale.x;
-	    }
-	    if(ePos.z > 0.0f){
-		    ePos.z = 0.0f;
-	    }
-	    if(ePos.z < -currentPlanetScale.y){
-		    ePos.z = -currentPlanetScale.y;
-	    }
-
-        int waste = 0; float wasteF = 0.0f; bool wasteB = false; bool wasteB2 = false;
-        buildCollisions(ePos, waste, wasteF, wasteB, wasteB2);
-
-        allEntities[e].modelPosition = ePos;
     }
+
+    if(!inMountain){
+        if(ePos.y < ENTITY_COLLIDER_DISTANCE){
+            ePos.y = ENTITY_COLLIDER_DISTANCE;
+        }
+    }
+
+    if(ePos.x < 0.0f + ENTITY_COLLIDER_DISTANCE){
+		ePos.x = 0.0f + ENTITY_COLLIDER_DISTANCE;
+	}
+	if(ePos.x > currentPlanetScale.x - ENTITY_COLLIDER_DISTANCE){
+		ePos.x = currentPlanetScale.x - ENTITY_COLLIDER_DISTANCE;
+	}
+	if(ePos.z > 0.0f - ENTITY_COLLIDER_DISTANCE){
+		ePos.z = 0.0f - ENTITY_COLLIDER_DISTANCE;
+	}
+	if(ePos.z < -currentPlanetScale.y + ENTITY_COLLIDER_DISTANCE){
+		ePos.z = -currentPlanetScale.y + ENTITY_COLLIDER_DISTANCE;
+	}
+
+    //int waste = 0; float wasteF = 0.0f; bool wasteB = false; bool wasteB2 = false;
+    //buildCollisions(ePos, waste, wasteF, wasteB, wasteB2);
+        
+    return ePos;
 }
 
 vector<string> inventorySaveLine(){
@@ -428,7 +454,23 @@ void swapItems(){
 
                 if(s == currentSwappingIndex){
                     // dropping
-                    
+                    item newEntity = allItems[allSlots[s].itemType];
+                    newEntity.itemType = allSlots[s].itemType;
+                    float pRotation = mainPlayer.rotation.y;
+                    vec3 pPos = mainPlayer.position;
+
+                    newEntity.dropping = true;
+                    newEntity.droppingStart = pPos;
+                    newEntity.modelPosition = pPos;
+
+                    newEntity.droppingEnd.x = pPos.x - sin(radians(pRotation)) * DROP_DISTANCE_CHARACTER;
+                    newEntity.droppingEnd.y = pPos.y;
+                    newEntity.droppingEnd.z = pPos.z - cos(radians(pRotation)) * DROP_DISTANCE_CHARACTER;
+                    newEntity.droppingEnd = entityColliders(newEntity.droppingEnd);
+
+                    allEntities[newVectorPos(&allEntities)] = newEntity;
+                    allButtons[allSlots[s].buttonIndex].colour = vec3(1.0f);
+                    currentSwappingIndex = -1;
                     return;
                 }
 
@@ -463,7 +505,7 @@ void givePlayerEntity(){
         vec3 ePos = allEntities[e].modelPosition;
         float distance = glm::distance(pPos, ePos);
 
-        if(distance < PLAYER_PICKUP_RADIUS){
+        if(distance < PLAYER_PICKUP_RADIUS && !allEntities[e].dropping){
             int slotIndex = -1;
             int firstEmptySlot = -1;
             bool fillingSlot = false;
@@ -490,7 +532,7 @@ void givePlayerEntity(){
             if(!fillingSlot){
                 allItems[allEntities[e].itemType].createButtonIcon(slotIndex);
             }
-            allSlots[slotIndex].itemQuantity += 1;
+            allSlots[slotIndex].itemQuantity += allEntities[e].quantity;
             allSlots[slotIndex].itemType = allEntities[e].itemType;
             deletedEntities[newVectorPos(&deletedEntities)] = e;
         }

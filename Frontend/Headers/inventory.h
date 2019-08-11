@@ -45,6 +45,12 @@ public:
 
     int quantity = 1;
     int itemType = 0;
+
+    bool dropping = false;
+    vec3 droppingEnd = vec3(0.0f);
+    vec3 droppingStart = vec3(0.0f);
+    float droppingAngle = 0.0f;
+    void droppingInteraction();
 };
 
 extern vector<inventorySlot> allSlots;
@@ -58,7 +64,7 @@ vector<string> inventorySaveLine();
 void getEntities();
 void swapItems();
 void givePlayerEntity();
-void entityColliders();
+vec3 entityColliders(vec3 start);
 void collectItems();
 void entityInteractions();
 void monsterItemDrops(monster &usedMonster);
