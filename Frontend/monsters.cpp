@@ -251,7 +251,7 @@ void monsterDamage(){
 		if(delay < 0 && allMonsters[m].health > 0){
 			allMonsters[m].multiplyColour = vec3(1.0f);
 		}
-		allMonsters[m].changeBackDelay -= (float) deltaTime;
+		allMonsters[m].changeBackDelay -= deltaTime;
 
 		int bCount = allBullets.size();
 		vector<int> bulletCollisionIndexes;
@@ -366,7 +366,7 @@ void monsterInteractions() {
 		if(allMonsters[m].health < 1){
 			monsterItemDrops(allMonsters[m]);
 			allMonsters[m].multiplyColour = vec3(2.5f, 0.2f, 0.2f);
-			allMonsters[m].rotation.x += (float) deltaTime * DYING_ROTATE_SPEED;
+			allMonsters[m].rotation.x += deltaTime * DYING_ROTATE_SPEED;
 			if(allMonsters[m].rotation.x > 90.0f){
 				deadMonsters[newVectorPos(&deadMonsters)] = m;
 			}
@@ -377,7 +377,7 @@ void monsterInteractions() {
 
 			distance = glm::distance(playerPos, monsterTwo);
 			if(!allMonsters[m].finishedAttackOne){
-				distance -= (float) deltaTime * MONSTER_ATTACK_SPEED;
+				distance -= deltaTime * MONSTER_ATTACK_SPEED;
 				if(distance < MONSTER_ATTACK_CLOSEST_DISTANCE){
 					allMonsters[m].finishedAttackOne = true;
 					mainPlayer.health -= allMonsters[m].damage;
@@ -386,7 +386,7 @@ void monsterInteractions() {
 				}
 			}
 			if(allMonsters[m].finishedAttackOne){
-				distance += (float) deltaTime * MONSTER_ATTACK_SPEED;
+				distance += deltaTime * MONSTER_ATTACK_SPEED;
 				if(distance > MONSTER_MOVE_ROTATE_DISTANCE_MIN){
 					allMonsters[m].attacking = false;
 					allMonsters[m].finishedAttackOne = false;
@@ -397,7 +397,7 @@ void monsterInteractions() {
 			allMonsters[m].position.x = xNew;
 			allMonsters[m].position.z = zNew;
 		}
-		allMonsters[m].attackChanceDelay -= (float) deltaTime;
+		allMonsters[m].attackChanceDelay -= deltaTime;
 	}
 
 	int deadMonstersCount = deadMonsters.size();

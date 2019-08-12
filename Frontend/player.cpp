@@ -76,7 +76,7 @@ void player::mainloop(){
 	if(allButtons[respawnButton].clickUp){ respawning=true; }
 	if(redDelay < 0.0f && !respawning){ multiplyColour=vec3(1.0f); }
 	if(health < 1){ multiplyColour = vec3(2.5f, 0.2f, 0.2f); }
-	redDelay -= (float) deltaTime;
+	redDelay -= deltaTime;
 }
 
 void player::respawn(){
@@ -89,7 +89,7 @@ void player::respawn(){
 	allTexts[diedText].active = false;
 	allButtons[respawnButton].active = false;
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	rotation.x -= (float) deltaTime * DYING_ROTATE_SPEED / 4.0f;
+	rotation.x -= deltaTime * DYING_ROTATE_SPEED / 4.0f;
 	if(rotation.x < 0.0f){
 		rotation.x = 0.0f;
 		respawning = false;
@@ -306,7 +306,7 @@ float lastPitch;
 void player::movement(){
 	if(health < 1 && !paused){
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-		rotation.x += (float) deltaTime * DYING_ROTATE_SPEED;
+		rotation.x += deltaTime * DYING_ROTATE_SPEED;
 		allTexts[diedText].active = true;
 		allButtons[respawnButton].active = true;
 		if(rotation.x > 90.0f){
@@ -344,7 +344,7 @@ void player::movement(){
 		jumpVelocity = JUMP_HEIGHT;
 	}
 	if (jumping) {
-		jumpVelocity -= (float) deltaTime * JUMP_SPEED;
+		jumpVelocity -= deltaTime * JUMP_SPEED;
 		if (position.y < lowestY + 0.02f && jumpVelocity < 0) {
 			jumpVelocity = 0.0f;
 			jumping = false;
@@ -368,10 +368,10 @@ void player::movement(){
 	velocity.y = jumpVelocity;
 	// rotations
 	if (checkKey(rightKey)) { 
-		rotation.y -= (float) deltaTime * PLAYER_ROTATE_SPEED;
+		rotation.y -= deltaTime * PLAYER_ROTATE_SPEED;
 	}
 	if (checkKey(leftKey)) {
-		rotation.y += (float) deltaTime * PLAYER_ROTATE_SPEED;
+		rotation.y += deltaTime * PLAYER_ROTATE_SPEED;
 	}
 	runAnimation(movingMultiplier);
 	if (checkKey(aimButton)) {
@@ -412,7 +412,7 @@ void player::movement(){
 
 	float xGap = -sin(radians(rotation.y));
 	float zGap = -cos(radians(rotation.y));
-	vec3 rotationMovement = vec3(xGap, 1.0f, zGap) * vec3((float) deltaTime);
+	vec3 rotationMovement = vec3(xGap, 1.0f, zGap) * vec3(deltaTime);
 	velocity = velocity * rotationMovement;
 	position += velocity;
 }
@@ -1048,8 +1048,8 @@ void player::runAnimation(float multiplier){
 				armRotation.x -= (float)deltaTime * 3 * 40.0f;
 				armRotationTwo.x += (float)deltaTime * 3 * 40.0f;
 			}
-			legRotation.x += (float) deltaTime * 3 * 40.0f;
-			legRotationTwo.x -= (float) deltaTime * 3 * 40.0f;
+			legRotation.x += deltaTime * 3 * 40.0f;
+			legRotationTwo.x -= deltaTime * 3 * 40.0f;
 		}
 		if (legRotationTwo.x < 0) {
 			upDown = -1;
@@ -1057,8 +1057,8 @@ void player::runAnimation(float multiplier){
 				armRotation.x += (float)deltaTime * 3 * 40.0f;
 				armRotationTwo.x -= (float)deltaTime * 3 * 40.0f;
 			}
-			legRotation.x -= (float) deltaTime * 3 * 40.0f;
-			legRotationTwo.x += (float) deltaTime * 3 * 40.0f;
+			legRotation.x -= deltaTime * 3 * 40.0f;
+			legRotationTwo.x += deltaTime * 3 * 40.0f;
 		}
 		if (upDown == -1) {
 			if (legRotationTwo.x > 0) {
@@ -1087,8 +1087,8 @@ void player::runAnimation(float multiplier){
 			armRotation.x += (float)deltaTime * 3 * multiplier;
 			armRotationTwo.x -= (float)deltaTime * 3 * multiplier;
 		}
-		legRotation.x -= (float) deltaTime * 2.5f * multiplier;
-		legRotationTwo.x += (float) deltaTime * 2.5f * multiplier;
+		legRotation.x -= deltaTime * 2.5f * multiplier;
+		legRotationTwo.x += deltaTime * 2.5f * multiplier;
 		
 		if (legRotationTwo.x >= 30.0f) {
 			finishedFirst = true;
@@ -1099,8 +1099,8 @@ void player::runAnimation(float multiplier){
 			armRotation.x -= (float)deltaTime * 3 * multiplier;
 			armRotationTwo.x += (float)deltaTime * 3 * multiplier;
 		}
-		legRotation.x += (float) deltaTime * 2.5f * multiplier;
-		legRotationTwo.x -= (float) deltaTime * 2.5f * multiplier;
+		legRotation.x += deltaTime * 2.5f * multiplier;
+		legRotationTwo.x -= deltaTime * 2.5f * multiplier;
 
 		if (legRotationTwo.x <= -30.0f) {
 			finishedSecond = true;
@@ -1111,8 +1111,8 @@ void player::runAnimation(float multiplier){
 			armRotation.x += (float)deltaTime * 3 * multiplier;
 			armRotationTwo.x -= (float)deltaTime * 3 * multiplier;
 		}
-		legRotation.x -= (float) deltaTime * 2.5f * multiplier;
-		legRotationTwo.x += (float) deltaTime * 2.5f * multiplier;
+		legRotation.x -= deltaTime * 2.5f * multiplier;
+		legRotationTwo.x += deltaTime * 2.5f * multiplier;
 
 		if (legRotationTwo.x >= 0) {
 			if (!aiming) {
@@ -1261,15 +1261,15 @@ void player::shoot() {
 void player::equipReloadAnimation(float multiplier) {
 	canShoot = false;
 	if (!finishedEquipFirst) {
-		armRotationTwo.x += (float) deltaTime * multiplier;
-		totalGoneUpEquipping += (float) deltaTime * multiplier;
+		armRotationTwo.x += deltaTime * multiplier;
+		totalGoneUpEquipping += deltaTime * multiplier;
 		if (totalGoneUpEquipping > 15.0f) {
 			finishedEquipFirst = true;
 		}
 	}
 	if (finishedEquipFirst) {
-		armRotationTwo.x -= (float) deltaTime * multiplier;
-		totalGoneUpEquipping -= (float) deltaTime * multiplier;
+		armRotationTwo.x -= deltaTime * multiplier;
+		totalGoneUpEquipping -= deltaTime * multiplier;
 		if (totalGoneUpEquipping < 0.0f) {
 			finishedEquipFirst = false;
 			equippingReloading = false;
@@ -1292,7 +1292,7 @@ void player::reload() {
 			equippingReloading = true;
 			reloadSpeed = 30.0f / allWeapons[currentWeapon].shotDelay;
 		}
-		allWeapons[currentWeapon].shotDelayCurrent -= (float) deltaTime;
+		allWeapons[currentWeapon].shotDelayCurrent -= deltaTime;
 		if (allWeapons[currentWeapon].shotDelayCurrent < 0) {
 			allWeapons[currentWeapon].currentAmmo = allWeapons[currentWeapon].maxAmmo;
 			allWeapons[currentWeapon].shotDelayCurrent = allWeapons[currentWeapon].shotDelay;

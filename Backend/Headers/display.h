@@ -24,7 +24,7 @@ bool openglBegin(GLFWwindow* &used_window, bool fullscreen,
 void resizeWindow(GLFWwindow* &used_window,
 	int new_width, int new_height); 
 
-extern double deltaTime, lastTime;
+extern float deltaTime, lastTime;
 double getFrames(); //get fps of window, to get fps frontend, use double 'frames'
 
 void displayMainloop(); // run every frame

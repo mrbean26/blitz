@@ -113,12 +113,12 @@ void resizeWindow(GLFWwindow *& used_window,
 		window_y);
 }
 
-double deltaTime, lastTime;
+float deltaTime, lastTime;
 
 double getFrames(){
 	double currentTime = glfwGetTime();
-	deltaTime = currentTime - lastTime;
-	lastTime = currentTime;
+	deltaTime = (float) (currentTime - lastTime);
+	lastTime = (float) currentTime;
 	return 1.0 / deltaTime;
 }
 

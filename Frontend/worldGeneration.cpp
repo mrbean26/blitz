@@ -673,7 +673,7 @@ void worldGeneration::renderTerrain() {
 }
 
 void worldGeneration::daynightCycle(){
-	currentTime += (float) deltaTime * timeMultiplier * 50.0f;
+	currentTime += deltaTime * timeMultiplier * 50.0f;
 	float valueX = tan(radians(currentTime)) * currentAreaScale.x;
 	lightRadius = currentAreaScale.x * 2;
 	lightPos.x = valueX;

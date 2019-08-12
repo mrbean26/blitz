@@ -13,11 +13,13 @@ using namespace std;
 
 #define SLOT_COUNT 15
 #define HOTBAR_COUNT 5
-#define ITEM_COLLECT_RADIUS 5
+#define ITEM_COLLECT_RADIUS 0.25f
 #define PLAYER_PICKUP_RADIUS 5
 #define SLOT_MAX_COUNT 8
 #define DROP_DISTANCE_CHARACTER 8
 #define ENTITY_COLLIDER_DISTANCE 1.0f
+#define ENTITY_DROPPING_SPEED 30.0f
+#define ENTITY_DROPPING_MAX_HEIGHT 2.0f
 
 bool inventoryOpen = false;
 int interactKeyInv = 0;
@@ -312,14 +314,24 @@ void item::droppingInteraction(){
     if(!dropping){
         return;
     }
+    vec2 floorStart = vec2(droppingStart.x, droppingStart.z);
     vec2 floorCurrent = vec2(modelPosition.x, modelPosition.z);
     vec2 floorEnd = vec2(droppingEnd.x, droppingEnd.z);
-    float bearing = radians(bearingTwo(floorCurrent, floorEnd));
+    vec2 floorCenter = vec2(
+        (floorStart.x + floorEnd.x) / 2.0f,
+        (floorStart.y + floorEnd.y) / 2.0f
+    );
+    float bearing = radians((float) bearingTwo(floorCurrent, floorEnd));
 
-    modelPosition.x += sin(bearing) * 1.0f;
-    modelPosition.z += cos(bearing) * 1.0f;
+    float distance = glm::distance(floorCurrent, floorCenter);
+    float fullDistance = glm::distance(floorStart, floorCenter);
+    float yMultiplier = distance / fullDistance;
 
-    float distance = glm::distance(floorCurrent, floorEnd);
+    modelPosition.x += sin(bearing) * deltaTime * ENTITY_DROPPING_SPEED;
+    modelPosition.y = droppingEnd.y + cos(radians(yMultiplier * 90.0f)) * ENTITY_DROPPING_MAX_HEIGHT;
+    modelPosition.z += cos(bearing) * deltaTime * ENTITY_DROPPING_SPEED;
+
+    distance = glm::distance(floorCurrent, floorEnd);
     if(distance < 0.1f){
         dropping = false;
     }
