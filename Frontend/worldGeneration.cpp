@@ -402,6 +402,38 @@ vector<vec2> currentAllMountainPositions;
 vector<vec3> currentAllMountainScales;
 vec2 currentPlanetScale;
 
+vec4 terrainColliders(vec3 original, float yAddition){
+	int mCount = currentAllMountainPositions.size();
+	float yHighest = 0.0f;
+	bool inMountain = false;
+	for(int m = 0; m < mCount; m++){
+		vec2 mPos = currentAllMountainPositions[m];
+		mPos.y = -mPos.y;
+
+		vec3 mSca = currentAllMountainScales[m];
+		bool crater = mSca.z < 0;
+		float currentRad = (mSca.x * 100.0f) * 0.025f;
+
+		vec3 mThree = vec3(mPos.x, 0.0f, mPos.y);
+		vec3 originalThree = vec3(original.x, 0.0f, original.z);
+
+		float distance = glm::distance(mThree, originalThree);
+		distance = currentRad - distance;
+		if(distance > 0){
+			inMountain = true;
+			distance = distance / currentRad;
+			distance = glm::clamp(distance, -1.0f, 1.0f);
+			float pointY = distance * mSca.y;
+			if(crater){
+				pointY = -pointY;
+			}
+			pointY += yAddition;
+			yHighest = pointY;
+		}
+	}
+	return vec4(original.x, yHighest, original.z, inMountain);
+}
+
 vector<vec2> negativeMountainCoords, positiveMountainCoords;
 void worldGeneration::beginMountains() {
 	string mountainName;

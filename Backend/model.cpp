@@ -15,49 +15,70 @@ To setup an OBJ enable only triangulate faces & enable write normals & enable ap
 Use readyModel to make obj file ok to use in game
 */
 
-model::model(vec4 mainColour, const char* filePath) { // load model (dont use this for main game, only for getting data)
+model::model(float colourMultiplier, const char* filePath) { // load model (dont use this for main game, only for getting data)
 	// load model
 	vector<string> allLines = readLines(filePath);
 	int lCount = allLines.size();
 
-	vector<vec3> points;
-	vector<vec3> faceIndexes;
+	vector<vec4> points;
+	vector<vec4> faceIndexes;
+	vector<string> names;
+	int shapeCount = 0;
 
 	for (int i = 0; i < lCount; i++) {
 		string line = allLines[i];
 		if (contains(line, "v")) {
 			vec3 point = getVec3File(filePath, "v", i);
-			points[newVectorPos(&points)] = point;
-			cout << "v" << endl;
+			vec4 newPoint = vec4(point, i);
+			points[newVectorPos(&points)] = newPoint;
 		}
 		if (contains(line, "f")) {
 			vec3 index = getVec3File(filePath, "f", i);
-			faceIndexes[newVectorPos(&faceIndexes)] = index;
-			cout << "f" << endl;
+			vec4 newIndex = vec4(index, i);
+			faceIndexes[newVectorPos(&faceIndexes)] = newIndex;
 		}//
+		if(contains(line, "o")){
+			names[newVectorPos(&names)] = to_string(i) + line;
+			shapeCount++;
+		}
 	}
-
 	// add colours
 	int fCount = faceIndexes.size();
-	vector<vec3> allColours = colourVector(fCount, mainColour, mainColour.w);
-
+	int lastIndex = 0;
+	int currentShape = -1;
+	vec3 currentColour = vec3(1.0f);
 	for (int f = 0; f < fCount; f++) {
+		if(faceIndexes[f].w > lastIndex + 1){
+			currentShape++;
+
+			cout << "Enter colour X for " << names[currentShape] << ": ";
+			cin >> currentColour.x;
+
+			cout << "Enter colour Y for " << names[currentShape] << ": ";
+			cin >> currentColour.y;
+
+			cout << "Enter colour Z for " << names[currentShape] << ": ";
+			cin >> currentColour.z;
+
+			cout << currentColour.x << " " << currentColour.y << " " << currentColour.z << endl;
+		}
 		int xIndex = (int) faceIndexes[f].x;
 		int yIndex = (int) faceIndexes[f].y;
 		int zIndex = (int) faceIndexes[f].z;
 
 		int indexes[] = { xIndex, yIndex, zIndex };
-
+		vec3 usedColour = currentColour + colourDifference(colourMultiplier);
 		for (int v = 0; v < 3; v++) {
 			int currentIndex = indexes[v] - 1;
 			vertices[newVectorPos(&vertices)] = points[currentIndex].x;
 			vertices[newVectorPos(&vertices)] = points[currentIndex].y;
 			vertices[newVectorPos(&vertices)] = points[currentIndex].z;
 
-			vertices[newVectorPos(&vertices)] = allColours[f].x;
-			vertices[newVectorPos(&vertices)] = allColours[f].y;
-			vertices[newVectorPos(&vertices)] = allColours[f].z;
+			vertices[newVectorPos(&vertices)] = usedColour.x;
+			vertices[newVectorPos(&vertices)] = usedColour.y;
+			vertices[newVectorPos(&vertices)] = usedColour.z;
 		}
+		lastIndex = faceIndexes[f].w;
 	}
 	startIrregularColorBuilding(vertices, VAO, VBO, size);
 }
@@ -67,6 +88,7 @@ void model::render(){
 	setMat4(playerShader, "model", modelMat);
 	setMat4(playerShader, "projection", projectionMatrix());
 	setMat4(playerShader, "view", viewMatrix());
+	setShaderInt(playerShader, "useLight", false);
 	setShaderFloat(playerShader, "alpha", 1.0f);
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, size);
@@ -94,6 +116,9 @@ void readyModel(const char* filePath) { // change file format to readable
 	int count = lines.size();
 	for (int i = 0; i < count; i++) {
 		if (contains(lines[i], "v ")) {
+			newLines[newVectorPos(&newLines)] = lines[i];
+		}
+		if(contains(lines[i], "o ")){
 			newLines[newVectorPos(&newLines)] = lines[i];
 		}
 		if (contains(lines[i], "f ")) {

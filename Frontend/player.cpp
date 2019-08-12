@@ -430,50 +430,14 @@ int insideBuildingIndex = -1;
 float lowestY = -999.0f;
 void player::collisions(){
 	// mountains and craters
-	bool inMountain = false;
-	bool cameraInMountain = false;
-	int mCount = currentAllMountainPositions.size();
-	float highestPoint = -999.0f;
-	float highestPointCamera = -999.0f;
-	for (int i = 0; i < mCount; i++) {
-		vec2 currentMPos = currentAllMountainPositions[i]; currentMPos.y *= -1.0f;
-		float currentRad = (currentAllMountainScales[i].x * 100.0f) * 0.025f;
-		vec2 floorPoint = vec2(position.x, position.z);
-		bool crater = false;
-		
-		vec3 mountainThree = vec3(currentMPos.x, 0.0f, currentMPos.y);
-		vec3 playerThree = vec3(position.x, 0.0f, position.z);
-		vec3 cameraThree = vec3(cameraThirdPos.x, 0.0f, cameraThirdPos.z);
-		if (currentAllMountainScales[i].z < 0) { crater = true; }
-
-		float distance = glm::distance(mountainThree, playerThree);
-		float distanceCamera = glm::distance(mountainThree, cameraThree);
-		distance = currentRad - distance;
-		distanceCamera = currentRad - distanceCamera;
-
-		if (distance > 0) {
-			inMountain = true;
-			distance = distance / currentRad;
-			distance = clamp(distance, -1.0f, 1.0f);
-			float pointY = distance*currentAllMountainScales[i].y;
-			if (crater) { pointY = -pointY; }
-
-			pointY += LEG_LENGTH; // feet on floor
-			if (pointY > highestPoint) { highestPoint = pointY; } // assign
-		}
-		if (distanceCamera > 0) {
-			cameraInMountain = true;
-			distanceCamera = distanceCamera / currentRad;
-			distanceCamera = clamp(distanceCamera, -1.0f, 1.0f);
-			float pointY = distanceCamera * currentAllMountainScales[i].y;
-			if (crater) { pointY = -pointY; }
-			if (pointY > highestPointCamera) { highestPointCamera = pointY; }
-		}
-	}
-	if (position.y < highestPoint && jumping) { position.y = highestPoint; }
-	if (!jumping) { position.y = highestPoint; }
-	lowestY = highestPoint;
-	lowestCameraY = highestPointCamera + 0.5f;
+	vec4 cameraCollide = terrainColliders(cameraThirdPos, 0.0f);
+	vec4 playerCollide = terrainColliders(position, LEG_LENGTH);
+	bool inMountain = (int) playerCollide.w;
+	bool cameraInMountain = (int) cameraCollide.w;
+	if (position.y < playerCollide.y && jumping) { position.y = playerCollide.y; }
+	if (!jumping) { position.y = playerCollide.y; }
+	lowestY = playerCollide.y;
+	lowestCameraY = cameraCollide.y + 0.5f;
 	bool useless = false;
 	buildCollisions(position, insideBuildingIndex, jumpVelocity, lastOnBench, useless);
 	// flat terrain collisions

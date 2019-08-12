@@ -46,6 +46,8 @@ extern vector<vec2> currentAllMountainPositions;
 extern vector<vec3> currentAllMountainScales;
 extern vec2 currentPlanetScale;
 
+vec4 terrainColliders(vec3 original, float yAddition);
+
 extern unsigned int skyboxVAO, skyboxVBO, skyboxTexture;
 unsigned int loadCubemapTexture(vector<string> faces);
 void startSkybox();

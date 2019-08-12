@@ -125,41 +125,14 @@ void monsterTerrainCollisions(){
 		vec2 monsterFloorPos = vec2(monsterPos.x, monsterPos.z);
 		vec3 monsterThree = vec3(monsterFloorPos.x, 0.0f, monsterFloorPos.y);
 
-		float yLowest = 0.0f;
-
-		int mountainCount = currentAllMountainPositions.size();
-		for(int i = 0; i < mountainCount; i++){
-			vec2 mountainPos = currentAllMountainPositions[i];
-			mountainPos.y *= -1.0f;
-			vec3 mountainThree = vec3(mountainPos.x, 0.0f, mountainPos.y);
-
-			float currentMRad = (currentAllMountainScales[i].x * 100.0f) * 0.025f;
-
-			bool crater = false;
-			if(currentAllMountainScales[i].z < 0){
-				crater = true;
-			}
-
-			float distance = glm::distance(mountainThree, monsterThree);
-			distance = currentMRad - distance;
-
-			if(distance > 0){
-				distance = distance / currentMRad;
-				distance = glm::clamp(distance, -1.0f, 1.0f);
-				float pointY = distance * currentAllMountainScales[i].y;
-				if(crater){
-					pointY = -pointY;
-				}
-				yLowest = pointY;
-			}
-		}
+		vec4 monsterCollide = terrainColliders(monsterPos, 0.0f);
 
 		int monsterType = allMonsters[m].monsterName;
 		if(monsterType == EARTH_ONE){
-			allMonsters[m].position.y = yLowest;
+			allMonsters[m].position.y = monsterCollide.w;
 		}
 		if(monsterType == EARTH_TWO){
-			allMonsters[m].position.y = yLowest + 4.0f;
+			allMonsters[m].position.y = monsterCollide.w + 4.0f;
 		}
 
 		// area limit colliders

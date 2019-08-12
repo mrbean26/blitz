@@ -11,7 +11,7 @@ using namespace glm;
 
 class model {
 public:
-	model(vec4 mainColour, const char* filePath);
+	model(float colourMultiplier, const char* filePath);
 	void render();
 
 	vector<float> vertices;

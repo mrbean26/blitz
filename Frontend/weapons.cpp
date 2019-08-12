@@ -355,29 +355,7 @@ void bulletColliders(){
 		vec3 bulletThree = vec3(bulletPos.x, 0.0f, bulletPos.z);
 		float yLowest = 0.0f;
 
-		int mountainCount = currentAllMountainPositions.size();
-		for(int m = 0; m < mountainCount; m++){
-			vec2 mountainPos = currentAllMountainPositions[m];
-			vec3 scale = currentAllMountainScales[m];
-
-			mountainPos.y = mountainPos.y * -1.0f;
-			vec3 mountainThree = vec3(mountainPos.x, 0.0f, mountainPos.y);
-			
-			float radius = (scale.x * 100.0f) * 0.025f;
-			bool crater = false;
-			if(scale.z < 0.0f){
-				crater = true;
-			}
-
-			float distance = radius - glm::distance(mountainThree, bulletThree);
-			if(distance > 0.0f){
-				distance = distance / radius;
-				distance = glm::clamp(distance, -1.0f, 1.0f);
-				float yPoint = distance * scale.y;
-				if(crater){ yPoint=-yPoint; }
-				yLowest = yPoint;
-			}
-		}
+		vec4 bulletCollide = terrainColliders(bulletPos, 0.0f);
 
 		if(bulletPos.y + 1.0f < yLowest){
 			badBullets[newVectorPos(&badBullets)] = b;

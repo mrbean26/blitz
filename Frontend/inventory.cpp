@@ -340,35 +340,8 @@ void item::droppingInteraction(){
 vec3 entityColliders(vec3 start){
     vec3 ePos = start;
 
-    float y = 0.0f;
-    int mCount = currentAllMountainPositions.size();
-    bool inMountain = false;
-    for(int m = 0; m < mCount; m++){
-        vec2 pos = currentAllMountainPositions[m];
-        pos.y *= -1.0f;
-        vec3 sca = currentAllMountainScales[m];
-        float currentRad = (sca.x * 100.0f) * 0.025f;
-        bool crater = sca.z < 0.0f;
-
-        vec3 mThree = vec3(pos.x, 0.0f, pos.y);
-        vec3 eThree = vec3(ePos.x, 0.0f, ePos.z);
-        float distance = currentRad - glm::distance(mThree, eThree);
-
-        if(distance > 0){
-            inMountain = true;
-            distance = distance / currentRad;
-            distance = glm::clamp(distance, -1.0f, 1.0f);
-            float pointY = distance * sca.y;
-            if(crater){
-                pointY = -pointY;
-            }
-            pointY += ENTITY_COLLIDER_DISTANCE;
-            if(ePos.y < pointY){
-                ePos.y = pointY;
-            }
-        }
-    }
-
+    vec4 entityCollide = terrainColliders(ePos, ENTITY_COLLIDER_DISTANCE);
+    bool inMountain = (int) entityCollide.w;
     if(!inMountain){
         if(ePos.y < ENTITY_COLLIDER_DISTANCE){
             ePos.y = ENTITY_COLLIDER_DISTANCE;
