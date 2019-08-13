@@ -125,15 +125,12 @@ void monsterTerrainCollisions(){
 		vec2 monsterFloorPos = vec2(monsterPos.x, monsterPos.z);
 		vec3 monsterThree = vec3(monsterFloorPos.x, 0.0f, monsterFloorPos.y);
 
-		vec4 monsterCollide = terrainColliders(monsterPos, 0.0f);
-
 		int monsterType = allMonsters[m].monsterName;
-		if(monsterType == EARTH_ONE){
-			allMonsters[m].position.y = monsterCollide.w;
-		}
+		float added = 0.0f;
 		if(monsterType == EARTH_TWO){
-			allMonsters[m].position.y = monsterCollide.w + 4.0f;
+			added = 4.0f;
 		}
+		vec4 monsterCollide = terrainColliders(monsterPos, added);
 
 		// area limit colliders
 		if(allMonsters[m].position.x < 0.0f){

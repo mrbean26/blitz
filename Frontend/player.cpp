@@ -312,6 +312,21 @@ void player::movement(){
 		if(rotation.x > 90.0f){
 			rotation.x = glm::clamp(rotation.x, 0.0f, 90.0f);
 			dead = true;
+
+			// drop items
+			for(int s = 0; s < SLOT_COUNT; s++){
+				if(allSlots[s].itemType != -1){
+					// drop
+					item newEntity = allItems[allSlots[s].itemType];
+					newEntity.modelPosition = position;
+					newEntity.quantity = allSlots[s].itemQuantity;
+					// reset
+					allSlots[s].itemType = -1;
+					allSlots[s].itemQuantity = 0;
+
+					allEntities[newVectorPos(&allEntities)] = newEntity;
+				}
+			}
 		}
 	}
 	if (!canMove || health < 1) { return; }

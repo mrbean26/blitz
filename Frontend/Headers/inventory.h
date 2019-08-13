@@ -15,6 +15,17 @@ using namespace std;
 #include <glm.hpp>
 using namespace glm;
 
+#define SLOT_COUNT 15
+#define HOTBAR_COUNT 5
+#define ITEM_COLLECT_RADIUS 2.0f
+#define PLAYER_PICKUP_RADIUS 5
+#define SLOT_MAX_COUNT 8
+#define DROP_DISTANCE_CHARACTER 8
+#define ENTITY_COLLIDER_DISTANCE 1.0f
+#define ENTITY_DROPPING_SPEED 30.0f
+#define ENTITY_DROPPING_MAX_HEIGHT 2.0f
+#define ITEM_CLOSEST_MOVEMENT 0.5f
+
 class inventorySlot{
 public:
     int itemType = -1; // empty

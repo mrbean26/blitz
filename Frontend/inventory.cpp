@@ -11,16 +11,6 @@
 #include <vector>
 using namespace std;
 
-#define SLOT_COUNT 15
-#define HOTBAR_COUNT 5
-#define ITEM_COLLECT_RADIUS 0.25f
-#define PLAYER_PICKUP_RADIUS 5
-#define SLOT_MAX_COUNT 8
-#define DROP_DISTANCE_CHARACTER 8
-#define ENTITY_COLLIDER_DISTANCE 1.0f
-#define ENTITY_DROPPING_SPEED 30.0f
-#define ENTITY_DROPPING_MAX_HEIGHT 2.0f
-
 bool inventoryOpen = false;
 int interactKeyInv = 0;
 vector<inventorySlot> allSlots;
@@ -161,7 +151,6 @@ void inventoryMainloop(){
     entityInteractions();
     collectItems();
     givePlayerEntity();
-    givePlayerEntity();
     swapItems();
     if(checkKeyDown(interactKeyInv)){
         if(!inventoryOpen){
@@ -229,7 +218,7 @@ int item::createButtonIcon(int inventorySlotIndex){
 }
 
 void item::removeButton(int buttonIndex){
-    allButtons.erase(allButtons.begin() + buttonIndex);
+    allButtons[buttonIndex].active = false;
 }
 
 vector<item> allEntities;
@@ -296,8 +285,8 @@ void collectItems(){
     }
 
     int dCount = deletedItems.size();
-    for(int d = 0; d < dCount; d++){
-        allEntities.erase(allEntities.begin() + deletedItems[d] - d);
+    for(int d = dCount - 1; d > -1; d--){
+        allEntities.erase(allEntities.begin() + deletedItems[d]);
     }
 }
 
@@ -332,7 +321,7 @@ void item::droppingInteraction(){
     modelPosition.z += cos(bearing) * deltaTime * ENTITY_DROPPING_SPEED;
 
     distance = glm::distance(floorCurrent, floorEnd);
-    if(distance < 0.1f){
+    if(distance < ITEM_CLOSEST_MOVEMENT){
         dropping = false;
     }
 }
@@ -438,6 +427,11 @@ void swapItems(){
                 // swap
 
                 if(s == currentSwappingIndex){
+                    if(allSlots[s].itemQuantity < 1){
+                        allButtons[allSlots[s].buttonIndex].colour = vec3(1.0f);
+                        currentSwappingIndex = -1;
+                        break;
+                    }
                     // dropping
                     item newEntity = allItems[allSlots[s].itemType];
                     newEntity.itemType = allSlots[s].itemType;
@@ -454,6 +448,11 @@ void swapItems(){
                     newEntity.droppingEnd = entityColliders(newEntity.droppingEnd);
 
                     allEntities[newVectorPos(&allEntities)] = newEntity;
+                    allSlots[s].itemQuantity -= 1;
+                    if(allSlots[s].itemQuantity < 1){
+                        allItems[allSlots[s].itemType].removeButton(allSlots[s].buttonIconIndex);
+                        allSlots[s].itemType = -1;
+                    }
                     allButtons[allSlots[s].buttonIndex].colour = vec3(1.0f);
                     currentSwappingIndex = -1;
                     return;
@@ -486,6 +485,9 @@ void givePlayerEntity(){
 
     vector<int> deletedEntities;
     int eCount = allEntities.size();
+    if(mainPlayer.health < 1){
+        return;
+    }
     for(int e = 0; e < eCount; e++){
         vec3 ePos = allEntities[e].modelPosition;
         float distance = glm::distance(pPos, ePos);
@@ -517,14 +519,25 @@ void givePlayerEntity(){
             if(!fillingSlot){
                 allItems[allEntities[e].itemType].createButtonIcon(slotIndex);
             }
-            allSlots[slotIndex].itemQuantity += allEntities[e].quantity;
+            int leftover = -1;
+            int added = allEntities[e].quantity;
+            if(allSlots[slotIndex].itemQuantity + added > SLOT_MAX_COUNT){
+                added = SLOT_MAX_COUNT - allSlots[slotIndex].itemQuantity;
+                leftover = allEntities[e].quantity - added;
+            }
+            allSlots[slotIndex].itemQuantity += added;
             allSlots[slotIndex].itemType = allEntities[e].itemType;
-            deletedEntities[newVectorPos(&deletedEntities)] = e;
+            if(leftover == -1){
+                deletedEntities[newVectorPos(&deletedEntities)] = e;
+            }
+            if(leftover != -1){
+                allEntities[e].quantity -= added;
+            }
         }
     }
 
     int dCount = deletedEntities.size();
-    for(int d = 0; d < dCount; d++){
-        allEntities.erase(allEntities.begin() + deletedEntities[d] - d);
+    for(int d = dCount - 1; d > -1; d--){
+        allEntities.erase(allEntities.begin() + deletedEntities[d]);
     }
 }
