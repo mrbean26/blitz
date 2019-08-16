@@ -23,9 +23,12 @@ using namespace std;
 #define JUMP_HEIGHT 8.0f
 #define PLAYER_ROTATE_SPEED 140.0f
 #define LEG_LENGTH 2.3f
+float CROUCH_HEIGHT_TAKEAWAY = 2.125f;
+#define CROUCH_CRATER_ADD 0.5f
 #define PITCH_MIN -80.0f
 #define PITCH_MAX 80.0f
 #define DYING_ROTATE_SPEED 240.0f
+#define PLAYER_CROUCH_SPEED 240.0f
 #define PLAYER_RESPAWN_KILL_RADIUS 10.0f
 
 vector<vec3> colourVector(int size, vec3 colour, float multiplier) {
@@ -301,10 +304,48 @@ void player::deleteMemory(){
 	health = 100;
 }
 
+void player::crouchMoveAnimation(float multiplier){
+	if(!finishedFirst){
+		armRotation.z -= deltaTime * multiplier;
+		legRotation.z -= deltaTime * multiplier;
+
+		armRotationTwo.z += deltaTime * multiplier;
+		legRotationTwo.z += deltaTime * multiplier;
+		
+		float compare = degreesClamp(legRotationTwo.z);
+		if(compare > 30.0f){
+			finishedFirst = true;
+		}
+	}
+	if(finishedFirst){
+		armRotation.z += deltaTime * multiplier;
+		legRotation.z += deltaTime * multiplier;
+
+		armRotationTwo.z -= deltaTime * multiplier;
+		legRotationTwo.z -= deltaTime * multiplier;
+
+		float compare = degreesClamp(legRotationTwo.z);
+		if(compare < 360.0f && compare > 180.0f){
+			finishedFirst = false;
+		}
+	}
+}
+
+float degreesDistance(float v1, float v2){
+	float one = degreesClamp(v1);
+	float two = degreesClamp(v2);
+	float distance = glm::distance(one, two);
+	if(distance > 180.0f){
+		distance = glm::distance(max(one, two) - 360.0f, min(one, two));
+	}
+	return distance;
+}
+
 bool lastOnBench = false;
 float lastPitch;
+bool crouchingInCrater = false;
 void player::movement(){
-	if(health < 1 && !paused){
+	if(health < 1){
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		rotation.x += deltaTime * DYING_ROTATE_SPEED;
 		allTexts[diedText].active = true;
@@ -312,21 +353,26 @@ void player::movement(){
 		if(rotation.x > 90.0f){
 			rotation.x = glm::clamp(rotation.x, 0.0f, 90.0f);
 			dead = true;
-
 			// drop items
 			for(int s = 0; s < SLOT_COUNT; s++){
 				if(allSlots[s].itemType != -1){
 					// drop
 					item newEntity = allItems[allSlots[s].itemType];
+					newEntity.itemType = allSlots[s].itemType; 
 					newEntity.modelPosition = position;
 					newEntity.quantity = allSlots[s].itemQuantity;
+					allItems[0].removeButton(allSlots[s].buttonIconIndex);
 					// reset
 					allSlots[s].itemType = -1;
 					allSlots[s].itemQuantity = 0;
 
 					allEntities[newVectorPos(&allEntities)] = newEntity;
+
 				}
 			}
+			// middle pos
+			position.x = currentPlanetScale.x / 2.0f;
+			position.z = -currentPlanetScale.y / 2.0f;
 		}
 	}
 	if (!canMove || health < 1) { return; }
@@ -338,22 +384,123 @@ void player::movement(){
 	int sprintKey = stoi(inputLines[7]);
 	int jumpKey = stoi(inputLines[9]);
 	int aimButton = stoi(inputLines[4]);
+	int crouchKey = stoi(inputLines[8]);
 
+	if(checkKeyDown(crouchKey)){
+		if(!changingCrouch){
+			changingCrouch = true;
+		}
+	}
+
+	if(changingCrouch){
+		if(!crouching){
+			rotation.x -= deltaTime * PLAYER_CROUCH_SPEED;
+			float clampedRotation = degreesClamp(rotation.x);
+			if(clampedRotation < 270.0f && clampedRotation > 90.0f){
+				rotation.x = 270.0f;
+				changingCrouch = false;
+				crouching = true;
+
+				armRotation.x = 0.0f;
+				armRotationTwo.x = 0.0f;
+				legRotation.x = 0.0f;
+				legRotationTwo.x = 0.0f;
+				finishedFirst = false; 
+				finishedSecond = false;
+				return;
+			}
+		}
+		if(crouching){
+			rotation.x += deltaTime * PLAYER_CROUCH_SPEED;
+			float clampedRotation = degreesClamp(rotation.x);
+			if(clampedRotation > 0.0f && clampedRotation < 270.0f){
+				rotation.x = 0.0f;
+				changingCrouch = false;
+				crouching = false;
+
+				armRotation.z = 0.0f;
+				armRotationTwo.z = 0.0f;
+				legRotation.z = 0.0f;
+				legRotationTwo.z = 0.0f;
+				finishedFirst = false; 
+				finishedSecond = false;
+			}
+		}
+		return;
+	}
+	if(crouching){
+		vec2 playerFloor = vec2(position.x, position.z);
+
+		int mountainIndex = -1;
+		int mCount = currentAllMountainPositions.size();
+		for(int m = 0; m < mCount; m++){
+			vec2 pos = currentAllMountainPositions[m]; pos.y *= -1.0f;
+			vec3 sca = currentAllMountainScales[m];
+			float currentRad = (sca.x * 100.0f) * 0.025f;
+			float distance = glm::distance(pos, playerFloor);
+			if(currentRad - distance > 0){
+				mountainIndex = m;
+			}
+		}
+		crouchingInCrater = false;
+		if(mountainIndex != -1){
+			vec2 floorPos = vec2(position.x, position.z);
+			vec2 mPosition = currentAllMountainPositions[mountainIndex];
+			mPosition.y = -mPosition.y;
+			vec3 scale = currentAllMountainScales[mountainIndex];
+			float radius = (scale.x * 100.0f) * 0.025f;
+
+			vec2 leftEdge = vec2(mPosition.x - radius, 0.0f);
+			vec2 center = vec2(mPosition.x, scale.y);
+
+			float upAngle = bearingTwo(leftEdge, center);
+			float downAngle = 180.0f - upAngle;
+
+			float bearing = bearingTwo(mPosition, floorPos);
+			float main = degreesDistance(rotation.y, bearing);
+			main = -((main - 90.0f) / 90.0f);
+
+			float angle = -upAngle + 90.0f;
+			if(main < 0){
+				angle = -downAngle + 90.0f;
+				main = -main;
+			}
+			if(scale.z < 0){ 
+				angle = -angle;
+				crouchingInCrater = true;
+			}
+			rotation.x = angle * main - 90.0f;
+			position.y += 0.5f;
+		}
+		if(mountainIndex ==  -1){
+			rotation.x = 270.0f;
+			rotation.z = 0.0f;
+		}
+	}
 	movingMultiplier = 0.0f;
 	velocity = vec3(0.0f);
 	if (checkKey(backKey) && !checkKey(forwardKey)) {
 		movingMultiplier = 25.0f;
 		velocity = vec3(BACKWARD_SPEED);
+		if(crouching){
+			velocity = vec3(BACKWARD_SPEED / 3.0f);
+		}
 	}
 	if (checkKey(forwardKey) && !checkKey(backKey)) {
 		velocity = vec3(WALK_SPEED);
+		if(crouching){
+			velocity = vec3(WALK_SPEED / 3.0f);
+		}
 		movingMultiplier = 30.0f;
 		if (checkKey(sprintKey)) {
 			movingMultiplier = 50.0f;
 			velocity = vec3(RUN_SPEED);
+			if(crouching){
+				velocity = vec3(RUN_SPEED / 3.0f);
+			}
 		}
 	}
-	if (checkKeyDown(jumpKey) && !jumping) {
+	if (checkKeyDown(jumpKey) && !jumping && !crouching) {
 		jumping = true;
 		startedLowestY = lowestY;
 		jumpVelocity = JUMP_HEIGHT;
@@ -388,7 +535,12 @@ void player::movement(){
 	if (checkKey(leftKey)) {
 		rotation.y += deltaTime * PLAYER_ROTATE_SPEED;
 	}
-	runAnimation(movingMultiplier);
+	if(!crouching){
+		runAnimation(movingMultiplier);
+	}
+	if(crouching){
+		crouchMoveAnimation(movingMultiplier);
+	}
 	if (checkKey(aimButton)) {
 		if (!aiming) {
 			armRotation.x = 90.0f;
@@ -404,6 +556,16 @@ void player::movement(){
 		}
 		armRotation.x = playerPitch + 90.0f;
 		armRotationTwo.x = playerPitch + 90.0f;
+		if(crouching){
+			armRotation.x += 135.0f;
+			armRotationTwo.x += 135.0f;
+			armRotation.x = glm::clamp(armRotation.x, 250.0f, 360.0f);
+			armRotationTwo.x = glm::clamp(armRotationTwo.x, 250.0f, 360.0f);
+		}
+		if(!crouching){
+			armRotation.x = glm::clamp(armRotation.x, 0.0f, 105.0f);
+			armRotationTwo.x = glm::clamp(armRotationTwo.x, 0.0f, 105.0f);
+		}
 		armPositionTwo = vec3(0.55f, -0.425f, 0.0f);
 		aimingView = true;
 
@@ -446,7 +608,14 @@ float lowestY = -999.0f;
 void player::collisions(){
 	// mountains and craters
 	vec4 cameraCollide = terrainColliders(cameraThirdPos, 0.0f);
-	vec4 playerCollide = terrainColliders(position, LEG_LENGTH);
+	float usedY = LEG_LENGTH;
+	if(crouching){ 
+		usedY = usedY - CROUCH_HEIGHT_TAKEAWAY;
+		if(crouchingInCrater){
+			usedY += CROUCH_CRATER_ADD;
+		}
+	}
+	vec4 playerCollide = terrainColliders(position, usedY);
 	bool inMountain = (int) playerCollide.w;
 	bool cameraInMountain = (int) cameraCollide.w;
 	if (position.y < playerCollide.y && jumping) { position.y = playerCollide.y; }
@@ -457,6 +626,9 @@ void player::collisions(){
 	buildCollisions(position, insideBuildingIndex, jumpVelocity, lastOnBench, useless);
 	// flat terrain collisions
 	float legPos = position.y - LEG_LENGTH;
+	if(crouching){
+		legPos += CROUCH_HEIGHT_TAKEAWAY;
+	}
 	if (legPos < 0 && !inMountain && !jumping) { position.y += -legPos; }
 	if (!inMountain) { lowestY = 2.2f; }
 	if (!cameraInMountain) { lowestCameraY = 0.5f; }
@@ -610,8 +782,6 @@ void player::cameraMovement(){
 		}
 	}
 	playerPitch = clamp(playerPitch, -80.0f, 80.0f);
-	headLookAtY = position.y;
-	headLookAtY = headLookAtY + 1.25f;
 	lastFrameMove = true;
 }
 
@@ -622,7 +792,11 @@ void player::renderPlayer(){
 
 	vector<GLuint> vaos = { headVAO, torsoVAO, armVAO, legVAO, armVAO, legVAO };
 	vector<int> vertCounts = { 48, 36, 60, 60, 60, 60 };
-
+	
+	vec3 headParentPos = position - vec3(
+		sin(radians(rotation.y)) * sin(radians(rotation.x)) * -1.2f, 
+		-1.2f * cos(radians(rotation.x)),
+		cos(radians(rotation.y)) * sin(radians(rotation.x)) * -1.2f);
 	vec3 legParentPos = position - vec3(
 		sin(radians(rotation.y)) * sin(radians(rotation.x)) * 0.775f, 
 		0.775f * cos(radians(rotation.x)),
@@ -631,7 +805,7 @@ void player::renderPlayer(){
 		0.55f * sin(radians(rotation.x)) * sin(radians(rotation.y)), 
 		0.55f * cos(radians(rotation.x)), 
 		0.55f * sin(radians(rotation.x)) * cos(radians(rotation.y)));
-	vector<vec3> parentPositions = { position, position, armParentPos, legParentPos, armParentPos, legParentPos };
+	vector<vec3> parentPositions = { headParentPos, position, armParentPos, legParentPos, armParentPos, legParentPos };
 	glUseProgram(playerShader);
 	for (int i = 0; i < 6; i++) {
 		
@@ -653,27 +827,29 @@ void player::renderPlayer(){
 		glDrawArrays(GL_TRIANGLES, 0, vertCounts[i]);
 	}
 	// laser
-	armRotation.x = clamp(armRotation.x, -1000.0f, 105.0f);
-	armRotationTwo.x = clamp(armRotationTwo.x, -1000.0f, 105.0f);
 	if (aiming) {
 		setShaderVecThree(playerShader, "multiplyColour", laserColour);
 		setShaderInt(playerShader, "useLight", 0);
 		glBindVertexArray(laserVAO);
 		setShaderFloat(playerShader, "alpha", 0.5f);
-		setMat4(playerShader, "model", modelMatrix(vec3(2.0f, 0.0f, -0.65f), vec3(playerPitch, 90.0f, 0.0f), vec3(250.0f, 0.1f, 0.1f),
-			true, vec3(position.x, position.y + 0.5f, position.z), rotation));
+		float xRot = playerPitch;
+		if(crouching){
+			xRot += 135.0f;
+		}
+		setMat4(playerShader, "model", modelMatrix(vec3(2.0f, 0.0f, -0.65f), vec3(armRotation.x - 90.0f, 90.0f, 0.0f), vec3(250.0f, 0.1f, 0.1f),
+			true, armParentPos, rotation));
 		glDrawArrays(GL_TRIANGLES, 0, 24);
 		glLinkProgram(playerShader);
 		// weapon
 		if (currentWeapon == 0) {
 			allWeapons[currentWeapon].render(modelMatrix(vec3(1.2f, 0.0f, -0.7f), 
-				vec3(playerPitch, 90.0f, 0.0f), vec3(0.4f), true, 
-					vec3(position.x, position.y + 0.25f, position.z), rotation));
+				vec3(armRotation.x - 90.0f, 90.0f, 0.0f), vec3(0.4f), true, 
+					armParentPos, rotation));
 		}
 		if (currentWeapon == 1) {
 			allWeapons[currentWeapon].render(modelMatrix(vec3(0.6f, 0.0f, 1.2f),
-				vec3(playerPitch, 180.0f, 0.0f), vec3(0.8f), true,
-				vec3(position.x, position.y + 0.5f, position.z), rotation));
+				vec3(armRotation.x - 90.0f, 180.0f, 0.0f), vec3(0.8f), true,
+				armParentPos, rotation));
 		}
 	}
 }
@@ -1224,6 +1400,10 @@ void player::shoot() {
 		vec3 bulletRot = vec3(0.0f);
 		bulletRot.y = rotation.y + 90.0f;
 		bulletRot.z = playerPitch;
+
+		if(crouching){
+			bulletRot.z += 45.0f;
+		}
 
 		vec3 bulletPos = position;
 		bulletPos.z += 0.7f * sin(radians(rotation.y));

@@ -182,7 +182,7 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 		cos(radians(playerPitch)))) + mainPlayer.position.z;
 	float cameraYPos = (-sin(radians(playerPitch)) * distanceFromCharacter) + 
 		mainPlayer.position.y + distanceAboveCharacter;
-	vec3 lookAtPos = vec3(mainPlayer.position.x, mainPlayer.headLookAtY, mainPlayer.position.z);
+	vec3 lookAtPos = vec3(mainPlayer.position.x, mainPlayer.position.y + 1.25f, mainPlayer.position.z);
 	// monster colliders
 	cameraXPos = glm::clamp(cameraXPos, 0.1f, currentPlanetScale.x);
 	cameraZPos = glm::clamp(cameraZPos, -currentPlanetScale.y, 0.1f);
@@ -243,7 +243,7 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 		// currently not possible to rotate more than one axis
 		newMatrix = lookAt(cameraPosition, cameraPosition + cameraFront, vec3(0.0f, 1.0f, 0.0f));
 	}
-	distanceFromCharacter = glm::distance(vec3(mainPlayer.position.x, mainPlayer.headLookAtY, mainPlayer.position.z), cameraThirdPos);
+	distanceFromCharacter = glm::distance(lookAtPos, cameraThirdPos);
 	distanceFromCharacter = glm::clamp(distanceFromCharacter, 0.0f, defaultDistance);
 	return newMatrix;
 }

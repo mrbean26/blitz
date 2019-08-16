@@ -78,7 +78,7 @@ model::model(float colourMultiplier, const char* filePath) { // load model (dont
 			vertices[newVectorPos(&vertices)] = usedColour.y;
 			vertices[newVectorPos(&vertices)] = usedColour.z;
 		}
-		lastIndex = faceIndexes[f].w;
+		lastIndex = (int) faceIndexes[f].w;
 	}
 	startIrregularColorBuilding(vertices, VAO, VBO, size);
 }

@@ -131,6 +131,9 @@ void monsterTerrainCollisions(){
 			added = 4.0f;
 		}
 		vec4 monsterCollide = terrainColliders(monsterPos, added);
+		if(allMonsters[m].position.y != monsterCollide.y){
+			allMonsters[m].position.y = monsterCollide.y;
+		}
 
 		// area limit colliders
 		if(allMonsters[m].position.x < 0.0f){

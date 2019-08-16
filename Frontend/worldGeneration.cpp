@@ -128,6 +128,7 @@ void createSave(const char* filePath, int saveType) {
 			earthScaleY = 300 - earthScaleX;
 		}
 		saveLines[newVectorPos(&saveLines)] = "planetEarthSize " + to_string(earthScaleX) + " " + to_string(earthScaleY);
+		saveLines = rewriteLine(saveLines, "playerPos", to_string(earthScaleX / 2.0f) + " 0 " + to_string(earthScaleY / -2.0f));
 		// lists to check if inside each other
 		vector<vec2> craterPositions;
 		vector<float> craterScales;
@@ -404,7 +405,7 @@ vec2 currentPlanetScale;
 
 vec4 terrainColliders(vec3 original, float yAddition){
 	int mCount = currentAllMountainPositions.size();
-	float yHighest = 0.0f;
+	float yHighest = yAddition;
 	bool inMountain = false;
 	for(int m = 0; m < mCount; m++){
 		vec2 mPos = currentAllMountainPositions[m];
@@ -433,7 +434,7 @@ vec4 terrainColliders(vec3 original, float yAddition){
 	}
 	return vec4(original.x, yHighest, original.z, inMountain);
 }
-
+#include "monsters.h"
 vector<vec2> negativeMountainCoords, positiveMountainCoords;
 void worldGeneration::beginMountains() {
 	string mountainName;

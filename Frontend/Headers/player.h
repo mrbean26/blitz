@@ -27,6 +27,8 @@ void pauseUIInteraction();
 vec3 cameraBuildingCollisions(vec3 original);
 void exitToMenus();
 
+float degreesDistance(float v1, float v2);
+
 class player {
 public:
 	bool active = false, canMove = true, canMoveCamera = true;
@@ -36,13 +38,13 @@ public:
 	vec3 position, rotation, scale = vec3(1.0f, 1.0f, 1.0f);
 	vec3 velocity = vec3(0.0f);
 
-	float headLookAtY = 0.0f;
-
 	void deleteMemory();
 
 	int currentWeapon = 0;
 	bool canShoot = true;
 	bool aiming = false;
+	bool changingCrouch = false;
+	bool crouching = false;
 	void shoot();
 
 	float health = 100.0f;
@@ -80,7 +82,7 @@ private:
 
 	void startHead();
 	GLuint headVAO, headVBO;
-	vec3 headPosition = vec3(0.0f, 1.2f, 0.0f), headRotation, headScale = vec3(0.9f, 0.9f, 0.9f);
+	vec3 headPosition = vec3(0.0f, 0.0f, 0.0f), headRotation, headScale = vec3(0.9f, 0.9f, 0.9f);
 
 	void startArm(); // includes hand
 	GLuint armVAO, armVBO;
@@ -101,6 +103,7 @@ private:
 	bool finishedFirst = false, finishedSecond = false;
 	float movingMultiplier = 0.0f; // speed at which to move limbs in runAnimation()
 	void runAnimation(float multiplier);
+	void crouchMoveAnimation(float multiplier);
 
 	bool finishedEquipFirst = false;
 	float totalGoneUpEquipping = 0.0f;
