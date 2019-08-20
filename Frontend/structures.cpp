@@ -4,6 +4,7 @@
 #include "display.h"
 #include "interface.h"
 #include "worldGeneration.h"
+#include "inventory.h"
 
 int interactKey, shootButton, aimButton;
 vector<buildingColour> allColourBuildings = { mainBench, mainBlueprint };
@@ -652,9 +653,8 @@ void buildBenchInteraction(){
 	if(saveType == 1){
 		currentBuildingScale = buildingScales[currentBuildingType] * (65.0f / 200.0f);
 	}
-	float distanceNeeded = 10.0f;
 	float distance = glm::distance(mainPlayer.position, mainBench.position);
-	if (distance < distanceNeeded) {
+	if (distance < BENCH_DISTANCE) {
 		if (checkKeyDown(interactKey)) {
 			benchInUse = !benchInUse;
 			mainPlayer.canMove = !benchInUse;
@@ -662,10 +662,26 @@ void buildBenchInteraction(){
 			for (int b = 0; b < size; b++) {
 				allButtons[buildingSelectButtons[b]].active = false;
 			}
+			if(!benchInUse){
+				for(int s = 0; s < HOTBAR_COUNT; s++){
+					allButtons[allSlots[s].buttonIndex].active = true;
+					if(allSlots[s].itemType != -1){
+						allButtons[allSlots[s].buttonIconIndex].active = true;
+					}
+					allTexts[allSlotTexts[s]].active = true;
+				}
+			}
 			if (benchInUse) {
 				for (int b = 0; b < size; b++) {
 					allButtons[buildingSelectButtons[b]].active = true;
 				}
+				for(int s = 0; s < SLOT_COUNT; s++){
+					allButtons[allSlots[s].buttonIndex].active = false;
+					if(allSlots[s].itemType != -1){
+						allButtons[allSlots[s].buttonIconIndex].active = false;
+					}
+					allTexts[allSlotTexts[s]].active = false;
+				}	
 				currentBuildingPosition = vec2(0.0f);
 				glfwSetCursorPos(window, display_x / 2.0, display_y / 2.0);
 

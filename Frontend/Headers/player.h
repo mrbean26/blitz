@@ -55,6 +55,9 @@ public:
 
 	bool equippingReloading = false;
 	float reloadSpeed;
+
+	vec3 armPosition=vec3(-0.7f, -0.55f, 0.0f), armRotation, armScale = vec3(0.4f, 0.4f, 0.4f);
+	vec3 armPositionTwo=vec3(0.7f, -0.55f, 0.0f), armRotationTwo, armScaleTwo = vec3(0.4f, 0.4f, 0.4f);
 private:
 	void respawn();
 	void movement();
@@ -86,8 +89,6 @@ private:
 
 	void startArm(); // includes hand
 	GLuint armVAO, armVBO;
-	vec3 armPosition=vec3(-0.7f, -0.55f, 0.0f), armRotation, armScale = vec3(0.4f, 0.4f, 0.4f);
-	vec3 armPositionTwo=vec3(0.7f, -0.55f, 0.0f), armRotationTwo, armScaleTwo = vec3(0.4f, 0.4f, 0.4f);
 
 	void startTorso();
 	GLuint torsoVAO, torsoVBO;

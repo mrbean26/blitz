@@ -6,7 +6,6 @@
 #define DEBUG_FONT_SIZE 25
 #define DEBUG_UPDATE_TIME_MS 500
 
-
 int debugText;
 int debugTextPlaceholder;
 float updateTimer = DEBUG_UPDATE_TIME_MS / 1000.0f;

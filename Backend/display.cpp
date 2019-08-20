@@ -169,7 +169,7 @@ float lowestCameraY = 0.0f;
 float distanceFromCharacter = 0.0f;
 float defaultDistance = DEFAULT_CAMERA_DISTANCE;
 vec3 cameraThirdPos;
-
+float var = 1.0f;
 mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	mat4 newMatrix = mat4(1.0f);
 	// third person camera
@@ -205,6 +205,27 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	// matrix
 	newMatrix = glm::lookAt(cameraThirdPos, 
 		lookAtPos, vec3(0.0f, 1.0f, 0.0f));
+	// aiming
+	if(playerView){
+		if(mainPlayer.aiming && !mainPlayer.crouching){
+			vec3 pPos = mainPlayer.position;
+			vec3 pRot = mainPlayer.rotation;
+			vec3 armRot = mainPlayer.armRotation;
+
+			vec3 position = pPos;
+			position.y += 0.9f;
+			
+			vec3 lookAt = pPos;
+			lookAt.x = pPos.x - 1.2f * sin(radians(pRot.y)) * glm::clamp(sin(radians(armRot.x)), 0.0f, 1.0f);
+			lookAt.y += 0.9 - sin(radians(armRot.x+ 90.0f)) * 1.2f;
+			lookAt.z = pPos.z - 1.2f * cos(radians(pRot.y)) * glm::clamp(sin(radians(armRot.x)), 0.0f, 1.0f);
+
+			newMatrix = glm::lookAt(position, lookAt, vec3(0.0f, 1.0f, 0.0f));
+		}
+		if(mainPlayer.aiming && mainPlayer.crouching){
+
+		}
+	}
 	// not 3rd person
 	if (!playerView) {
 		// clamp 0-360

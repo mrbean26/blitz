@@ -563,8 +563,8 @@ void player::movement(){
 			armRotationTwo.x = glm::clamp(armRotationTwo.x, 250.0f, 360.0f);
 		}
 		if(!crouching){
-			armRotation.x = glm::clamp(armRotation.x, 0.0f, 105.0f);
-			armRotationTwo.x = glm::clamp(armRotationTwo.x, 0.0f, 105.0f);
+			armRotation.x = glm::clamp(armRotation.x, 10.0f, 170.0f);
+			armRotationTwo.x = glm::clamp(armRotationTwo.x, 10.0f, 170.0f);
 		}
 		armPositionTwo = vec3(0.55f, -0.425f, 0.0f);
 		aimingView = true;
@@ -808,7 +808,9 @@ void player::renderPlayer(){
 	vector<vec3> parentPositions = { headParentPos, position, armParentPos, legParentPos, armParentPos, legParentPos };
 	glUseProgram(playerShader);
 	for (int i = 0; i < 6; i++) {
-		
+		if(i < 2 && aiming){
+			continue;
+		}
 		vec3 combinedScale = scale * scales[i];
 
 		setMat4(playerShader, "model", modelMatrix(positions[i], rotations[i], combinedScale, 
@@ -842,7 +844,7 @@ void player::renderPlayer(){
 		glLinkProgram(playerShader);
 		// weapon
 		if (currentWeapon == 0) {
-			allWeapons[currentWeapon].render(modelMatrix(vec3(1.2f, 0.0f, -0.7f), 
+			allWeapons[currentWeapon].render(modelMatrix(vec3(1.2f, -0.3f, -0.7f), 
 				vec3(armRotation.x - 90.0f, 90.0f, 0.0f), vec3(0.4f), true, 
 					armParentPos, rotation));
 		}

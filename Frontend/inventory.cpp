@@ -153,7 +153,9 @@ void inventoryMainloop(){
     givePlayerEntity();
     swapItems();
     if(checkKeyDown(interactKeyInv)){
-        if(!inventoryOpen){
+        float distance = glm::distance(mainPlayer.position, mainBench.position);
+
+        if(!inventoryOpen && distance > BENCH_DISTANCE){
             for(int s = HOTBAR_COUNT; s < SLOT_COUNT; s++){
                 allButtons[allSlots[s].buttonIndex].active = true;
             }

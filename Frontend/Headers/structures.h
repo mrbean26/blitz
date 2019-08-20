@@ -4,6 +4,8 @@
 
 #include "frontend.h"
 
+#define BENCH_DISTANCE 10.0f
+
 struct buildingColour {
 	int buildingType = -1;
 	GLuint VAO = 0, VBO = 0;

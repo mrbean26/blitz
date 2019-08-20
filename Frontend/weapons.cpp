@@ -237,14 +237,14 @@ void weaponUI() {
 	int icons[] = { weaponIconOne, weaponIconTwo, weaponIconThree, weaponIconFour };
 	if (!checkKey(weaponKey)) {
 		if (weaponSelectOpen) {
-			//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
 		weaponSelectOpen = false;
 		mainPlayer.canMoveCamera = true;
 	}
 	if (checkKey(weaponKey)) {
 		if (!weaponSelectOpen) {
-			//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
 		weaponSelectOpen = true;
 		mainPlayer.canMoveCamera = false;
