@@ -1,12 +1,12 @@
-#pragma once
-
-#ifndef MODEL_H
-#define MODEL_H
-
 #include "model.h"
-#include "saveFiles.h"
-#include "interface.h"
+
+#include <string>
+#include <algorithm>
+#include <vector>
+
 #include "structures.h"
+#include "inventory.h"
+#include "worldGeneration.h"
 
 /*
 To setup an OBJ enable only triangulate faces & enable write normals & enable apply modifiers
@@ -175,4 +175,181 @@ void readyModel(const char* filePath) { // change file format to readable
 	writeLines(filePath, newLines);
 }
 
-#endif 
+/*
+setting up texture models:
+export with only:
+-triangulate faces
+-apply modifiers
+-include UVs
+-objects as obj objects
+*/
+
+texture blankTexture;
+
+void readyTextureModelfile(const char * filePath){
+	vector<string> lines = readLines(filePath);
+	vector<string> newLines;
+
+	int count = lines.size();
+	for (int i = 0; i < count; i++) {
+		if (contains(lines[i], "v ")) {
+			newLines[newVectorPos(&newLines)] = lines[i];
+		}
+		if(contains(lines[i], "vt")){
+			newLines[newVectorPos(&newLines)] = lines[i];
+		}
+		if (contains(lines[i], "f ")) {
+			string line = lines[i];
+			
+			std::replace(line.begin(), line.end(), '/', ',');
+			std::replace(line.begin(), line.end(), ' ', ',');
+			line[1] = ' ';
+			line += ',';
+
+			newLines[newVectorPos(&newLines)] = line;
+		}
+	}
+
+	writeLines(filePath, newLines);
+}
+
+void textureModel::outputVertices(){
+	cout << "{ ";
+
+	int vCount = vertices.size();
+	for (int v = 0; v < vCount; v++) {
+		string output = to_string(vertices[v]) + "f" + ", ";
+		if(!contains(output, ".")){
+			output = to_string(vertices[v]) + ".0" + "f" + ", ";
+		}
+		cout << output;
+	}
+
+	cout << "}" << endl;
+}
+
+textureModel::textureModel(const char * filePath, texture usedTexture){
+	// load model
+	vector<string> allLines = readLines(filePath);
+	int lCount = allLines.size();
+
+	vector<vec4> points;
+	vector<vector<float>> indexes;
+	vector<vec2> uvCoords;
+
+	for (int i = 0; i < lCount; i++) {
+		string line = allLines[i];
+		if (contains(line, "v ")) {
+			vec3 point = getVec3File(filePath, "v", i);
+			vec4 newPoint = vec4(point, i);
+			points[newVectorPos(&points)] = newPoint;
+		}
+		if (contains(line, "f")) {
+			vector<float> faceIndexes = getVectorFile(filePath, "f", i);
+			indexes[newVectorPos(&indexes)] = faceIndexes;
+		}//
+		if(contains(line, "vt")){
+			vec2 uv = getVec2File(filePath, "vt", i);
+			uvCoords[newVectorPos(&uvCoords)] = uv;
+		}
+	}
+	modelTexture = usedTexture;
+
+
+	// coord then uv
+	int fCount = indexes.size();
+	for(int f = 0; f < fCount; f++){
+		int xIndex = (int) indexes[f][0];
+		int xUVIndex = (int) indexes[f][1];
+		int yIndex = (int) indexes[f][2];
+		int yUVIndex = (int) indexes[f][3];
+		int zIndex = (int) indexes[f][4];
+		int zUVIndex = (int) indexes[f][5];
+		
+		int indexes[] = { xIndex, xUVIndex, yIndex, yUVIndex, zIndex, zUVIndex };
+		for (int v = 0; v < 3; v++) {
+			int currentIndex = indexes[v * 2] - 1;
+			vertices[newVectorPos(&vertices)] = points[currentIndex].x;
+			vertices[newVectorPos(&vertices)] = points[currentIndex].y;
+			vertices[newVectorPos(&vertices)] = points[currentIndex].z;
+
+			// uv
+			int currentUVIndex = indexes[v * 2 + 1] - 1;
+			vertices[newVectorPos(&vertices)] = uvCoords[currentUVIndex].x;
+			vertices[newVectorPos(&vertices)] = uvCoords[currentUVIndex].y;
+		}
+	}
+
+	// begin vao & vbo
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0); // position attribute
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1); // colour attribute
+	size = vertices.size() / 5;
+}
+
+int modelTextureShader;
+void startModelTextureShader(){
+	int vertex = createShader("assets/shaders/modelTextureVert.txt", GL_VERTEX_SHADER);
+	int fragment = createShader("assets/shaders/modelTextureFrag.txt", GL_FRAGMENT_SHADER);
+	modelTextureShader = createProgram({vertex, fragment});
+}
+
+void textureModel::render(mat4 model){
+	glUseProgram(modelTextureShader);
+	setMat4(modelTextureShader, "view", viewMatrix());
+	setMat4(modelTextureShader, "projection", projectionMatrix());
+	setMat4(modelTextureShader, "model", model);
+	
+	glActiveTexture(GL_TEXTURE31);
+	enableTexture(modelTexture);
+	setShaderInt(modelTextureShader, "texture0", 31);
+
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_TRIANGLES, 0, size);
+}
+
+readyTextureModel::readyTextureModel(std::vector<float> usedVertices, texture usedTexture, bool initiate){
+	if (!initiate) {
+		return;
+	}
+	modelTexture = usedTexture;
+	// begin vao & vbo
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, usedVertices.size() * sizeof(float), usedVertices.data(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0); // position attribute
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1); // colour attribute
+	size = usedVertices.size() / 5;
+}
+
+void readyTextureModel::render(mat4 model, bool useLight, vec3 multiply){
+	glUseProgram(modelTextureShader);
+
+	setShaderVecThree(modelTextureShader, "multiplyColour", multiply);
+	setShaderVecThree(modelTextureShader, "lightPos", lightPos);
+	setShaderFloat(modelTextureShader, "lightIntensity", lightIntensity);
+	setShaderFloat(modelTextureShader, "lightRadius", lightRadius);
+	setShaderInt(modelTextureShader, "useLight", useLight);
+	setShaderFloat(modelTextureShader, "lowestLight", lowestLight);
+
+	setMat4(modelTextureShader, "view", viewMatrix());
+	setMat4(modelTextureShader, "projection", projectionMatrix());
+	setMat4(modelTextureShader, "model", model);
+	
+	glActiveTexture(GL_TEXTURE31);
+	enableTexture(modelTexture);
+	setShaderInt(modelTextureShader, "texture0", 31);
+
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_TRIANGLES, 0, size);
+}

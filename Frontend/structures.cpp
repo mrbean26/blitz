@@ -5,6 +5,7 @@
 #include "interface.h"
 #include "worldGeneration.h"
 #include "inventory.h"
+#include "people.h"
 
 int interactKey, shootButton, aimButton;
 vector<buildingColour> allColourBuildings = { mainBench, mainBlueprint };
@@ -713,14 +714,14 @@ void buildBenchInteraction(){
 
 				allMiniBuildings[newVectorPos(&allMiniBuildings)] = newMiniBuilding;
 				// lines to save
-				if(saveType == LARGE_WORLD){
+				if (saveType == LARGE_WORLD) {
 					divider = 200.0f;
 				}
 				vec2 areaScaleMax = vec2(currentPlanetScale.x / divider, currentPlanetScale.y / divider);
 				vec2 buildWorldPos = vec2(((currentBuildingPosition.x / areaScaleMax.x) * currentPlanetScale.x) + currentPlanetScale.x / 2.0f,
 					((currentBuildingPosition.y / areaScaleMax.y) * currentPlanetScale.y) + currentPlanetScale.y / 2.0f);
 
-				if(saveType == LARGE_WORLD){
+				if (saveType == LARGE_WORLD) {
 					float x = (currentBuildingPosition.x + (currentPlanetScale.x / 200.0f) / 2.0f) / areaScaleMax.x;
 					float y = (currentBuildingPosition.y + (currentPlanetScale.y / 200.0f) / 2.0f) / areaScaleMax.y;
 
@@ -728,7 +729,7 @@ void buildBenchInteraction(){
 					buildWorldPos.y = y * currentPlanetScale.y;
 				}
 
-				string buildTypeLine = WorldGeneration.currentAreaPrefix + "BuildingType " + 
+				string buildTypeLine = WorldGeneration.currentAreaPrefix + "BuildingType " +
 					to_string(currentBuildingType);
 				string buildPosLine = WorldGeneration.currentAreaPrefix + "BuildingPosition " +
 					to_string(buildWorldPos.x) + " " + to_string(-buildWorldPos.y);
@@ -744,6 +745,19 @@ void buildBenchInteraction(){
 				newBuildingPhysical.position = vec3(buildWorldPos.x, 0.0f, -buildWorldPos.y);
 				newBuildingPhysical.rotation = vec3(0.0f, currentBuildingRotation.y, 0.0f);
 				allColourBuildings[newVectorPos(&allColourBuildings)] = newBuildingPhysical;
+
+				// create owner
+				int personType = 0;
+				if (WorldGeneration.currentAreaPrefix == "earth") {
+					if (currentBuildingType == 0) {
+						personType = 1;
+					}
+					if (currentBuildingType == 1) {
+						personType = 0;
+					}
+				}
+				int newPerson = createPlayer(personType, vec3(buildWorldPos.x, 0.0f, -buildWorldPos.y));
+				allPeople[newPerson].rotation.y = currentBuildingRotation.y + 90.0f;
 			}
 		}
 	}
@@ -755,6 +769,11 @@ void startBuildings() {
 	mainBench.buildingType = 2;
 	allColourBuildings = { mainBench, mainBlueprint };
 }
+
+int emptyInt = 0;
+float emptyFloat = 0.0f;
+bool emptyBool = false;
+bool emptyBoolTwo = false;
 
 void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVelocity, bool &lastOnBench, bool &hitBuilding){
 	// outside of buildings
@@ -1022,12 +1041,12 @@ void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVeloci
 			}
 		}
 		if (current.buildingType == 2) { // bench
-			if (position.y - 2.3f <= pos.y + 2.25f * sca.y) {
+			if (position.y - 2.16f <= pos.y + 2.25f * sca.y) {
 				if (position.x >= pos.x - 0.5f * sca.x && position.x <= pos.x + 1.5f * sca.x) {
 					// on top
 					if (position.z >= pos.z - 2.0f * sca.z && position.z <= pos.z + 3.0f * sca.z) {
-						if (position.y - 2.3f <= pos.y + 2.25f * sca.y) {
-							position.y = 2.3f + pos.y + 2.25f * sca.y;
+						if (position.y - 2.16f <= pos.y + 2.25f * sca.y) {
+							position.y = 2.16f + pos.y + 2.25f * sca.y;
 							if (jumpVelocity < 0) { jumpVelocity = 0.0f; }
 							int jumpKey = stoi(inputLines[9]);
 							float jumpHeight = 8.0f;

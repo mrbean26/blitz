@@ -7,9 +7,5 @@ in vec2 TexCoord;
 uniform sampler2D texture0; //this corresponds to the texture unit (0-31) assigned by using glActiveTexture()
 
 void main(){
-	
-
-
-
     FragColor = texture(texture0, TexCoord) * textureColour;
 }

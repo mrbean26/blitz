@@ -43,6 +43,12 @@ bool insideOtherBuilding();
 bool insideAreaScale();
 bool insideMountain();
 bool okToBuild();
+
+extern int emptyInt;
+extern float emptyFloat;
+extern bool emptyBool;
+extern bool emptyBoolTwo;
+
 void buildCollisions(vec3 &position, int &insideBuildingIndex, float &jumpVelocity, bool &lastOnBench, bool &hitBuilding);
 
 void changeBuildings();

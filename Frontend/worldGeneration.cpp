@@ -406,7 +406,7 @@ vec2 currentPlanetScale;
 vec4 terrainColliders(vec3 original, float yAddition){
 	int mCount = currentAllMountainPositions.size();
 	float yHighest = yAddition;
-	bool inMountain = false;
+	int inMountainIndex = -1;
 	for(int m = 0; m < mCount; m++){
 		vec2 mPos = currentAllMountainPositions[m];
 		mPos.y = -mPos.y;
@@ -421,7 +421,7 @@ vec4 terrainColliders(vec3 original, float yAddition){
 		float distance = glm::distance(mThree, originalThree);
 		distance = currentRad - distance;
 		if(distance > 0){
-			inMountain = true;
+			inMountainIndex = m + 1;
 			distance = distance / currentRad;
 			distance = glm::clamp(distance, -1.0f, 1.0f);
 			float pointY = distance * mSca.y;
@@ -432,7 +432,7 @@ vec4 terrainColliders(vec3 original, float yAddition){
 			yHighest = pointY;
 		}
 	}
-	return vec4(original.x, yHighest, original.z, inMountain);
+	return vec4(original.x, yHighest, original.z, (float) inMountainIndex);
 }
 #include "monsters.h"
 vector<vec2> negativeMountainCoords, positiveMountainCoords;
@@ -655,30 +655,14 @@ void worldGeneration::beginTerrrain() {
 }
 
 void worldGeneration::renderAreaLimits(){
-	// get alpha value
-	float alpha = 1.0f;
-	float distanceToLimit = 5.0f;
-
-	float distanceXMax = glm::max(mainPlayer.position.x, currentAreaScale.x) - glm::min(mainPlayer.position.x, currentAreaScale.x);
-	float distanceXMin = glm::max(mainPlayer.position.x, 0.0f) - glm::min(mainPlayer.position.x, 0.0f);
-
-	float distanceZMax = glm::max(mainPlayer.position.z, -currentAreaScale.y) - glm::min(mainPlayer.position.z, -currentAreaScale.y);
-	float distanceZMin = glm::max(mainPlayer.position.z, 0.0f) - glm::min(mainPlayer.position.z, 0.0f);
-
-	float xDistance = glm::min(distanceXMax, distanceXMin);
-	float zDistance = glm::min(distanceZMax, distanceZMin);
-
-	float alphaX = 0.0f + (xDistance / distanceToLimit);
-	float alphaZ = 0.0f + (zDistance / distanceToLimit);
-	alpha = 1.0f - (alphaX * alphaZ) / 2.0f; // divide by 2 to get average 
-
 	// render
 	glUseProgram(terrainShader);
 
 	setMat4(terrainShader, "model", mat4(1.0f));
 	setMat4(terrainShader, "projection", projectionMatrix());
 	setMat4(terrainShader, "view", viewMatrix());
-	setShaderFloat(terrainShader, "alpha", alpha);
+	setShaderFloat(terrainShader, "alpha", 1.0f);
+	setShaderInt(terrainShader, "useLight", 0);
 	
 	glBindVertexArray(areaLimitVAO);
 	glDrawArrays(GL_TRIANGLES, 0, areaLimitCount * 3);
@@ -755,72 +739,86 @@ void worldGeneration::mainloop() {
 void worldGeneration::beginAreaLimits() {
 	// generate points
 	vector<float> points;
-	vec3 colour = vec3(1.0f) - currentAreaColour;
-	float triangleSize = 3.0f;
+	vec3 colour = vec3(1.0f) - (currentAreaColour * vec3(0.5f));
+	float triangleSize = 0.1f;
 	float maxHeight = 30.0f;
-	// left side
-	vector<float> whichZ = { -currentAreaScale.y - 1.0f, 1.0f };
-	for (int z = 0; z < 2; z++) {
-		for (int xx = -1; xx < (currentAreaScale.x + 1) / triangleSize; xx++) {
-			for (int yy = -15; yy < maxHeight / triangleSize; yy++) {
-				float x = xx * triangleSize;
-				float y = yy * triangleSize;
+	// red lines
+	for (int w = 0; w < 2; w++) {
+		float z[] = { 0.0f, -currentAreaScale.y };
+		float yLast = terrainColliders(vec3(0.0f, 0.0f, z[w]), 0.135f).y;
+		for (float x = -triangleSize; x < currentAreaScale.x; x += triangleSize) {
+			vec4 terrain = terrainColliders(vec3(x + triangleSize, 0.0f, z[w]), 0.135f);
+			float yNew = terrain.y;
 
-				vec3 one = vec3(x, y, whichZ[z]);
-				vec3 two = vec3(x + triangleSize, y, whichZ[z]);
-				vec3 three = vec3(x, y + triangleSize, whichZ[z]);
-				vec3 four = vec3(x + triangleSize, y + triangleSize, whichZ[z]);
-				vector<vec3> whichPoint = { one, four };
-
-				vec3 squareColour = colour + colourDifference(0.1f);
-
-				for (int t = 0; t < 2; t++) { // two triangles
-					vector<vec3> allPoints = { whichPoint[t], two, three };
-					for (vec3 point : allPoints) {
-						for (int v = 0; v < 3; v++) {
-							points[newVectorPos(&points)] = point[v];
-						}
-						// add colour
-						for (int c = 0; c < 3; c++) {
-							points[newVectorPos(&points)] = squareColour[c];
-						}
-					}
-					areaLimitCount++;
-				}
-
+			if (yNew < 0) {
+				yNew = yNew + (-yNew * 0.175f);
 			}
+			if (yNew > -0.3f && yNew < 0.135f) {
+				yNew = 0.135f;
+			}
+
+			vec3 one = vec3(x, yLast, -triangleSize + z[w]);
+			vec3 two = vec3(x + triangleSize, yNew, -triangleSize + z[w]);
+			vec3 three = vec3(x + triangleSize, yNew, triangleSize + z[w]);
+			vec3 four = vec3(x, yLast, triangleSize + z[w]);
+
+			vector<vec3> triangleOne = { one, two, four };
+			vector<vec3> triangleTwo = { three, four, two };
+			vector<vector<vec3>> bothTriangles = { triangleOne, triangleTwo };
+
+			for (int t = 0; t < 2; t++) {
+				vector<vec3> currentTriangle = bothTriangles[t];
+				for (int p = 0; p < 3; p++) {
+					points[newVectorPos(&points)] = currentTriangle[p].x;
+					points[newVectorPos(&points)] = currentTriangle[p].y;
+					points[newVectorPos(&points)] = currentTriangle[p].z;
+
+					points[newVectorPos(&points)] = 1.0f;
+					points[newVectorPos(&points)] = 0.0f;
+					points[newVectorPos(&points)] = 0.0f;
+				}
+			}
+			yLast = yNew;
 		}
 	}
-	whichZ = { currentAreaScale.x + 1.0f, -1.0f };
-	for (int z = 0; z < 2; z++) {
-		for (int xx = -1; xx < (currentAreaScale.y + 1) / triangleSize; xx++) {
-			for (int yy = -15; yy < maxHeight / triangleSize; yy++) { // allow for deep craters
-				float x = xx * triangleSize;
-				float y = yy * triangleSize;
+	
 
-				vec3 one = vec3(whichZ[z], y, -x);
-				vec3 two = vec3(whichZ[z], y, -x - triangleSize);
-				vec3 three = vec3(whichZ[z], y + triangleSize, -x);
-				vec3 four = vec3(whichZ[z], y + triangleSize, -x - triangleSize);
-				vector<vec3> whichPoint = { one, four };
+	for (int w = 0; w < 2; w++) {
+		float z[] = { 0.0f, currentAreaScale.x };
+		float yLast = terrainColliders(vec3(z[w], 0.0f, 0.0f), 0.135f).y;
+		for (float x = 0.0f; x < currentAreaScale.y; x += triangleSize) {
+			vec4 terrain = terrainColliders(vec3(z[w], 0.0f, -x - triangleSize), 0.135f);
+			float yNew = terrain.y;
 
-				vec3 squareColour = colour + colourDifference(0.3f);
-
-				for (int t = 0; t < 2; t++) { // two triangles
-					vector<vec3> allPoints = { whichPoint[t], two, three };
-					for (vec3 point : allPoints) {
-						for (int v = 0; v < 3; v++) {
-							points[newVectorPos(&points)] = point[v];
-						}
-						// add colour
-						for (int c = 0; c < 3; c++) {
-							points[newVectorPos(&points)] = squareColour[c];
-						}
-					}
-					areaLimitCount++;
-				}
-
+			if (yNew < 0) {
+				yNew = yNew + (-yNew * 0.175f);
 			}
+			if (yNew > -0.3f && yNew < 0.135f) {
+				yNew = 0.135f;
+			}
+
+			vec3 one = vec3(-triangleSize + z[w], yLast, -x);
+			vec3 two = vec3(-triangleSize + z[w], yNew, -x - triangleSize);
+			vec3 three = vec3(triangleSize + z[w], yNew, -x - triangleSize);
+			vec3 four = vec3(triangleSize + z[w], yLast, -x);
+
+			vector<vec3> triangleOne = { one, two, four };
+			vector<vec3> triangleTwo = { three, four, two };
+			vector<vector<vec3>> bothTriangles = { triangleOne, triangleTwo };
+
+			for (int t = 0; t < 2; t++) {
+				vector<vec3> currentTriangle = bothTriangles[t];
+				for (int p = 0; p < 3; p++) {
+					points[newVectorPos(&points)] = currentTriangle[p].x;
+					points[newVectorPos(&points)] = currentTriangle[p].y;
+					points[newVectorPos(&points)] = currentTriangle[p].z;
+
+					points[newVectorPos(&points)] = 1.0f;
+					points[newVectorPos(&points)] = 0.0f;
+					points[newVectorPos(&points)] = 0.0f;
+				}
+			}
+			yLast = yNew;
 		}
 	}
 	// memory
@@ -833,4 +831,5 @@ void worldGeneration::beginAreaLimits() {
 	glEnableVertexAttribArray(0); // position attribute
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1); // colour attribute
+	areaLimitCount = points.size() / 3;
 }

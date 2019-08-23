@@ -13,6 +13,7 @@ void backendMainloop() {
 void backendBegin() {
 	debugBegin();
 	interfaceBegin();
+	startModelTextureShader();
 }
 
 double lastMouseX, lastMouseY;

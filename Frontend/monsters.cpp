@@ -1,35 +1,8 @@
+#include "inventory.h"
 #include "monsters.h"
 #include "frontend.h"
 #include "weapons.h"
 #include "structures.h"
-#include "inventory.h"
-
-#define EARTH_ONE_SCALE 1.25f
-#define EARTH_TWO_SCALE 2.5f
-#define MONSTER_TO_MONSTER_COLLIDER_DISTANCE 1.75f
-#define MONSTER_LIGHT_SPAWN_MAX 0.7f
-#define MONSTER_MAX_COUNT 11
-#define MONSTER_SPAWN_RATE 1000
-#define DAMAGE_SHOW_RED_TIME 0.75f
-#define EARTH_ONE_BULLET_DISTANCE 0.5f
-#define EARTH_TWO_BULLET_DISTANCE_CENTER 0.65f
-#define EARTH_TWO_ARM_LENGTH 1.0f
-#define EARTH_TWO_ARM_WIDTH 8.0f
-#define MONSTER_ROTATE_DISTANCE_MAX 12.0f
-#define MONSTER_MOVE_DISTANCE_MAX 8.0f
-#define MONSTER_MOVE_ROTATE_DISTANCE_MIN 3.0f
-#define MONSTER_CAMERA_ANGLE 17.5f
-#define MONSTER_CAMERA_DISTANCE 1.0f
-#define DYING_X_COLOUR 2.5f
-#define DYING_Y_COLOUR 0.2f
-#define DYING_Z_COLOUR 0.2f
-#define DYING_ROTATE_SPEED 240.0f
-#define MONSTER_ATTACK_CLOSEST_DISTANCE 1.0f
-#define MONSTER_ATTACK_SPEED 10.0f
-#define EARTH_ONE_DROP_CHANCE 1
-#define EARTH_TWO_DROP_CHANCE 3
-#define EARTH_ONE_DROP_INDEX 0
-#define EARTH_TWO_DROP_INDEX 1
 
 double bearingOne(float one, float two) {
 	double angle = atan(one - two);
@@ -39,13 +12,13 @@ double bearingOne(float one, float two) {
 	return degrees(angle);
 }
 
-double bearingTwo(vec2 xyOne, vec2 xyTwo) {
+float bearingTwo(vec2 xyOne, vec2 xyTwo) {
 	double angle = atan2(xyTwo.x - xyOne.x,
 		xyTwo.y - xyOne.y);
 	if (angle < 0.0) {
 		angle += pi<float>() * 2;
 	}
-	return degrees(angle);
+	return (float) degrees(angle);
 }
 
 int earthOne, earthTwo;
@@ -254,7 +227,7 @@ void monsterDamage(){
 				// arms are at rotation - 90 & rotation + 90
 				float rotationOne = degreesClamp(allMonsters[m].rotation.y - 90.0f);
 				float rotationTwo = degreesClamp(allMonsters[m].rotation.y + 90.0f);
-				float usedBearing = degreesClamp((float) bearingTwo(vec2(monsterPos.x, monsterPos.z), vec2(bulletPos.x, bulletPos.z)));
+				float usedBearing = degreesClamp(bearingTwo(vec2(monsterPos.x, monsterPos.z), vec2(bulletPos.x, bulletPos.z)));
 				
 				float armOneDistance = glm::distance(rotationOne, usedBearing);
 				float armTwoDistance = glm::distance(rotationTwo, usedBearing);
@@ -314,7 +287,7 @@ void monsterInteractions() {
 		vec3 monsterPos = allMonsters[m].position;
 		float distance = glm::distance(playerPos, vec2(monsterPos.x, monsterPos.z));
 		if (distance < MONSTER_ROTATE_DISTANCE_MAX && distance > MONSTER_MOVE_ROTATE_DISTANCE_MIN) {
-			float bearingAngle = (float) bearingTwo(playerPos,
+			float bearingAngle = bearingTwo(playerPos,
 			vec2(monsterPos.x, monsterPos.z));
 			allMonsters[m].rotation.y = bearingAngle;
 		}
@@ -346,7 +319,7 @@ void monsterInteractions() {
 		}
 		if(allMonsters[m].attacking && mainPlayer.health > 0 && !mainPlayer.respawning){
 			vec2 monsterTwo = vec2(monsterPos.x, monsterPos.z);
-			float bearing = (float) bearingTwo(playerPos, monsterTwo);
+			float bearing = bearingTwo(playerPos, monsterTwo);
 
 			distance = glm::distance(playerPos, monsterTwo);
 			if(!allMonsters[m].finishedAttackOne){
@@ -399,7 +372,7 @@ float monsterCameraColliders(vec3 cameraPos, vec3 lookAt, float defaultDistance)
 	vec3 playerPos = mainPlayer.position;
 	vec2 playerX = vec2(playerPos.x, playerPos.z);
 
-	float changedYaw = degreesClamp((float) bearingTwo(playerX, vec2(cameraPos.x, cameraPos.z)));
+	float changedYaw = degreesClamp(bearingTwo(playerX, vec2(cameraPos.x, cameraPos.z)));
 	
 	float cameraDistance = glm::distance(playerX, vec2(cameraPos.x, cameraPos.z));
 	float yCameraDistance = playerPos.y - cameraPos.y;
@@ -419,7 +392,7 @@ float monsterCameraColliders(vec3 cameraPos, vec3 lookAt, float defaultDistance)
 		float yDistance = lookAt.y - position.y;
 		float yAngle = degreesClamp(degrees(atan(yDistance / floorLength)));
 			
-		float floorAngle = degreesClamp((float) bearingTwo(playerX, positionX));
+		float floorAngle = degreesClamp(bearingTwo(playerX, positionX));
 		float compareYaw = degreesClamp(changedYaw); // x
 		float comparePitch = degreesClamp(changedPitch); // y
 

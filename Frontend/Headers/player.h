@@ -12,6 +12,9 @@
 using namespace glm;
 using namespace std;
 
+#include "model.h"
+#include "texture.h"
+
 extern float lowestY;
 extern GLuint playerShader;
 void startPlayerShader();
@@ -35,7 +38,7 @@ public:
 	void begin();
 	void mainloop();
 
-	vec3 position, rotation, scale = vec3(1.0f, 1.0f, 1.0f);
+	vec3 position, rotation, scale = vec3(0.8f);
 	vec3 velocity = vec3(0.0f);
 
 	void deleteMemory();
@@ -55,10 +58,11 @@ public:
 
 	bool equippingReloading = false;
 	float reloadSpeed;
+	int personType = 0;
 
-	vec3 armPosition=vec3(-0.7f, -0.55f, 0.0f), armRotation, armScale = vec3(0.4f, 0.4f, 0.4f);
-	vec3 armPositionTwo=vec3(0.7f, -0.55f, 0.0f), armRotationTwo, armScaleTwo = vec3(0.4f, 0.4f, 0.4f);
-private:
+	vec3 armPosition=vec3(-0.72f, -0.55f, 0.0f), armRotation, armScale = vec3(0.3f);
+	vec3 armPositionTwo=vec3(0.72f, -0.55f, 0.0f), armRotationTwo, armScaleTwo = vec3(0.3f);
+
 	void respawn();
 	void movement();
 	void resetArms();
@@ -73,31 +77,32 @@ private:
 	void cameraMovement();
 	float sensitivity = 0.3f;
 	
-	
 	void startLaserForBullets();
 	GLuint laserVAO, laserVBO;
 	vec3 laserColour = vec3(1.0f, 0.0f, 0.0f);
 	float currentDelay = 0.0f;
 
 	void renderPlayer();
+	texture playerTexture;
 
 	void startCharacterVertices();
 
 	void startHead();
-	GLuint headVAO, headVBO;
-	vec3 headPosition = vec3(0.0f, 0.0f, 0.0f), headRotation, headScale = vec3(0.9f, 0.9f, 0.9f);
+	readyTextureModel headModel;
+	vec3 headPosition = vec3(0.0f, 0.0f, 0.0f), headRotation = vec3(0.0f, 180.0f, 0.0f), headScale = vec3(0.3f, 0.3f, 0.3f);
 
 	void startArm(); // includes hand
-	GLuint armVAO, armVBO;
+	readyTextureModel armModel;
 
 	void startTorso();
-	GLuint torsoVAO, torsoVBO;
-	vec3 torsoPosition, torsoRotation, torsoScale = vec3(0.6f, 0.6f, 0.6f);
+	readyTextureModel torsoModel;
+	vec3 torsoPosition, torsoRotation = vec3(0.0f, 180.0f, 0.0f), torsoScale = vec3(0.3f);
 
 	void startLeg(); // includes foot
-	GLuint legVAO, legVBO;
-	vec3 legPosition = vec3(-0.25f, -0.775f, 0.0f), legRotation, legScale = vec3(0.3f, 0.3f, 0.3f);
-	vec3 legPositionTwo = vec3(0.25f, -0.775f, 0.0f), legRotationTwo, legScaleTwo = vec3(0.3f, 0.3f, 0.3f);
+	readyTextureModel legModel;
+
+	vec3 legPosition = vec3(-0.2f, -0.72f, 0.0f), legRotation, legScale = vec3(0.298f);
+	vec3 legPositionTwo = vec3(0.2f, -0.72f, 0.0f), legRotationTwo, legScaleTwo = vec3(0.298f);
 
 	// animations
 	bool walking = false, running = false;

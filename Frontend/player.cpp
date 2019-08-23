@@ -1,3 +1,4 @@
+#include "model.h"
 #include "player.h"
 #include "shader.h"
 #include "display.h"
@@ -8,6 +9,7 @@
 #include "weapons.h"
 #include "monsters.h"
 #include "inventory.h"
+#include "people.h"
 
 #include <glm/gtc/type_ptr.hpp>
 using namespace glm;
@@ -16,13 +18,13 @@ using namespace glm;
 #include <vector>
 using namespace std;
 
-#define WALK_SPEED 8.0f
-#define RUN_SPEED 12.0f
-#define BACKWARD_SPEED -0.75f
+#define WALK_SPEED 6.0f
+#define RUN_SPEED 10.0f
+#define BACKWARD_SPEED -4.0f
 #define JUMP_SPEED 12.0f
 #define JUMP_HEIGHT 8.0f
 #define PLAYER_ROTATE_SPEED 140.0f
-#define LEG_LENGTH 2.3f
+#define LEG_LENGTH 2.16f
 float CROUCH_HEIGHT_TAKEAWAY = 2.125f;
 #define CROUCH_CRATER_ADD 0.5f
 #define PITCH_MIN -80.0f
@@ -45,6 +47,7 @@ vector<string> inputLines;
 int diedText, respawnButton;
 int pauseKey;
 void player::begin(){
+	playerTexture = loadTexture("assets/models/player/skin.png");
 	startCharacterVertices();
 	playerView = true;
 	inputLines = readLines("assets/saves/inputs.save");
@@ -135,11 +138,9 @@ void startPlayerUI() {
 	allButtons[healthIcon].interactive = false;
 	allButtons[healthIcon].position = vec3(-18.5f, -10.0f, 0.0f);
 	ammoText = createText();
-	allTexts[ammoText].fontCharacters = getFont("assets/fonts/zekton.ttf", 40);
-	allTexts[ammoText].fontSize = display_x / 50;
+	allTexts[ammoText].fontCharacters = getFont("assets/fonts/zekton.ttf", display_x / 30);
 	healthText = createText();
-	allTexts[healthText].fontCharacters = getFont("assets/fonts/zekton.ttf", 40);
-	allTexts[healthText].fontSize = display_x / 50;
+	allTexts[healthText].fontCharacters = getFont("assets/fonts/zekton.ttf", display_x / 30);
 }
 
 void exitToMenus() {
@@ -214,6 +215,25 @@ void exitToMenus() {
 		currentAllLines[newVectorPos(&currentAllLines)] = newLine;
 	}
 	allMonsters.clear();
+	// people
+	iterator = currentAllLines.begin();
+	while (iterator != currentAllLines.end()) {
+		if (contains(*iterator, WorldGeneration.currentAreaPrefix + "Person")) { // delete values
+			iterator = currentAllLines.erase(iterator);
+		}
+		else {
+			++iterator;
+		}
+	}
+	// write
+	int personCount = allPeople.size();
+	for (int p = 0; p < personCount; p++) {
+		player person = allPeople[p];
+		currentAllLines[newVectorPos(&currentAllLines)] = WorldGeneration.currentAreaPrefix + "Person " + to_string(person.position.x) +
+			" " + to_string(person.rotation.y) + " " + to_string(person.position.z) + " " +
+			to_string(person.personType);
+	}
+	allPeople.clear();
 	// all entities
 	// erase
 	iterator = currentAllLines.begin();
@@ -289,16 +309,6 @@ void pauseUIInteraction() {
 
 float startedLowestY = -999.0f;
 void player::deleteMemory(){
-	glDeleteVertexArrays(1, &headVAO);
-	glDeleteVertexArrays(1, &armVAO);
-	glDeleteVertexArrays(1, &torsoVAO);
-	glDeleteVertexArrays(1, &legVAO);
-
-	glDeleteBuffers(1, &headVBO);
-	glDeleteBuffers(1, &armVBO);
-	glDeleteBuffers(1, &torsoVBO);
-	glDeleteBuffers(1, &legVBO);
-
 	position = vec3(0.0f);
 	rotation = vec3(0.0f);
 	health = 100;
@@ -541,7 +551,7 @@ void player::movement(){
 	if(crouching){
 		crouchMoveAnimation(movingMultiplier);
 	}
-	if (checkKey(aimButton)) {
+	if (checkKey(aimButton) && !crouching) {
 		if (!aiming) {
 			armRotation.x = 90.0f;
 			armRotationTwo.x = 90.0f;
@@ -551,6 +561,8 @@ void player::movement(){
 			reloadSpeed = allWeapons[currentWeapon].equipTime;
 		}
 		aiming = true;
+		armScale = vec3(0.1f, 0.4f, 0.1f);
+		armScaleTwo = vec3(0.1f, 0.4f, 0.1f);
 		if (!equippingReloading) {
 			armRotationTwo.z = -45.0f;
 		}
@@ -574,11 +586,14 @@ void player::movement(){
 	if (!checkKey(aimButton)) {
 		if (aiming) {
 			armRotation.x = 0.0f;
-			armPositionTwo = vec3(0.7f, -0.55f, 0.0f);
+			armPositionTwo = vec3(0.9f, -0.55f, 0.0f);
 			armRotationTwo = vec3(0.0f);
 			aimingView = false;
 		}
+		armPositionTwo = vec3(0.72f, -0.55f, 0.0f);
 		aiming = false;
+		armScale = vec3(0.3f);
+		armScaleTwo = vec3(0.3f);
 	}
 
 	if (equippingReloading) {
@@ -616,8 +631,8 @@ void player::collisions(){
 		}
 	}
 	vec4 playerCollide = terrainColliders(position, usedY);
-	bool inMountain = (int) playerCollide.w;
-	bool cameraInMountain = (int) cameraCollide.w;
+	bool inMountain = (int) playerCollide.w > 0;
+	bool cameraInMountain = (int) cameraCollide.w > 0;
 	if (position.y < playerCollide.y && jumping) { position.y = playerCollide.y; }
 	if (!jumping) { position.y = playerCollide.y; }
 	lowestY = playerCollide.y;
@@ -790,46 +805,31 @@ void player::renderPlayer(){
 	vector<vec3> rotations = { headRotation, torsoRotation, armRotation, legRotation, armRotationTwo, legRotationTwo };
 	vector<vec3> scales = { headScale, torsoScale, armScale, legScale, armScaleTwo, legScaleTwo };
 
-	vector<GLuint> vaos = { headVAO, torsoVAO, armVAO, legVAO, armVAO, legVAO };
-	vector<int> vertCounts = { 48, 36, 60, 60, 60, 60 };
-	
+	vector<readyTextureModel> models = { headModel, torsoModel, armModel, legModel, armModel, legModel };
 	vec3 headParentPos = position - vec3(
 		sin(radians(rotation.y)) * sin(radians(rotation.x)) * -1.2f, 
 		-1.2f * cos(radians(rotation.x)),
 		cos(radians(rotation.y)) * sin(radians(rotation.x)) * -1.2f);
 	vec3 legParentPos = position - vec3(
-		sin(radians(rotation.y)) * sin(radians(rotation.x)) * 0.775f, 
-		0.775f * cos(radians(rotation.x)),
-		cos(radians(rotation.y)) * sin(radians(rotation.x)) * 0.775f);
+		sin(radians(rotation.y)) * sin(radians(rotation.x)) * 0.72f, 
+		0.72f * cos(radians(rotation.x)),
+		cos(radians(rotation.y)) * sin(radians(rotation.x)) * 0.72f);
 	vec3 armParentPos = position + vec3(
 		0.55f * sin(radians(rotation.x)) * sin(radians(rotation.y)), 
 		0.55f * cos(radians(rotation.x)), 
 		0.55f * sin(radians(rotation.x)) * cos(radians(rotation.y)));
 	vector<vec3> parentPositions = { headParentPos, position, armParentPos, legParentPos, armParentPos, legParentPos };
-	glUseProgram(playerShader);
 	for (int i = 0; i < 6; i++) {
 		if(i < 2 && aiming){
 			continue;
 		}
 		vec3 combinedScale = scale * scales[i];
-
-		setMat4(playerShader, "model", modelMatrix(positions[i], rotations[i], combinedScale, 
-			true, parentPositions[i], rotation));
-		setMat4(playerShader, "view", viewMatrix());
-		setMat4(playerShader, "projection", projectionMatrix());
-
-		setShaderVecThree(playerShader, "multiplyColour", multiplyColour);
-		setShaderVecThree(playerShader, "lightPos", lightPos);
-		setShaderFloat(playerShader, "lightIntensity", lightIntensity);
-		setShaderFloat(playerShader, "lightRadius", lightRadius);
-		setShaderInt(playerShader, "useLight", 1);
-		setShaderFloat(playerShader, "lowestLight", lowestLight);
-
-		glBindVertexArray(vaos[i]);
-		glDrawArrays(GL_TRIANGLES, 0, vertCounts[i]);
+		models[i].render(modelMatrix(positions[i], rotations[i], combinedScale, true, parentPositions[i], rotation), true);
+		//models[i].render(modelMatrix(positions[i], rotations[i], combinedScale, true, parentPositions[i], rotation), true, multiplyColour);
 	}
 	// laser
 	if (aiming) {
+		glUseProgram(playerShader);
 		setShaderVecThree(playerShader, "multiplyColour", laserColour);
 		setShaderInt(playerShader, "useLight", 0);
 		glBindVertexArray(laserVAO);
@@ -914,286 +914,21 @@ void player::startLaserForBullets() {
 }
 
 void player::startHead(){
-	vector<vec3> headColours = colourVector(16, vec3(0.26f, 0.53, 0.96));
-	float headVertices[] = {
-		// top section of head
-		0.0f, 0.75f, 0.0f, headColours[0].x, headColours[0].y, headColours[0].z,
-		1.0f, 0.25f, 0.0f, headColours[0].x, headColours[0].y, headColours[0].z,
-		0.0f, 0.25f, 1.0f, headColours[0].x, headColours[0].y, headColours[0].z,
-
-		0.0f, 0.75f, 0.0f, headColours[1].x, headColours[1].y, headColours[1].z,
-		1.0f, 0.25f, 0.0f, headColours[1].x, headColours[1].y, headColours[1].z,
-		0.0f, 0.25f, -1.0f, headColours[1].x, headColours[1].y, headColours[1].z,
-
-		0.0f, 0.75f, 0.0f, headColours[2].x, headColours[2].y, headColours[2].z,
-		-1.0f, 0.25f, 0.0f, headColours[2].x, headColours[2].y, headColours[2].z,
-		0.0f, 0.25f, 1.0f, headColours[2].x, headColours[2].y, headColours[2].z,
-
-		0.0f, 0.75f, 0.0f, headColours[3].x, headColours[3].y, headColours[3].z,
-		-1.0f, 0.25f, 0.0f, headColours[3].x, headColours[3].y, headColours[3].z,
-		0.0f, 0.25f, -1.0f, headColours[3].x, headColours[3].y, headColours[3].z,
-
-		//middle section of head
-		0.0f, 0.25f, -1.0f, headColours[4].x, headColours[4].y, headColours[4].z,
-		-1.0f, 0.25f, 0.0f, headColours[4].x, headColours[4].y, headColours[4].z,
-		-1.0f, -0.25f, 0.0f, headColours[4].x, headColours[4].y, headColours[4].z,
-
-		0.0f, -0.25f, -1.0f,  headColours[5].x, headColours[5].y, headColours[5].z,
-		0.0f, 0.25f, -1.0f, headColours[5].x, headColours[5].y, headColours[5].z,
-		-1.0f, -0.25f, 0.0f, headColours[5].x, headColours[5].y, headColours[5].z,
-
-		0.0f, 0.25f, 1.0f, headColours[6].x, headColours[6].y, headColours[6].z,
-		-1.0f, 0.25f, 0.0f, headColours[6].x, headColours[6].y, headColours[6].z,
-		-1.0f, -0.25f, 0.0f, headColours[6].x, headColours[6].y, headColours[6].z,
-
-		0.0f, -0.25f, 1.0f, headColours[7].x, headColours[7].y, headColours[7].z,
-		0.0f, 0.25f, 1.0f, headColours[7].x, headColours[7].y, headColours[7].z,
-		-1.0f, -0.25f, 0.0f, headColours[7].x, headColours[7].y, headColours[7].z,
-
-		0.0f, 0.25f, -1.0f, headColours[8].x, headColours[8].y, headColours[8].z,
-		1.0f, 0.25f, 0.0f, headColours[8].x, headColours[8].y, headColours[8].z,
-		1.0f, -0.25f, 0.0f, headColours[8].x, headColours[8].y, headColours[8].z,
-
-		0.0f, -0.25f, -1.0f, headColours[9].x, headColours[9].y, headColours[9].z,
-		0.0f, 0.25f, -1.0f, headColours[9].x, headColours[9].y, headColours[9].z,
-		1.0f, -0.25f, 0.0f, headColours[9].x, headColours[9].y, headColours[9].z,
-
-		0.0f, 0.25f, 1.0f, headColours[10].x, headColours[10].y, headColours[10].z,
-		1.0f, 0.25f, 0.0f, headColours[10].x, headColours[10].y, headColours[10].z,
-		1.0f, -0.25f, 0.0f, headColours[10].x, headColours[10].y, headColours[10].z,
-
-		0.0f, -0.25f, 1.0f, headColours[11].x, headColours[11].y, headColours[11].z,
-		0.0f, 0.25f, 1.0f, headColours[11].x, headColours[11].y, headColours[11].z,
-		1.0f, -0.25f, 0.0f, headColours[11].x, headColours[11].y, headColours[11].z,
-
-		// bottom section of head
-		0.0f, -0.25f, 0.0f, headColours[12].x, headColours[12].y, headColours[12].z,
-		1.0f, -0.25f, 0.0f, headColours[12].x, headColours[12].y, headColours[12].z,
-		0.0f, -0.25f, 1.0f, headColours[12].x, headColours[12].y, headColours[12].z,
-
-		0.0f, -0.25f, 0.0f, headColours[13].x, headColours[13].y, headColours[13].z,
-		1.0f, -0.25f, 0.0f, headColours[13].x, headColours[13].y, headColours[13].z,
-		0.0f, -0.25f, -1.0f, headColours[13].x, headColours[13].y, headColours[13].z,
-
-		0.0f, -0.25f, 0.0f, headColours[14].x, headColours[14].y, headColours[14].z,
-		-1.0f, -0.25f, 0.0f, headColours[14].x, headColours[14].y, headColours[14].z,
-		0.0f, -0.25f, 1.0f, headColours[14].x, headColours[14].y, headColours[14].z,
-
-		0.0f, -0.25f, 0.0f, headColours[15].x, headColours[15].y, headColours[15].z,
-		-1.0f, -0.25f, 0.0f, headColours[15].x, headColours[15].y, headColours[15].z,
-		0.0f, -0.25f, -1.0f, headColours[15].x, headColours[15].y, headColours[15].z,
-	};
-	// start ints
-	glCreateVertexArrays(1, &headVAO);
-	glCreateBuffers(1, &headVBO);
-	glBindVertexArray(headVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, headVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(headVertices), headVertices, GL_STATIC_DRAW);
-	// pointers
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3*sizeof(float)));
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
+	vector<float> headVerts = { -2.000000f, -2.000000f, 2.000000f, 0.214239f, 0.703683f, 2.000000f, -2.000000f, 2.000000f, 0.355532f, 0.703684f, 2.000000f, 2.000000f, 2.000000f, 0.355533f, 0.844979f, -2.000000f, -2.000000f, 2.000000f, 0.214239f, 0.703683f, 2.000000f, 2.000000f, 2.000000f, 0.355533f, 0.844979f, -2.000000f, 2.000000f, 2.000000f, 0.214239f, 0.844978f, -2.000000f, 2.000000f, 2.000000f, 0.214239f, 0.844978f, 2.000000f, 2.000000f, 2.000000f, 0.355533f, 0.844979f, 2.000000f, 2.000000f, -2.000000f, 0.355532f, 0.986273f, -2.000000f, 2.000000f, 2.000000f, 0.214239f, 0.844978f, 2.000000f, 2.000000f, -2.000000f, 0.355532f, 0.986273f, -2.000000f, 2.000000f, -2.000000f, 0.214239f, 0.986273f, -2.000000f, 2.000000f, -2.000000f, 0.638122f, 0.844978f, 2.000000f, 2.000000f, -2.000000f, 0.496827f, 0.844978f, 2.000000f, -2.000000f, -2.000000f, 0.496827f, 0.703683f, -2.000000f, 2.000000f, -2.000000f, 0.638122f, 0.844978f, 2.000000f, -2.000000f, -2.000000f, 0.496827f, 0.703683f, -2.000000f, -2.000000f, -2.000000f, 0.638122f, 0.703684f, -2.000000f, -2.000000f, -2.000000f, 0.214239f, 0.562390f, 2.000000f, -2.000000f, -2.000000f, 0.355533f, 0.562389f, 2.000000f, -2.000000f, 2.000000f, 0.355532f, 0.703684f, -2.000000f, -2.000000f, -2.000000f, 0.214239f, 0.562390f, 2.000000f, -2.000000f, 2.000000f, 0.355532f, 0.703684f, -2.000000f, -2.000000f, 2.000000f, 0.214239f, 0.703683f, 2.000000f, -2.000000f, 2.000000f, 0.355532f, 0.703684f, 2.000000f, -2.000000f, -2.000000f, 0.496827f, 0.703683f, 2.000000f, 2.000000f, -2.000000f, 0.496827f, 0.844978f, 2.000000f, -2.000000f, 2.000000f, 0.355532f, 0.703684f, 2.000000f, 2.000000f, -2.000000f, 0.496827f, 0.844978f, 2.000000f, 2.000000f, 2.000000f, 0.355533f, 0.844979f, -2.000000f, -2.000000f, -2.000000f, 0.072944f, 0.703683f, -2.000000f, -2.000000f, 2.000000f, 0.214239f, 0.703683f, -2.000000f, 2.000000f, 2.000000f, 0.214239f, 0.844978f, -2.000000f, -2.000000f, -2.000000f, 0.072944f, 0.703683f, -2.000000f, 2.000000f, 2.000000f, 0.214239f, 0.844978f, -2.000000f, 2.000000f, -2.000000f, 0.072944f, 0.844979f, };
+	readyTextureModel newHead(headVerts, playerTexture, true);
+	headModel = newHead;
 }
 
 void player::startArm() {
-	vector<vec3> armColour = colourVector(10, vec3(0.96f, 0.26f, 0.26f));
-	vector<vec3> handColour = colourVector(10, vec3(0.26f, 0.53f, 0.96f));
-	float armVertices[] = {
-		0.3f, 1.5f, 0.3f, armColour[0].x, armColour[0].y, armColour[0].z,
-		-0.3f, 1.5f, 0.3f, armColour[0].x, armColour[0].y, armColour[0].z,
-		-0.3f, -1.5f, 0.3f, armColour[0].x, armColour[0].y, armColour[0].z,
-
-		-0.3f, -1.5f, 0.3f, armColour[1].x, armColour[1].y, armColour[1].z,
-		0.3f, -1.5f, 0.3f, armColour[1].x, armColour[1].y, armColour[1].z,
-		0.3f, 1.5f, 0.3f, armColour[1].x, armColour[1].y, armColour[1].z,
-
-		0.3f, 1.5f, -0.3f, armColour[2].x, armColour[2].y, armColour[2].z,
-		-0.3f, 1.5f, -0.3f, armColour[2].x, armColour[2].y, armColour[2].z,
-		-0.3f, -1.5f, -0.3f, armColour[2].x, armColour[2].y, armColour[2].z,
-
-		-0.3f, -1.5f, -0.3f, armColour[3].x, armColour[3].y, armColour[3].z,
-		0.3f, -1.5f, -0.3f, armColour[3].x, armColour[3].y, armColour[3].z,
-		0.3f, 1.5f, -0.3f, armColour[3].x, armColour[3].y, armColour[3].z,
-
-		// z
-		0.3f, 1.5f, 0.3f, armColour[4].x, armColour[4].y, armColour[4].z,
-		0.3f, 1.5f, -0.3f, armColour[4].x, armColour[4].y, armColour[4].z,
-		0.3f, -1.5f, -0.3f, armColour[4].x, armColour[4].y, armColour[4].z,
-
-		0.3f, -1.5f, -0.3f, armColour[5].x, armColour[5].y, armColour[5].z,
-		0.3f, -1.5f, 0.3f, armColour[5].x, armColour[5].y, armColour[5].z,
-		0.3f, 1.5f, 0.3f, armColour[5].x, armColour[5].y, armColour[5].z,
-
-		-0.3f, 1.5f, 0.3f, armColour[6].x, armColour[6].y, armColour[6].z,
-		-0.3f, 1.5f, -0.3f, armColour[6].x, armColour[6].y, armColour[6].z,
-		-0.3f, -1.5f, -0.3f, armColour[6].x, armColour[6].y, armColour[6].z,
-
-		-0.3f, -1.5f, -0.3f, armColour[7].x, armColour[7].y, armColour[7].z,
-		-0.3f, -1.5f, 0.3f, armColour[7].x, armColour[7].y, armColour[7].z,
-		-0.3f, 1.5f, 0.3f, armColour[7].x, armColour[7].y, armColour[7].z,
-
-		// top
-		-0.3f, 1.5f, -0.3f, armColour[8].x, armColour[8].y, armColour[8].z,
-		-0.3f, 1.5f, 0.3f, armColour[8].x, armColour[8].y, armColour[8].z,
-		0.3f, 1.5f, -0.3f, armColour[8].x, armColour[8].y, armColour[8].z,
-
-		0.3f, 1.5f, 0.3f, armColour[9].x, armColour[9].y, armColour[9].z,
-		-0.3f, 1.5f, 0.3f, armColour[9].x, armColour[9].y, armColour[9].z,
-		0.3f, 1.5f, -0.3f, armColour[9].x, armColour[9].y, armColour[9].z,
-
-		-0.3f, -2.0f, -0.3f, handColour[0].x, handColour[0].y, handColour[0].z,
-		-0.3f, -2.0f, 0.3f, handColour[0].x, handColour[0].y, handColour[0].z,
-		0.3f, -2.0f, -0.3f, handColour[0].x, handColour[0].y, handColour[0].z,
-
-		0.3f, -2.0f, 0.3f, handColour[1].x, handColour[1].y, handColour[1].z,
-		-0.3f, -2.0f, 0.3f, handColour[1].x, handColour[1].y, handColour[1].z,
-		0.3f, -2.0f, -0.3f, handColour[1].x, handColour[1].y, handColour[1].z,
-
-		// hand
-		0.3f, -1.5f, 0.3f, handColour[2].x, handColour[2].y, handColour[2].z,
-		0.3f, -2.0f, 0.3f, handColour[2].x, handColour[2].y, handColour[2].z,
-		0.3f, -2.0f, -0.3f, handColour[2].x, handColour[2].y, handColour[2].z,
-
-		0.3f, -2.0f, -0.3f, handColour[3].x, handColour[3].y, handColour[3].z,
-		0.3f, -1.5f, -0.3f, handColour[3].x, handColour[3].y, handColour[3].z,
-		0.3f, -1.5f, 0.3f, handColour[3].x, handColour[3].y, handColour[3].z,
-
-		-0.3f, -1.5f, 0.3f, handColour[4].x, handColour[4].y, handColour[4].z,
-		-0.3f, -2.0f, 0.3f, handColour[4].x, handColour[4].y, handColour[4].z,
-		-0.3f, -2.0f, -0.3f, handColour[4].x, handColour[4].y, handColour[4].z,
-
-		-0.3f, -2.0f, -0.3f, handColour[5].x, handColour[5].y, handColour[5].z,
-		-0.3f, -1.5f, -0.3f, handColour[5].x, handColour[5].y, handColour[5].z,
-		-0.3f, -1.5f, 0.3f, handColour[5].x, handColour[5].y, handColour[5].z,
-
-		0.3f, -1.5f, 0.3f, handColour[6].x, handColour[6].y, handColour[6].z,
-		0.3f, -2.0f, 0.3f, handColour[6].x, handColour[6].y, handColour[6].z,
-		-0.3f, -2.0f, 0.3f, handColour[6].x, handColour[6].y, handColour[6].z,
-
-		-0.3f, -2.0f, 0.3f, handColour[7].x, handColour[7].y, handColour[7].z,
-		-0.3f, -1.5f, 0.3f, handColour[7].x, handColour[7].y, handColour[7].z,
-		0.3f, -1.5f, 0.3f, handColour[7].x, handColour[7].y, handColour[7].z,
-
-		0.3f, -1.5f, -0.3f, handColour[8].x, handColour[8].y, handColour[8].z,
-		0.3f, -2.0f, -0.3f, handColour[8].x, handColour[8].y, handColour[8].z,
-		-0.3f, -2.0f, -0.3f, handColour[8].x, handColour[8].y, handColour[8].z,
-
-		-0.3f, -2.0f, -0.3f, handColour[9].x, handColour[9].y, handColour[9].z,
-		-0.3f, -1.5f, -0.3f, handColour[9].x, handColour[9].y, handColour[9].z,
-		0.3f, -1.5f, -0.3f, handColour[9].x, handColour[9].y, handColour[9].z,
-	};
-	// start ints
-	glCreateVertexArrays(1, &armVAO);
-	glCreateBuffers(1, &armVBO);
-	glBindVertexArray(armVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, armVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(armVertices), armVertices, GL_STATIC_DRAW);
-	// pointers
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
+	vector<float> armVerts = { -1.000000f, -0.000000f, 1.000000f, 0.110906f, 0.425123f, 1.000000f, -0.000000f, 1.000000f, 0.180302f, 0.425123f, 1.000000f, 3.000000f, 1.000000f, 0.180302f, 0.529216f, -1.000000f, -0.000000f, 1.000000f, 0.110906f, 0.425123f, 1.000000f, 3.000000f, 1.000000f, 0.180302f, 0.529216f, -1.000000f, 3.000000f, 1.000000f, 0.110906f, 0.529216f, -1.000000f, -3.000000f, 1.000000f, 0.110906f, 0.321030f, 1.000000f, -0.000000f, 1.000000f, 0.180302f, 0.425123f, -1.000000f, -0.000000f, 1.000000f, 0.110906f, 0.425123f, -1.000000f, -3.000000f, 1.000000f, 0.110906f, 0.321030f, 1.000000f, -3.000000f, 1.000000f, 0.180302f, 0.321030f, 1.000000f, -0.000000f, 1.000000f, 0.180302f, 0.425123f, -1.000000f, 3.000000f, 1.000000f, 0.110906f, 0.529216f, 1.000000f, 3.000000f, 1.000000f, 0.180302f, 0.529216f, 1.000000f, 3.000000f, -1.000000f, 0.180302f, 0.598611f, -1.000000f, 3.000000f, 1.000000f, 0.110906f, 0.529216f, 1.000000f, 3.000000f, -1.000000f, 0.180302f, 0.598611f, -1.000000f, 3.000000f, -1.000000f, 0.110906f, 0.598611f, -1.000000f, 3.000000f, -1.000000f, 0.319092f, 0.529216f, 1.000000f, 3.000000f, -1.000000f, 0.249697f, 0.529216f, 1.000000f, 0.000000f, -1.000000f, 0.249697f, 0.425123f, -1.000000f, 3.000000f, -1.000000f, 0.319092f, 0.529216f, 1.000000f, 0.000000f, -1.000000f, 0.249697f, 0.425123f, -1.000000f, 0.000000f, -1.000000f, 0.319092f, 0.425123f, -1.000000f, 0.000000f, -1.000000f, 0.319092f, 0.425123f, 1.000000f, 0.000000f, -1.000000f, 0.249697f, 0.425123f, 1.000000f, -3.000000f, -1.000000f, 0.249697f, 0.321030f, -1.000000f, 0.000000f, -1.000000f, 0.319092f, 0.425123f, 1.000000f, -3.000000f, -1.000000f, 0.249697f, 0.321030f, -1.000000f, -3.000000f, -1.000000f, 0.319092f, 0.321030f, 1.000000f, -0.000000f, 1.000000f, 0.180302f, 0.425123f, 1.000000f, 0.000000f, -1.000000f, 0.249697f, 0.425123f, 1.000000f, 3.000000f, -1.000000f, 0.249697f, 0.529216f, 1.000000f, -0.000000f, 1.000000f, 0.180302f, 0.425123f, 1.000000f, 3.000000f, -1.000000f, 0.249697f, 0.529216f, 1.000000f, 3.000000f, 1.000000f, 0.180302f, 0.529216f, 1.000000f, -3.000000f, 1.000000f, 0.180302f, 0.321030f, 1.000000f, 0.000000f, -1.000000f, 0.249697f, 0.425123f, 1.000000f, -0.000000f, 1.000000f, 0.180302f, 0.425123f, 1.000000f, -3.000000f, 1.000000f, 0.180302f, 0.321030f, 1.000000f, -3.000000f, -1.000000f, 0.249697f, 0.321030f, 1.000000f, 0.000000f, -1.000000f, 0.249697f, 0.425123f, -1.000000f, 0.000000f, -1.000000f, 0.041511f, 0.425123f, -1.000000f, -0.000000f, 1.000000f, 0.110906f, 0.425123f, -1.000000f, 3.000000f, 1.000000f, 0.110906f, 0.529216f, -1.000000f, 0.000000f, -1.000000f, 0.041511f, 0.425123f, -1.000000f, 3.000000f, 1.000000f, 0.110906f, 0.529216f, -1.000000f, 3.000000f, -1.000000f, 0.041511f, 0.529216f, -1.000000f, -3.000000f, -1.000000f, 0.041511f, 0.321030f, -1.000000f, -0.000000f, 1.000000f, 0.110906f, 0.425123f, -1.000000f, 0.000000f, -1.000000f, 0.041511f, 0.425123f, -1.000000f, -3.000000f, -1.000000f, 0.041511f, 0.321030f, -1.000000f, -3.000000f, 1.000000f, 0.110906f, 0.321030f, -1.000000f, -0.000000f, 1.000000f, 0.110906f, 0.425123f, 1.000000f, -3.000000f, -1.000000f, 0.180302f, 0.251635f, 1.000000f, -3.000000f, 1.000000f, 0.180302f, 0.321030f, -1.000000f, -3.000000f, 1.000000f, 0.110906f, 0.321030f, 1.000000f, -3.000000f, -1.000000f, 0.180302f, 0.251635f, -1.000000f, -3.000000f, 1.000000f, 0.110906f, 0.321030f, -1.000000f, -3.000000f, -1.000000f, 0.110906f, 0.251635f, };
+	readyTextureModel newArm(armVerts, playerTexture, true);
+	armModel = newArm;
 }
 
 void player::startLeg() {
-	vector<vec3> armColour = colourVector(10, vec3(0.96f, 0.26f, 0.26f));
-	vector<vec3> handColour = colourVector(10, vec3(0.26f, 0.53f, 0.96f));
-	float legVertices[] = {
-		0.5f, 1.75f, 0.5f, armColour[0].x, armColour[0].y, armColour[0].z,
-		-0.5f, 1.75f, 0.5f, armColour[0].x, armColour[0].y, armColour[0].z,
-		-0.5f, -1.75f, 0.5f, armColour[0].x, armColour[0].y, armColour[0].z,
-
-		-0.5f, -1.75f, 0.5f, armColour[1].x, armColour[1].y, armColour[1].z,
-		0.5f, -1.75f, 0.5f, armColour[1].x, armColour[1].y, armColour[1].z,
-		0.5f, 1.75f, 0.5f, armColour[1].x, armColour[1].y, armColour[1].z,
-
-		0.5f, 1.75f, -0.5f, armColour[2].x, armColour[2].y, armColour[2].z,
-		-0.5f, 1.75f, -0.5f, armColour[2].x, armColour[2].y, armColour[2].z,
-		-0.5f, -1.75f, -0.5f, armColour[2].x, armColour[2].y, armColour[2].z,
-
-		-0.5f, -1.75f, -0.5f, armColour[3].x, armColour[3].y, armColour[3].z,
-		0.5f, -1.75f, -0.5f, armColour[3].x, armColour[3].y, armColour[3].z,
-		0.5f, 1.75f, -0.5f, armColour[3].x, armColour[3].y, armColour[3].z,
-
-		// z
-		0.5f, 1.75f, 0.5f, armColour[4].x, armColour[4].y, armColour[4].z,
-		0.5f, 1.75f, -0.5f, armColour[4].x, armColour[4].y, armColour[4].z,
-		0.5f, -1.75f, -0.5f, armColour[4].x, armColour[4].y, armColour[4].z,
-
-		0.5f, -1.75f, -0.5f, armColour[5].x, armColour[5].y, armColour[5].z,
-		0.5f, -1.75f, 0.5f, armColour[5].x, armColour[5].y, armColour[5].z,
-		0.5f, 1.75f, 0.5f, armColour[5].x, armColour[5].y, armColour[5].z,
-
-		-0.5f, 1.75f, 0.5f, armColour[6].x, armColour[6].y, armColour[6].z,
-		-0.5f, 1.75f, -0.5f, armColour[6].x, armColour[6].y, armColour[6].z,
-		-0.5f, -1.75f, -0.5f, armColour[6].x, armColour[6].y, armColour[6].z,
-
-		-0.5f, -1.75f, -0.5f, armColour[7].x, armColour[7].y, armColour[7].z,
-		-0.5f, -1.75f, 0.5f, armColour[7].x, armColour[7].y, armColour[7].z,
-		-0.5f, 1.75f, 0.5f, armColour[7].x, armColour[7].y, armColour[7].z,
-
-		// top
-		-0.5f, 1.75f, -0.5f, armColour[8].x, armColour[8].y, armColour[8].z,
-		-0.5f, 1.75f, 0.5f, armColour[8].x, armColour[8].y, armColour[8].z,
-		0.5f, 1.75f, -0.5f, armColour[8].x, armColour[8].y, armColour[8].z,
-
-		0.5f, 1.75f, 0.5f, armColour[9].x, armColour[9].y, armColour[9].z,
-		-0.5f, 1.75f, 0.5f, armColour[9].x, armColour[9].y, armColour[9].z,
-		0.5f, 1.75f, -0.5f, armColour[9].x, armColour[9].y, armColour[9].z,
-
-		-0.5f, -2.75f, -0.5f, handColour[0].x, handColour[0].y, handColour[0].z,
-		-0.5f, -2.75f, 0.5f, handColour[0].x, handColour[0].y, handColour[0].z,
-		0.5f, -2.75f, -0.5f, handColour[0].x, handColour[0].y, handColour[0].z,
-
-		0.5f, -2.75f, 0.5f, handColour[1].x, handColour[1].y, handColour[1].z,
-		-0.5f, -2.75f, 0.5f, handColour[1].x, handColour[1].y, handColour[1].z,
-		0.5f, -2.75f, -0.5f, handColour[1].x, handColour[1].y, handColour[1].z,
-
-		// hand
-		0.5f, -1.75f, 0.5f, handColour[2].x, handColour[2].y, handColour[2].z,
-		0.5f, -2.75f, 0.5f, handColour[2].x, handColour[2].y, handColour[2].z,
-		0.5f, -2.75f, -0.5f, handColour[2].x, handColour[2].y, handColour[2].z,
-
-		0.5f, -2.75f, -0.5f, handColour[3].x, handColour[3].y, handColour[3].z,
-		0.5f, -1.75f, -0.5f, handColour[3].x, handColour[3].y, handColour[3].z,
-		0.5f, -1.75f, 0.5f, handColour[3].x, handColour[3].y, handColour[3].z,
-
-		-0.5f, -1.75f, 0.5f, handColour[4].x, handColour[4].y, handColour[4].z,
-		-0.5f, -2.75f, 0.5f, handColour[4].x, handColour[4].y, handColour[4].z,
-		-0.5f, -2.75f, -0.5f, handColour[4].x, handColour[4].y, handColour[4].z,
-
-		-0.5f, -2.75f, -0.5f, handColour[5].x, handColour[5].y, handColour[5].z,
-		-0.5f, -1.75f, -0.5f, handColour[5].x, handColour[5].y, handColour[5].z,
-		-0.5f, -1.75f, 0.5f, handColour[5].x, handColour[5].y, handColour[5].z,
-
-		0.5f, -1.75f, 0.5f, handColour[6].x, handColour[6].y, handColour[6].z,
-		0.5f, -2.75f, 0.5f, handColour[6].x, handColour[6].y, handColour[6].z,
-		-0.5f, -2.75f, 0.5f, handColour[6].x, handColour[6].y, handColour[6].z,
-
-		-0.5f, -2.75f, 0.5f, handColour[7].x, handColour[7].y, handColour[7].z,
-		-0.5f, -1.75f, 0.5f, handColour[7].x, handColour[7].y, handColour[7].z,
-		0.5f, -1.75f, 0.5f, handColour[7].x, handColour[7].y, handColour[7].z,
-
-		0.5f, -1.75f, -0.5f, handColour[8].x, handColour[8].y, handColour[8].z,
-		0.5f, -2.75f, -0.5f, handColour[8].x, handColour[8].y, handColour[8].z,
-		-0.5f, -2.75f, -0.5f, handColour[8].x, handColour[8].y, handColour[8].z,
-
-		-0.5f, -2.75f, -0.5f, handColour[9].x, handColour[9].y, handColour[9].z,
-		-0.5f, -1.75f, -0.5f, handColour[9].x, handColour[9].y, handColour[9].z,
-		0.5f, -1.75f, -0.5f, handColour[9].x, handColour[9].y, handColour[9].z,
-	};
-	// start ints
-	glCreateVertexArrays(1, &legVAO);
-	glCreateBuffers(1, &legVBO);
-	glBindVertexArray(legVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, legVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(legVertices), legVertices, GL_STATIC_DRAW);
-	// pointers
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
+	vector<float> legVerts = { -1.000000f, -0.000000f, 1.000000f, 0.839335f, 0.203811f, 1.000000f, -0.000000f, 1.000000f, 0.908730f, 0.203811f, 1.000000f, 3.000000f, 1.000000f, 0.908730f, 0.307904f, -1.000000f, -0.000000f, 1.000000f, 0.839335f, 0.203811f, 1.000000f, 3.000000f, 1.000000f, 0.908730f, 0.307904f, -1.000000f, 3.000000f, 1.000000f, 0.839335f, 0.307904f, -1.000000f, -3.000000f, 1.000000f, 0.839335f, 0.099718f, 1.000000f, -0.000000f, 1.000000f, 0.908730f, 0.203811f, -1.000000f, -0.000000f, 1.000000f, 0.839335f, 0.203811f, -1.000000f, -3.000000f, 1.000000f, 0.839335f, 0.099718f, 1.000000f, -3.000000f, 1.000000f, 0.908731f, 0.099718f, 1.000000f, -0.000000f, 1.000000f, 0.908730f, 0.203811f, -1.000000f, 3.000000f, 1.000000f, 0.839335f, 0.307904f, 1.000000f, 3.000000f, 1.000000f, 0.908730f, 0.307904f, 1.000000f, 3.000000f, -1.000000f, 0.908730f, 0.377299f, -1.000000f, 3.000000f, 1.000000f, 0.839335f, 0.307904f, 1.000000f, 3.000000f, -1.000000f, 0.908730f, 0.377299f, -1.000000f, 3.000000f, -1.000000f, 0.839335f, 0.377299f, -1.000000f, 3.000000f, -1.000000f, 0.769940f, 0.307904f, 1.000000f, 3.000000f, -1.000000f, 0.700545f, 0.307904f, 1.000000f, 0.000000f, -1.000000f, 0.700545f, 0.203811f, -1.000000f, 3.000000f, -1.000000f, 0.769940f, 0.307904f, 1.000000f, 0.000000f, -1.000000f, 0.700545f, 0.203811f, -1.000000f, 0.000000f, -1.000000f, 0.769940f, 0.203811f, -1.000000f, 0.000000f, -1.000000f, 0.769940f, 0.203811f, 1.000000f, 0.000000f, -1.000000f, 0.700545f, 0.203811f, 1.000000f, -3.000000f, -1.000000f, 0.700545f, 0.099718f, -1.000000f, 0.000000f, -1.000000f, 0.769940f, 0.203811f, 1.000000f, -3.000000f, -1.000000f, 0.700545f, 0.099718f, -1.000000f, -3.000000f, -1.000000f, 0.769940f, 0.099718f, 1.000000f, -0.000000f, 1.000000f, 0.908730f, 0.203811f, 1.000000f, 0.000000f, -1.000000f, 0.978126f, 0.203811f, 1.000000f, 3.000000f, -1.000000f, 0.978126f, 0.307904f, 1.000000f, -0.000000f, 1.000000f, 0.908730f, 0.203811f, 1.000000f, 3.000000f, -1.000000f, 0.978126f, 0.307904f, 1.000000f, 3.000000f, 1.000000f, 0.908730f, 0.307904f, 1.000000f, -3.000000f, 1.000000f, 0.908731f, 0.099718f, 1.000000f, 0.000000f, -1.000000f, 0.978126f, 0.203811f, 1.000000f, -0.000000f, 1.000000f, 0.908730f, 0.203811f, 1.000000f, -3.000000f, 1.000000f, 0.908731f, 0.099718f, 1.000000f, -3.000000f, -1.000000f, 0.978126f, 0.099718f, 1.000000f, 0.000000f, -1.000000f, 0.978126f, 0.203811f, -1.000000f, 0.000000f, -1.000000f, 0.769940f, 0.203811f, -1.000000f, -0.000000f, 1.000000f, 0.839335f, 0.203811f, -1.000000f, 3.000000f, 1.000000f, 0.839335f, 0.307904f, -1.000000f, 0.000000f, -1.000000f, 0.769940f, 0.203811f, -1.000000f, 3.000000f, 1.000000f, 0.839335f, 0.307904f, -1.000000f, 3.000000f, -1.000000f, 0.769940f, 0.307904f, -1.000000f, -3.000000f, -1.000000f, 0.769940f, 0.099718f, -1.000000f, -0.000000f, 1.000000f, 0.839335f, 0.203811f, -1.000000f, 0.000000f, -1.000000f, 0.769940f, 0.203811f, -1.000000f, -3.000000f, -1.000000f, 0.769940f, 0.099718f, -1.000000f, -3.000000f, 1.000000f, 0.839335f, 0.099718f, -1.000000f, -0.000000f, 1.000000f, 0.839335f, 0.203811f, 1.000000f, -3.000000f, 1.000000f, 0.908731f, 0.099718f, -1.000000f, -3.000000f, 1.000000f, 0.839335f, 0.099718f, -1.000000f, -3.000000f, -1.000000f, 0.839335f, 0.030323f, 1.000000f, -3.000000f, 1.000000f, 0.908731f, 0.099718f, -1.000000f, -3.000000f, -1.000000f, 0.839335f, 0.030323f, 1.000000f, -3.000000f, -1.000000f, 0.908730f, 0.030323f, };
+	readyTextureModel newLeg(legVerts, playerTexture, true);
+	legModel = newLeg;	
 }
 
 void player::runAnimation(float multiplier){
@@ -1286,74 +1021,9 @@ void player::runAnimation(float multiplier){
 }
 
 void player::startTorso() {
-	vector<vec3> torsoColour = colourVector(12, vec3(0.27f, 0.87f, 0.92f));
-	float torsoVertices[] = {
-		// top
-		-1.0f, 1.75f, 0.5f, torsoColour[0].x, torsoColour[0].y, torsoColour[0].z,
-		-1.0f, 1.75f, -0.5f, torsoColour[0].x, torsoColour[0].y, torsoColour[0].z,
-		1.0f, 1.75f, 0.5f, torsoColour[0].x, torsoColour[0].y, torsoColour[0].z,
-
-		1.0f, 1.75f, 0.5f, torsoColour[1].x, torsoColour[1].y, torsoColour[1].z,
-		1.0f, 1.75f, -0.5f, torsoColour[1].x, torsoColour[1].y, torsoColour[1].z,
-		-1.0f, 1.75f, -0.5f, torsoColour[1].x, torsoColour[1].y, torsoColour[1].z,
-
-		// bottom
-		-1.0f, -1.75f, 0.5f, torsoColour[2].x, torsoColour[2].y, torsoColour[2].z,
-		-1.0f, -1.75f, -0.5f, torsoColour[2].x, torsoColour[2].y, torsoColour[2].z,
-		1.0f, -1.75f, 0.5f, torsoColour[2].x, torsoColour[2].y, torsoColour[2].z,
-
-		1.0f, -1.75f, 0.5f, torsoColour[3].x, torsoColour[3].y, torsoColour[3].z,
-		1.0f, -1.75f, -0.5f, torsoColour[3].x, torsoColour[3].y, torsoColour[3].z,
-		-1.0f, -1.75f, -0.5f, torsoColour[3].x, torsoColour[3].y, torsoColour[3].z,
-
-		//left
-		-1.0f, 1.75f, 0.5f, torsoColour[4].x, torsoColour[4].y, torsoColour[4].z,
-		-1.0f, -1.75f, 0.5f, torsoColour[4].x, torsoColour[4].y, torsoColour[4].z,
-		-1.0f, -1.75f, -0.5f, torsoColour[4].x, torsoColour[4].y, torsoColour[4].z,
-
-		-1.0f, 1.75f, 0.5f, torsoColour[5].x, torsoColour[5].y, torsoColour[5].z,
-		-1.0f, 1.75f, -0.5f, torsoColour[5].x, torsoColour[5].y, torsoColour[5].z,
-		-1.0f, -1.75f, -0.5f, torsoColour[5].x, torsoColour[5].y, torsoColour[5].z,
-
-		// right
-		1.0f, 1.75f, 0.5f, torsoColour[6].x, torsoColour[6].y, torsoColour[6].z,
-		1.0f, -1.75f, 0.5f, torsoColour[6].x, torsoColour[6].y, torsoColour[6].z,
-		1.0f, -1.75f, -0.5f, torsoColour[6].x, torsoColour[6].y, torsoColour[6].z,
-
-		1.0f, 1.75f, 0.5f, torsoColour[7].x, torsoColour[7].y, torsoColour[7].z,
-		1.0f, 1.75f, -0.5f, torsoColour[7].x, torsoColour[7].y, torsoColour[7].z,
-		1.0f, -1.75f, -0.5f, torsoColour[7].x, torsoColour[7].y, torsoColour[7].z,
-
-		// front
-		-1.0f, 1.75f, 0.5f, torsoColour[8].x, torsoColour[8].y, torsoColour[8].z,
-		-1.0f, -1.75f, 0.5f, torsoColour[8].x, torsoColour[8].y, torsoColour[8].z,
-		1.0f, -1.75f, 0.5f, torsoColour[8].x, torsoColour[8].y, torsoColour[8].z,
-
-		1.0f, 1.75f, 0.5f, torsoColour[9].x, torsoColour[9].y, torsoColour[9].z,
-		-1.0f, 1.75f, 0.5f, torsoColour[9].x, torsoColour[9].y, torsoColour[9].z,
-		1.0f, -1.75f, 0.5f, torsoColour[9].x, torsoColour[9].y, torsoColour[9].z,
-
-		// back
-		-1.0f, 1.75f, -0.5f, torsoColour[10].x, torsoColour[10].y, torsoColour[10].z,
-		-1.0f, -1.75f, -0.5f, torsoColour[10].x, torsoColour[10].y, torsoColour[10].z,
-		1.0f, -1.75f, -0.5f, torsoColour[10].x, torsoColour[10].y, torsoColour[10].z,
-
-		1.0f, 1.75f, -0.5f, torsoColour[11].x, torsoColour[11].y, torsoColour[11].z,
-		-1.0f, 1.75f, -0.5f, torsoColour[11].x, torsoColour[11].y, torsoColour[11].z,
-		1.0f, -1.75f, -0.5f, torsoColour[11].x, torsoColour[11].y, torsoColour[11].z,
-
-	};
-	// start ints
-	glCreateVertexArrays(1, &torsoVAO);
-	glCreateBuffers(1, &torsoVBO);
-	glBindVertexArray(torsoVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, torsoVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(torsoVertices), torsoVertices, GL_STATIC_DRAW);
-	// pointers
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
+	vector<float> torsoVerts = { -2.002170f, -3.000000f, 1.000000f, 0.465780f, 0.391188f, 1.997840f, -3.000000f, 1.000000f, 0.607623f, 0.391188f, 1.997840f, 3.000000f, 1.000000f, 0.607623f, 0.603950f, -2.002170f, -3.000000f, 1.000000f, 0.465780f, 0.391188f, 1.997840f, 3.000000f, 1.000000f, 0.607623f, 0.603950f, -2.002170f, 3.000000f, 1.000000f, 0.465781f, 0.603950f, -2.002170f, 3.000000f, 1.000000f, 0.465781f, 0.603950f, 1.997840f, 3.000000f, 1.000000f, 0.607623f, 0.603950f, 2.002170f, 3.000000f, -1.000000f, 0.607776f, 0.674871f, -2.002170f, 3.000000f, 1.000000f, 0.465781f, 0.603950f, 2.002170f, 3.000000f, -1.000000f, 0.607776f, 0.674871f, -1.997840f, 3.000000f, -1.000000f, 0.465934f, 0.674871f, -1.997840f, 3.000000f, -1.000000f, 0.820385f, 0.603950f, 2.002170f, 3.000000f, -1.000000f, 0.678543f, 0.603950f, 2.002170f, -3.000000f, -1.000000f, 0.678543f, 0.391188f, -1.997840f, 3.000000f, -1.000000f, 0.820385f, 0.603950f, 2.002170f, -3.000000f, -1.000000f, 0.678543f, 0.391188f, -1.997840f, -3.000000f, -1.000000f, 0.820385f, 0.391188f, -1.997840f, -3.000000f, -1.000000f, 0.465934f, 0.320267f, 2.002170f, -3.000000f, -1.000000f, 0.607776f, 0.320268f, 1.997840f, -3.000000f, 1.000000f, 0.607623f, 0.391188f, -1.997840f, -3.000000f, -1.000000f, 0.465934f, 0.320267f, 1.997840f, -3.000000f, 1.000000f, 0.607623f, 0.391188f, -2.002170f, -3.000000f, 1.000000f, 0.465780f, 0.391188f, 1.997840f, -3.000000f, 1.000000f, 0.607623f, 0.391188f, 2.002170f, -3.000000f, -1.000000f, 0.678543f, 0.391188f, 2.002170f, 3.000000f, -1.000000f, 0.678543f, 0.603950f, 1.997840f, -3.000000f, 1.000000f, 0.607623f, 0.391188f, 2.002170f, 3.000000f, -1.000000f, 0.678543f, 0.603950f, 1.997840f, 3.000000f, 1.000000f, 0.607623f, 0.603950f, -1.997840f, -3.000000f, -1.000000f, 0.394860f, 0.391188f, -2.002170f, -3.000000f, 1.000000f, 0.465780f, 0.391188f, -2.002170f, 3.000000f, 1.000000f, 0.465781f, 0.603950f, -1.997840f, -3.000000f, -1.000000f, 0.394860f, 0.391188f, -2.002170f, 3.000000f, 1.000000f, 0.465781f, 0.603950f, -1.997840f, 3.000000f, -1.000000f, 0.394860f, 0.603950f, };
+	readyTextureModel newTorso(torsoVerts, playerTexture, true);
+	torsoModel = newTorso;	
 }
 
 void startPlayerShader(){
@@ -1470,7 +1140,7 @@ void player::monsterColliders(){
 		vec3 pos = allMonsters[m].position;
 		vec2 floorPos = vec2(pos.x, pos.z);
 
-		float bearing = (float) bearingTwo(playerFloorPos, floorPos);
+		float bearing = bearingTwo(playerFloorPos, floorPos);
 		float distance = glm::distance(playerFloorPos, floorPos);
 		
 		if(!allMonsters[m].attacking){

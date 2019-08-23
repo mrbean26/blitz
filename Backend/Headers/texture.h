@@ -14,7 +14,7 @@ public:
 };
 
 texture loadTexture(const char * filePath); // load texture from file and return a relevant texture class
-
+extern texture emptyTexture;
 void enableTexture(texture usedTexture); // ready for drawing shapes
 
 #endif

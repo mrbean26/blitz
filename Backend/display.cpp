@@ -184,8 +184,8 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 		mainPlayer.position.y + distanceAboveCharacter;
 	vec3 lookAtPos = vec3(mainPlayer.position.x, mainPlayer.position.y + 1.25f, mainPlayer.position.z);
 	// monster colliders
-	cameraXPos = glm::clamp(cameraXPos, 0.1f, currentPlanetScale.x);
-	cameraZPos = glm::clamp(cameraZPos, -currentPlanetScale.y, 0.1f);
+	//cameraXPos = glm::clamp(cameraXPos, 0.1f, currentPlanetScale.x);
+	//cameraZPos = glm::clamp(cameraZPos, -currentPlanetScale.y, 0.1f);
 	cameraYPos = glm::clamp(cameraYPos, lowestCameraY, 10000.0f);
 	cameraThirdPos = vec3(cameraXPos, cameraYPos, cameraZPos);
 	float newDistance = monsterCameraColliders(cameraThirdPos, lookAtPos,
@@ -197,8 +197,8 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	 cameraYPos = (-sin(radians(playerPitch)) * newDistance) + 
 		mainPlayer.position.y + distanceAboveCharacter;
 	// clamp values
-	cameraXPos = glm::clamp(cameraXPos, 0.1f, currentPlanetScale.x);
-	cameraZPos = glm::clamp(cameraZPos, -currentPlanetScale.y, 0.1f);
+	//cameraXPos = glm::clamp(cameraXPos, 0.1f, currentPlanetScale.x);
+	//cameraZPos = glm::clamp(cameraZPos, -currentPlanetScale.y, 0.1f);
 	cameraYPos = glm::clamp(cameraYPos, lowestCameraY, 10000.0f);
 	cameraThirdPos = vec3(cameraXPos, cameraYPos, cameraZPos);
 	cameraThirdPos = cameraBuildingCollisions(cameraThirdPos);
@@ -217,13 +217,10 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 			
 			vec3 lookAt = pPos;
 			lookAt.x = pPos.x - 1.2f * sin(radians(pRot.y)) * glm::clamp(sin(radians(armRot.x)), 0.0f, 1.0f);
-			lookAt.y += 0.9 - sin(radians(armRot.x+ 90.0f)) * 1.2f;
+			lookAt.y += 0.9f - sin(radians(armRot.x+ 90.0f)) * 1.2f;
 			lookAt.z = pPos.z - 1.2f * cos(radians(pRot.y)) * glm::clamp(sin(radians(armRot.x)), 0.0f, 1.0f);
 
 			newMatrix = glm::lookAt(position, lookAt, vec3(0.0f, 1.0f, 0.0f));
-		}
-		if(mainPlayer.aiming && mainPlayer.crouching){
-
 		}
 	}
 	// not 3rd person

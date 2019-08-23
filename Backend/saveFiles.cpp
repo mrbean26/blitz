@@ -292,7 +292,6 @@ vec3 getVec3File(const char* fileName, string vec3Name, int pos) {
 		for (int v3 = secondValuePos + 1; v3 < valLength; v3++) {
 			valThree += valueOnly[v3];
 		}
-
 		floatOne = stof(valOne);
 		floatTwo = stof(valTwo);
 		floatThree = stof(valThree);

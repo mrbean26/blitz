@@ -6,8 +6,8 @@
 #include <glew.h>
 #include <glfw3.h>
 #include "texture.h"
-#include "monsters.h"
 #include "interface.h"
+#include "monsters.h"
 
 #include <vector>
 using namespace std;

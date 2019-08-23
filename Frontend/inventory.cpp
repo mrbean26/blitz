@@ -70,7 +70,7 @@ void startInventoryUI(){
         allItems[allSlots[index].itemType].createButtonIcon(index);
     }
     // texts
-    map<GLchar, Character> zekton = getFont("assets/fonts/zekton.ttf", 20);
+    map<GLchar, Character> zekton = getFont("assets/fonts/zekton.ttf", display_x / 90);
     for(int s = 0; s < SLOT_COUNT; s++){
         int newText = createText();
         allTexts[newText].displayedText = "0";
@@ -312,7 +312,7 @@ void item::droppingInteraction(){
         (floorStart.x + floorEnd.x) / 2.0f,
         (floorStart.y + floorEnd.y) / 2.0f
     );
-    float bearing = radians((float) bearingTwo(floorCurrent, floorEnd));
+    float bearing = radians(bearingTwo(floorCurrent, floorEnd));
 
     float distance = glm::distance(floorCurrent, floorCenter);
     float fullDistance = glm::distance(floorStart, floorCenter);
@@ -331,13 +331,13 @@ void item::droppingInteraction(){
 vec3 entityColliders(vec3 start){
     vec3 ePos = start;
     vec4 entityCollide = terrainColliders(ePos, ENTITY_COLLIDER_DISTANCE);
-    bool inMountain = (int) entityCollide.w;
-    if(!inMountain){
+    float inMountain = (int) entityCollide.w;
+    if(inMountain == 0.0f){
         if(ePos.y < ENTITY_COLLIDER_DISTANCE){
             ePos.y = ENTITY_COLLIDER_DISTANCE;
         }
     }
-    if(inMountain){
+    if(inMountain > 0.0f){
         if(ePos.y < entityCollide.y){
             ePos.y = entityCollide.y;
         }

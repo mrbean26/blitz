@@ -1,6 +1,7 @@
 #include "weapons.h"
 #include "frontend.h"
 #include "structures.h"
+#include "monsters.h"
 
 int basicPistol, basicRifle;
 int weaponKey;
@@ -382,18 +383,107 @@ void removeBullet(int index){
 }
 
 void moveBullets() {
-	int count = allBullets.size();
-	float bulletSpeed = 0.25f;
-	for (int i = 0; i < count; i++) {
-		vec3 bulletRot = allBullets[i].rotation;
+	float bulletSpeed = 15.0f;
+	int index = 0;
+	for (float f = 0; f < 110.0f / (deltaTime * bulletSpeed); f += deltaTime * bulletSpeed) {
+		vector<int> badBullets;
+		int count = allBullets.size();
+		for (int i = 0; i < count; i++) {
+			vec3 bulletRot = allBullets[i].rotation;
 
-		vec3 added = vec3(0.0f);
-		added.x = cos(radians(bulletRot.y)) * cos(radians(bulletRot.z)) * bulletSpeed;
-		added.y = sin(radians(bulletRot.z)) * bulletSpeed;
-		added.z = -sin(radians(bulletRot.y)) * cos(radians(bulletRot.z)) * bulletSpeed;
+			vec3 added = vec3(0.0f);
+			added.x = cos(radians(bulletRot.y)) * cos(radians(bulletRot.z)) * bulletSpeed * deltaTime;
+			added.y = sin(radians(bulletRot.z)) * bulletSpeed * deltaTime;
+			added.z = -sin(radians(bulletRot.y)) * cos(radians(bulletRot.z)) * bulletSpeed * deltaTime;
 
-		allBullets[i].position += added;
+			allBullets[i].position += added;
+
+			if (index / 3.0f == glm::floor(index / 3.0f)) {
+				vec3 bulletPos = allBullets[i].position;
+				vec3 bulletThree = vec3(bulletPos.x, 0.0f, bulletPos.z);
+				float yLowest = 0.0f;
+
+				vec4 bulletCollide = terrainColliders(bulletPos, 0.0f);
+
+				if (bulletPos.y + 1.0f < yLowest) {
+					badBullets[newVectorPos(&badBullets)] = i;
+					continue;
+				}
+
+				// buildings
+				int intEmpty = 0; float floatEmpty = 0.0f; bool boolEmpty = false;
+				bool hitBuilding = false;
+				buildCollisions(bulletPos, intEmpty, floatEmpty, boolEmpty, hitBuilding);
+				if (hitBuilding) {
+					badBullets[newVectorPos(&badBullets)] = i;
+				}
+			}
+
+			int mCount = allMonsters.size();
+			for (int m = 0; m < mCount; m++) {
+				vec3 monsterPos = allMonsters[m].position;
+				int type = allMonsters[m].monsterName;
+
+				float delay = allMonsters[m].changeBackDelay;
+				if (delay < 0 && allMonsters[m].health > 0) {
+					allMonsters[m].multiplyColour = vec3(1.0f);
+				}
+				allMonsters[m].changeBackDelay -= deltaTime;
+
+				vec3 bulletPos = allBullets[i].position;
+				if (type == 1) { // MOUSE
+					float distance = glm::distance(bulletPos, monsterPos);
+					if (distance < EARTH_ONE_BULLET_DISTANCE) {
+						// collision
+						allMonsters[m].health -= allBullets[i].damage;
+						allMonsters[m].multiplyColour = vec3(2.5f, 0.2f, 0.2f);
+						allMonsters[m].changeBackDelay = DAMAGE_SHOW_RED_TIME;
+						badBullets[newVectorPos(&badBullets)] = i;
+					}
+				}
+				if (type == 2) { // PUNCHY
+					 // center part
+					float distance = glm::distance(bulletPos, monsterPos - vec3(0.0f, 0.15f, 0.0f));
+					if (distance < EARTH_TWO_BULLET_DISTANCE_CENTER) {
+						// collision
+						allMonsters[m].health -= allBullets[i].damage;
+						allMonsters[m].multiplyColour = vec3(2.5f, 0.2f, 0.2f);
+						allMonsters[m].changeBackDelay = DAMAGE_SHOW_RED_TIME;
+						badBullets[newVectorPos(&badBullets)] = i;
+						continue;
+					}
+					// arms are at rotation - 90 & rotation + 90
+					float rotationOne = degreesClamp(allMonsters[m].rotation.y - 90.0f);
+					float rotationTwo = degreesClamp(allMonsters[m].rotation.y + 90.0f);
+					float usedBearing = degreesClamp(bearingTwo(vec2(monsterPos.x, monsterPos.z), vec2(bulletPos.x, bulletPos.z)));
+
+					float armOneDistance = glm::distance(rotationOne, usedBearing);
+					float armTwoDistance = glm::distance(rotationTwo, usedBearing);
+					if (armOneDistance < EARTH_TWO_ARM_WIDTH || armTwoDistance < EARTH_TWO_ARM_WIDTH) {
+						// inside width of arm
+						if (distance < EARTH_TWO_BULLET_DISTANCE_CENTER + EARTH_TWO_ARM_LENGTH) {
+							// collision
+							allMonsters[m].health -= allBullets[i].damage;
+							allMonsters[m].multiplyColour = vec3(2.5f, 0.2f, 0.2f);
+							allMonsters[m].changeBackDelay = DAMAGE_SHOW_RED_TIME;
+							badBullets[newVectorPos(&badBullets)] = i;
+						}
+					}
+				}
+
+
+				index++;
+			}
+
+		}
+
+		int badCount = badBullets.size();
+		for (int bb = badCount - 1; bb > -1; bb--) {
+			removeBullet(badBullets[bb]);
+		}
+		
 	}
+	allBullets.clear(); // all out of render distance now
 }
 
 int createBullet(vec3 position, vec3 rotation, float damage) {
