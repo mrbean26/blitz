@@ -361,8 +361,6 @@ void startScreen::mainloop(){
 		loading = false;
 		return;
 	}
-	// randomise saves
-	randomSeedCount++;
 	// button data
 	vector<string> saveLinesOne = readLines("assets/saves/saveOne.save");
 	vec2 createScale = vec2(0.8375f, 0.215f);

@@ -17,10 +17,7 @@ using namespace glm;
 #define LARGE_WORLD 1
 #define PLANET_WORLD 0
 
-extern int randomSeedCount;
 int randomInt(int min, int max); // quick maths
-
-vector<float> getTerrainCoords(string line);
 
 bool insideCircle(vec2 circlePos, float radius, vec2 pointPos, bool terrain = false);
 
@@ -29,6 +26,9 @@ vec3 colourDifference(float multiplier);
 vector<vec2> circleCoords(vec2 position, float radius, int pointCount, float scale);
 
 void createSave(const char * filePath, int saveType); // a lot of code
+
+void beginRandom();
+void endRandom();
 
 class triangle {
 public:

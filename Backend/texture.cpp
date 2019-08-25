@@ -30,4 +30,4 @@ texture loadTexture(const char * filePath){
 texture emptyTexture;
 void enableTexture(texture usedTexture){
 	glBindTexture(GL_TEXTURE_2D, usedTexture.textureId);
-}
+}                  

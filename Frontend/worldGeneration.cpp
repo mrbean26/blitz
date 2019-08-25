@@ -32,15 +32,8 @@ bool insideCircle(vec2 circlePos, float radius, vec2 pointPos, bool terrain) {
 	return false;
 }
 
-int randomSeedCount = 5;
-int randomSeed() {
-	randomSeedCount++;
-	return randomSeedCount;
-}
-
 int randomInt(int min, int max) {
 	max = max + 1; // includes maximum number
-	srand(randomSeed());
 	int random = rand() % (max - min) + min;
 	return random;
 }
@@ -196,6 +189,20 @@ void createSave(const char* filePath, int saveType) {
 		saveLines[newVectorPos(&saveLines)] = "earthBuildingRotation 0.0";
 	}
 	writeLines(filePath, saveLines);
+}
+
+void beginRandom(){
+	vector<string> inputLines = readLines("assets/saves/inputs.save");
+	int seed = stoi(inputLines[12]);
+	srand(seed);
+}
+
+void endRandom(){
+	vector<string> inputLines = readLines("assets/saves/inputs.save");
+	int current = stoi(inputLines[12]);
+	current += 1;
+	inputLines[12] = to_string(current);
+	writeLines("assets/saves/inputs.save", inputLines);
 }
 
 GLuint loadCubemapTexture(vector<string> faces){

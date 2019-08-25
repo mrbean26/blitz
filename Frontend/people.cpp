@@ -30,6 +30,7 @@ void peopleMainloop(){
 		allPeople[p].position.x = clamp(allPeople[p].position.x, 0.0f, currentPlanetScale.x);
 		allPeople[p].position.z = clamp(allPeople[p].position.z, -currentPlanetScale.y, 0.0f);
 
+		peopleMovement(&allPeople[p]);
 		allPeople[p].renderPlayer();
 	}
 }
@@ -77,4 +78,66 @@ void getPeople(){
 			allPeople[newPlayer].rotation.y = personData.y;
 		}
 	}
+}
+
+void peopleMovement(player * person){
+	if (!person->personMoving) {
+		person->runAnimation(0.0f);
+	}
+	if (person->movementDelay < 0.0f && !person->personMoving && !person->personRotating) {
+		retry:
+		person->personRotation = (float) randomInt(0, 6) * 60.0f;
+		if (degreesDistance(person->personRotation, person->rotation.y) < 65.0f) {
+			goto retry;
+		}
+		person->personRotating = true;
+	}
+	if (person->personRotating) {
+		float distance = glm::distance(degreesClamp(person->rotation.y), person->personRotation);
+		if (distance > 180.0f) {
+			bool changed = false;
+			if (degreesClamp(person->rotation.y) > person->personRotation) {
+				person->rotation.y += deltaTime * PEOPLE_ROTATE_SPEED;
+				changed = true;
+			}
+			if (degreesClamp(person->rotation.y) < person->personRotation && !changed) {
+				person->rotation.y -= deltaTime * PEOPLE_ROTATE_SPEED;
+			}
+		}
+		if (distance <= 180.0f) {
+			bool changed = false;
+			if (degreesClamp(person->rotation.y) > person->personRotation) {
+				person->rotation.y -= deltaTime * PEOPLE_ROTATE_SPEED;
+				changed = true;
+			}
+			if (degreesClamp(person->rotation.y) < person->personRotation && !changed) {
+				person->rotation.y += deltaTime * PEOPLE_ROTATE_SPEED;
+			}
+		}
+		if (degreesDistance(person->personRotation, degreesClamp(person->rotation.y)) < 3.0f) {
+			person->rotation.y = person->personRotation;
+			person->personMoving = true;
+			person->personRotating = false;
+			person->movingStart = vec2(person->position.x, person->position.z);
+		}
+	}
+	if (person->personMoving) {
+		person->movingTime += deltaTime;
+
+		person->position.x = person->position.x + -sin(radians(person->rotation.y)) * deltaTime * PEOPLE_MOVEMENT_SPEED;
+		person->position.z = person->position.z + -cos(radians(person->rotation.y)) * deltaTime * PEOPLE_MOVEMENT_SPEED;
+		person->runAnimation(PEOPLE_MOVEMENT_SPEED * 12.0f);
+		vec2 floor = vec2(person->position.x, person->position.z);
+		float distance = glm::distance(floor, person->movingStart);
+
+		if (person->movingTime > PEOPLE_MOVEMENT_TIMEOUT || distance > PEOPLE_MOVEMENT_DISTANCE) {
+			person->personMoving = false;
+			person->personRotating = false;
+			person->movementDelay = PEOPLE_MOVEMENT_DELAY;
+			person->movingTime = 0.0f;
+			return;
+		}
+		
+	}
+	person->movementDelay -= deltaTime;
 }

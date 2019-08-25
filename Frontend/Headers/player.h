@@ -56,6 +56,14 @@ public:
 	vec3 multiplyColour = vec3(1.0f);
 	float redDelay = 0.0f;
 
+	float movementDelay = 4.0f;
+
+	bool personRotating = false;
+	bool personMoving = false;
+	float personRotation = 0.0f;
+	float movingTime = 0.0f;
+	vec2 movingStart = vec2(0.0f);
+
 	bool equippingReloading = false;
 	float reloadSpeed;
 	int personType = 0;

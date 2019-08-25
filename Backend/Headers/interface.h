@@ -7,6 +7,7 @@
 
 #include "display.h"
 #include "texture.h"
+#include "worldGeneration.h"
 #include "shader.h"
 #include "backend.h"
 

@@ -23,6 +23,7 @@ void frontendBegin(){
 	StartScreen.begin();
 	startPlayerShader();
 	startSkybox();
+	beginRandom();
 }
 
 void frontendMainloop(){
@@ -48,4 +49,3 @@ void frontendMainloop(){
 	interfaceLastcall();
 	updateKeys(); // this has to be called last every frame / after last call of getkeydown
 }
-

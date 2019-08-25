@@ -355,6 +355,7 @@ void interfaceMainloop(){
 	renderTexts();
 	updateMousePos();
 	registerClicks();
+	randomInt(0, 1000);
 }
 
 void interfaceLastcall(){

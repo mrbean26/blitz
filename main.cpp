@@ -16,6 +16,7 @@ int main(){
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+	endRandom();
 	glfwTerminate();
 	return 0;
 }

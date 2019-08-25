@@ -331,7 +331,7 @@ void item::droppingInteraction(){
 vec3 entityColliders(vec3 start){
     vec3 ePos = start;
     vec4 entityCollide = terrainColliders(ePos, ENTITY_COLLIDER_DISTANCE);
-    float inMountain = (int) entityCollide.w;
+    float inMountain = glm::round(entityCollide.w);
     if(inMountain == 0.0f){
         if(ePos.y < ENTITY_COLLIDER_DISTANCE){
             ePos.y = ENTITY_COLLIDER_DISTANCE;
