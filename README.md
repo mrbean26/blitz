@@ -3,11 +3,11 @@ OpenGL Longterm - Adventure, Combat - Space
 
 3D game, colonise planets and build bases, defend it from aliens and weather conditions.
 
-[x] Test for bugs / errors.
-[ ] Fix bugs / errors.
-[ ] Research status text.
-[ ] Notification menu (easy to alert) (in top right but down a bit).
-[ ] Robot research animation 1.
+-[ ] Test for bugs / errors.
+-[ ] Fix bugs / errors.
+-[ ] Research status text.
+-[ ] Notification menu (easy to alert) (in top right but down a bit).
+-[ ] Robot research animation 1.
 -[ ] Robot research animation 2.
 -[ ] Person research animation.
 -[ ] Robot researching x2
