@@ -4,12 +4,19 @@
 #ifndef START_SCREEN
 #define START_SCREEN
 
+#include "interface.h"
+#include <iostream>
+
 extern int lastKey;
 void keyInput(GLFWwindow * window, int key,
 	int scancode, int action, int mods); // detect if a key is clicked
 
 void mouseInput(GLFWwindow * window, int button,
 	int action, int mods); // detect if m1, m2 or mwheel is clicked
+
+extern vector<text> previousAllTexts;
+extern vector<button> previousAllButtons;
+extern bool loading;
 
 class startScreen {
 public:
@@ -32,6 +39,8 @@ public:
 	int sprintButton, sprintText;
 	int crouchButton, crouchText;
 	int jumpButton, jumpText;
+	int pauseButton, pauseText; 
+	int weaponButton, weaponText;
 
 	int forwardKey;
 	int leftKey;
@@ -43,8 +52,11 @@ public:
 	int sprintKey;
 	int crouchKey;
 	int jumpKey;
+	int pauseKey;
+	int weaponKey;
 
 	int playOneTexture=2, playTwoTexture=2; //0=create, 1=play
+	int loadingText;
 
 	vector<string> inputLines;
 

@@ -18,9 +18,12 @@ extern GLFWwindow * window;
 #include "texture.h"
 #include "interface.h"
 #include "saveFiles.h"
+#include "model.h"
+#include "debug.h"
 
 void backendMainloop(); // run every frame
 
 void backendBegin(); // run before first frame
 
+vec2 mouseDifferences();
 #endif

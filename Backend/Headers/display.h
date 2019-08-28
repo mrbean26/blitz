@@ -5,6 +5,8 @@
 #include <glew.h>
 #include <glfw3.h>
 
+#include "player.h"
+
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
 
@@ -22,7 +24,7 @@ bool openglBegin(GLFWwindow* &used_window, bool fullscreen,
 void resizeWindow(GLFWwindow* &used_window,
 	int new_width, int new_height); 
 
-extern double deltaTime, lastTime;
+extern float deltaTime, lastTime;
 double getFrames(); //get fps of window, to get fps frontend, use double 'frames'
 
 void displayMainloop(); // run every frame
@@ -34,7 +36,12 @@ extern vec3 cameraPosition;
 extern vec3 cameraRotation;
 
 mat4 projectionMatrix();
-mat4 modelMatrix();
+mat4 modelMatrix(vec3 position = vec3(0.0f), vec3 rotation = vec3(0.0f), vec3 scale = vec3(1.0f), bool child = false, vec3 parentPosition = vec3(0.0f), vec3 parentRotation=vec3(0.0f));
+
+extern bool playerView, aimingView;
+extern float playerYaw, playerPitch, lowestCameraY;
+extern float distanceFromCharacter;
+extern vec3 cameraThirdPos;
 mat4 viewMatrix();
 
 #endif

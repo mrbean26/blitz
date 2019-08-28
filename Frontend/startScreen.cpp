@@ -9,6 +9,7 @@ using namespace std;
 #include "interface.h"
 #include "worldGeneration.h"
 #include "frontend.h"
+#include "debug.h"
 
 int lastKey = -1;
 void keyInput(GLFWwindow * window, int key, 
@@ -20,7 +21,7 @@ void mouseInput(GLFWwindow * window, int button,
 	int action, int mods){
 	if (button == GLFW_MOUSE_BUTTON_RIGHT) {
 		if (action == GLFW_PRESS) {
-			lastKey = 256256; //unused ASCII values
+			lastKey = 256256;
 		}
 	}
 	if (button == GLFW_MOUSE_BUTTON_LEFT) {
@@ -35,7 +36,7 @@ void mouseInput(GLFWwindow * window, int button,
 	}
 }
 
-string startScreen::asciiToString(int ascii){ // unrecognised ascii values -> string
+string startScreen::asciiToString(int ascii){
 	if (ascii >= 'a' && ascii <= 'z') {
 		char returned = char(ascii);
 		return to_string(returned);
@@ -111,6 +112,9 @@ string startScreen::asciiToString(int ascii){ // unrecognised ascii values -> st
 	if (ascii == 345) {
 		return "RCtrl";
 	}
+	if(ascii == 256){
+		return "Escape";
+	}
 	if (ascii == 257) {
 		return "Enter";
 	}
@@ -154,8 +158,8 @@ string startScreen::asciiToString(int ascii){ // unrecognised ascii values -> st
 
 void startScreen::changeInputs(){
 	vector<int> keyTextsInts = { forwardKey, leftKey, backKey, rightKey, aimKey,
-			shootKey, interactKey, sprintKey, crouchKey, jumpKey };
-	for (int i = forwardButton; i <= jumpButton; i++) { // iterate over every button
+			shootKey, interactKey, sprintKey, crouchKey, jumpKey, pauseKey, weaponKey };
+	for (int i = forwardButton; i <= weaponButton; i++) {
 		//check for key
 		if (allButtons[i].clickUp && !checkKey) {
 			checkKey = true;
@@ -164,7 +168,7 @@ void startScreen::changeInputs(){
 			textChange = keyTextsInts[i - forwardButton];
 		}
 	}
-	if (checkKey) { // check for key inputs if a button has been pressed previously
+	if (checkKey) {
 		glfwSetKeyCallback(window, keyInput);
 		glfwSetMouseButtonCallback(window, mouseInput);
 		if (lastKey != -1) {
@@ -196,27 +200,60 @@ void startScreen::changeInputs(){
 	}
 }
 
+bool loading = false;
+const char * linesPathHold;
+vector<text> previousAllTexts;
+vector<button> previousAllButtons;
+
+void loadWorld(const char * linesPath) {
+	loading = true;
+	allButtons[StartScreen.playOneButton].clickUp = false;
+	allButtons[StartScreen.playTwoButton].clickUp = false;
+	previousAllButtons = allButtons;
+	previousAllTexts = allTexts;
+	allButtons.clear();
+	int textCount = allTexts.size();
+	allTexts[StartScreen.loadingText].active = true;
+	for (int i = 0; i < textCount; i++) {
+		if (i != StartScreen.loadingText) {
+			if(i != debugText){
+				allTexts[i].active = false;
+			}
+		}
+	}
+	linesPathHold = linesPath;
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+void startWorld(const char * linesPath) {
+	StartScreen.active = false;
+	WorldGeneration.active = true;
+	WorldGeneration.worldLinesPath = linesPath;
+	text debugTextHolder = allTexts[debugText];
+	allTexts.clear();
+	allTexts = {debugTextHolder};
+	debugText = 0;
+	mainPlayer.active = true;
+}
+
 void startScreen::begin(){
 	//title
-	titleImage = createButton(vec3(0.0f, 2.5f, 0.0f), vec2(1.5f, 0.712f));
+	titleImage = createButton(vec2(1.5f, 0.712f), vec3(0.0f, 2.5f, 0.0f), false);
 	allButtons[titleImage].texture = loadTexture("assets/images/blitzTitle.png");
-	allButtons[titleImage].interactive = false;
 	//save one text
-	saveOneImage = createButton(vec3(-3.0f, 0.95f, 0.0f), vec2(1.1f, 0.295f));
+	saveOneImage = createButton(vec2(1.1f, 0.295f), vec3(-3.0f, 0.95f, 0.0f), false);
 	allButtons[saveOneImage].texture = loadTexture("assets/images/saveOneTitle.png");
-	allButtons[saveOneImage].interactive = false;
 	//save two text
-	saveTwoImage = createButton(vec3(-3.0f, -2.5f, 0.0f), vec2(1.1f, 0.295f));
+	saveTwoImage = createButton(vec2(1.1f, 0.295f), vec3(-3.0f, -2.5f, 0.0f), false);
 	allButtons[saveTwoImage].texture = loadTexture("assets/images/saveTwoTitle.png");
-	allButtons[saveTwoImage].interactive = false;
 	//play buttons
 	playOneButton = createButton();
 	playTwoButton = createButton();
 	//delete buttons
 	texture trashCan = loadTexture("assets/images/trashCan.png");
-	deleteOneButton = createButton(vec3(2.0f, 0.95f, 0.0f), vec2(0.165f, 0.27f));
+	deleteOneButton = createButton(vec2(0.165f, 0.27f), vec3(2.0f, 0.95f, 0.0f));
 	allButtons[deleteOneButton].texture = trashCan;
-	deleteTwoButton = createButton(vec3(2.0f, -2.95f, 0.0f), vec2(0.165f, 0.278f));
+	deleteTwoButton = createButton(vec2(0.165f, 0.27f), vec3(2.0f, -2.95f, 0.0f));
 	allButtons[deleteTwoButton].texture = trashCan;
 	//INPUT MANAGER
 	texture inputButtonBackground = loadTexture("assets/images/inputButtonBackground.png");
@@ -235,17 +272,19 @@ void startScreen::begin(){
 	sprintButton = createButton();
 	crouchButton = createButton();
 	jumpButton = createButton();
-	for (int i = forwardButton; i <= jumpButton; i++) {
+	pauseButton = createButton();
+	weaponButton = createButton();
+	for (int i = forwardButton; i <= weaponButton; i++) {
 		allButtons[i] = defaultInputButton;
-		float xPosition;
-		float yPosition;
-		if (i < shootButton) {
+		float xPosition = 0.0f;
+		float yPosition = 0.0f;
+		if (i < interactButton) {
 			xPosition = 5.5f;
 			yPosition = -13.5f + (((float)i - forwardButton)*3.5f);
 		}
-		if (i > aimButton) {
+		if (i > shootButton) {
 			xPosition = 9.5f;
-			yPosition = -13.5f + (((float)i - shootButton)*3.5f);
+			yPosition = -13.5f + (((float)i - interactButton)*3.5f);
 		}
 		allButtons[i].position = vec3(xPosition, yPosition, 0.0f);
 	}
@@ -260,13 +299,15 @@ void startScreen::begin(){
 	sprintText = createText();
 	crouchText = createText();
 	jumpText = createText();
+	pauseText = createText();
+	weaponText = createText();
 	vector<string> displayedTexts = { "Forward", "Left",
 		"Backward", "Right", "Aim", "Shoot", "Interact", "Sprint",
-			"Crouch", "Jump" };
-	for (int i = forwardText; i <= jumpText; i++) {
+			"Crouch", "Jump", "Pause", "Weapon" };
+	for (int i = forwardText; i <= weaponText; i++) {
 		allTexts[i].fontPath = "assets/fonts/zekton.ttf";
 		allTexts[i].displayedText = displayedTexts[i - forwardText];
-		allTexts[i].fontSize = displayX / 50;
+		allTexts[i].fontSize = display_x / 50;
 	}
 	//key input texts (ontop of buttons)
 	forwardKey = createText();
@@ -279,61 +320,99 @@ void startScreen::begin(){
 	sprintKey = createText();
 	crouchKey = createText();
 	jumpKey = createText();
+	pauseKey = createText();
+	weaponKey = createText();
 	inputLines = readLines("assets/saves/inputs.save");
-	for (int i = forwardKey; i <= jumpKey; i++) {
+	for (int i = forwardKey; i <= weaponKey; i++) {
 		allTexts[i].fontPath = "assets/fonts/zekton.ttf";
 		allTexts[i].colour = vec3(0.0f, 0.0f, 1.0f);
-		allTexts[i].fontSize = displayX / 55;
+		allTexts[i].fontSize = display_x / 55;
 		allTexts[i].displayedText = asciiToString(stoi(inputLines[i - forwardKey]));
 	}
+	// world size text
+	int worldSizeText = createText();
+	allTexts[worldSizeText].fontPath = "assets/fonts/zekton.ttf";
+	allTexts[worldSizeText].fontSize = display_x / 30;
+	allTexts[worldSizeText].position = vec2(display_x / 4, display_y / 5);
+	allTexts[worldSizeText].displayedText = "World 1 : Small Worlds";
+
+	int worldSizeTextLarge = createText();
+	allTexts[worldSizeTextLarge].fontPath = "assets/fonts/zekton.ttf";
+	allTexts[worldSizeTextLarge].fontSize = display_x / 30;
+	allTexts[worldSizeTextLarge].position = vec2(display_x / 4, display_y / 10);
+	allTexts[worldSizeTextLarge].displayedText = "World 2 : Large Worlds";
+	// loading text
+	loadingText = createText();
+	allTexts[loadingText].fontPath = "assets/fonts/zekton.ttf";
+	allTexts[loadingText].fontSize = (int)((float)display_x / 30.0f);
+	allTexts[loadingText].displayedText = "Loading...";
+	allTexts[loadingText].position = vec2(display_x / 2.0f, display_y / 2.0f);
+	allTexts[loadingText].centered = true;
+	allTexts[loadingText].active = false;
 }
 
-void startScreen::mainloop(){ //change textures & check for inputs
+void startScreen::mainloop(){
 	if (!active) {
 		return;
 	}
+	if (loading) {
+		startWorld(linesPathHold);
+		loading = false;
+		return;
+	}
+	// button data
 	vector<string> saveLinesOne = readLines("assets/saves/saveOne.save");
-	vector<string> saveLinesTwo = readLines("assets/saves/saveTwo.save");
 	vec2 createScale = vec2(0.8375f, 0.215f);
 	vec2 playScale = vec2(0.63f, 0.27f);
 	//check if savefiles are used - if true, change texture to "play" and enable delete button
-	vector<vector<string>> bothVectors = {saveLinesOne, saveLinesTwo};
-	vector<int> bothTextures = {playOneTexture, playTwoTexture};
-	for(int v = 0; v < 2; v++){
-		vector<string> currentVector = bothVectors[v];
-		if (currentVector[0] == "NOT USED" && bothTextures[v] != 0) {
-			allButtons[playOneButton].texture =
-				loadTexture("assets/images/createTitle.png");
-			bothTextures[v] = 0;
-			allButtons[playOneButton].scale = createScale;
-			allButtons[playOneButton].position = vec3(-1.0f, 1.3f, 0.0f);
-			allButtons[deleteOneButton].active = false;
-		}
-		if (currentVector[0] == "IN USE" && bothTextures[v] != 1) {
-			allButtons[playOneButton].texture =
-				loadTexture("assets/images/playTitle.png");
-			bothTextures = 1;
-			allButtons[playOneButton].scale = playScale;
-			allButtons[playOneButton].position = vec3(-1.4f, 1.0f, 0.0f);
-			allButtons[deleteOneButton].active = true;
-		}
+	if (saveLinesOne[0] == "NOT USED" && playOneTexture != 0) {
+		allButtons[playOneButton].texture =
+			loadTexture("assets/images/createTitle.png");
+		playOneTexture = 0;
+		allButtons[playOneButton].scale = createScale;
+		allButtons[playOneButton].position = vec3(-1.0f, 1.3f, 0.0f);
+		allButtons[deleteOneButton].active = false;
 	}
-	playOneTexture = bothTextures[0]; playTwoTexture = bothTextures[1];
+	if (contains(saveLinesOne[0], "IN USE") && playOneTexture != 1) {
+		allButtons[playOneButton].texture =
+			loadTexture("assets/images/playTitle.png");
+		playOneTexture = 1;
+		allButtons[playOneButton].scale = playScale;
+		allButtons[playOneButton].position = vec3(-1.4f, 1.0f, 0.0f);
+		allButtons[deleteOneButton].active = true;
+	}
+	vector<string> saveLinesTwo = readLines("assets/saves/saveTwo.save");
+	if (saveLinesTwo[0] == "NOT USED" && playTwoTexture != 0) {
+		allButtons[playTwoButton].texture =
+			loadTexture("assets/images/createTitle.png");
+		playTwoTexture = 0;
+		allButtons[playTwoButton].scale = createScale;
+		allButtons[playTwoButton].position = vec3(-1.0f, -3.3f, 0.0f);
+		allButtons[deleteTwoButton].active = false;
+	}
+	if (contains(saveLinesTwo[0], "IN USE") && playTwoTexture != 1) {
+		allButtons[playTwoButton].texture =
+			loadTexture("assets/images/playTitle.png");
+		playTwoTexture = 1;
+		allButtons[playTwoButton].scale = playScale;
+		allButtons[playTwoButton].position = vec3(-1.4f, -3.0f, 0.0f);
+		allButtons[deleteTwoButton].active = true;
+	}
 	//INPUT MANAGER
 	vector<int> buttonInts = { forwardButton, leftButton, backButton, rightButton,
-		aimButton, shootButton, interactButton, sprintButton, crouchButton, jumpButton };
-	for (int i = forwardText; i <= jumpText; i++) {
+		aimButton, shootButton, interactButton, sprintButton, crouchButton, jumpButton, pauseButton, weaponButton };
+	for (int i = forwardText; i <= weaponText; i++) {
 		int index = buttonInts[i - forwardText];
 		float positionX = allButtons[index].minX * 1.005f;
-		float positionY = ((float)displayY - allButtons[index].minY) + (displayY*0.01f);
+		float positionY = ((float)display_y - allButtons[index].minY) + (display_y*0.01f);
 		allTexts[i].colour = vec3(0.18f, 0.82f, 0.86f);
-		allTexts[i].fontSize = displayX / 45;
+		allTexts[i].fontSize = display_x / 45;
 		allTexts[i].position = vec2(positionX, positionY);
 	}
-	for (int i = forwardKey; i <= jumpKey; i++) {
+	for (int i = forwardKey; i <= weaponKey; i++) {
 		int index = buttonInts[i - forwardKey];
 		float positionX = allButtons[index].minX * 1.005f;
-		float positionY = ((float)displayY - allButtons[index].maxY) + (displayY*0.015f);
+		float positionY = ((float)display_y - allButtons[index].maxY) + (display_y*0.015f);
 		allTexts[i].position = vec2(positionX, positionY);
 	}
 	changeInputs();
@@ -380,24 +459,16 @@ void startScreen::mainloop(){ //change textures & check for inputs
 			createSave("assets/saves/saveOne.save", DEFAULT_SAVE);
 		}
 		if (playOneTexture == 1) {
-			allButtons.clear();
-			allTexts.clear();
-			earthWorldGeneration.worldLinesPath = "assets/saves/saveOne.save";
-			active = false;
-			earthWorldGeneration.active = true;
+			loadWorld("assets/saves/saveOne.save");
 			return;
 		}
 	}
 	if (allButtons[playTwoButton].clickUp) {
 		if (playTwoTexture == 0) {
-			createSave("assets/saves/saveTwo.save", DEFAULT_SAVE);
+			createSave("assets/saves/saveTwo.save", LARGE_WORLD);
 		}
 		if (playTwoTexture == 1) {
-			allButtons.clear();
-			allTexts.clear();
-			earthWorldGeneration.worldLinesPath = "assets/saves/saveTwo.save";
-			active = false;
-			earthWorldGeneration.active = true;
+			loadWorld("assets/saves/saveTwo.save");
 			return;
 		}
 	}
