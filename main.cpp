@@ -5,7 +5,7 @@ int main(){
 	if (!openglBegin(window, false, 640, 360)) {
 		return -1;
 	}
-    beginRandom();
+    	beginRandom();
 	frontendBegin();
 	backendBegin();
 	while (!glfwWindowShouldClose(window)){
