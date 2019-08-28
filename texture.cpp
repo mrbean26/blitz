@@ -8,7 +8,7 @@
 #include <iostream>
 using namespace std;
 
-texture loadTexture(const char * filePath){
+texture loadTexture(const char * filePath){ // return texture class holding relevant data
 	texture newTexture;
 	glGenTextures(1, &newTexture.textureId);
 	newTexture.data = stbi_load(filePath, &newTexture.width,

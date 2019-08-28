@@ -10,18 +10,20 @@ GLuint buttonVAO, buttonVBO, buttonEBO;
 
 std::vector<button> allButtons;
 
-int createButton(){
+int createButton(vec3 position, vec2 scale){ // return value in list of the new button which has been created
 	button newButton;
+	newButton.position = position;
+	newButton.scale = scale;
 	int buttonCount = allButtons.size();
 	allButtons.resize(buttonCount + 1);
 	allButtons[buttonCount] = newButton;
 	return buttonCount;
 }
 
-void renderButtons(){
+void renderButtons(){ // check if button is being hovered over or clicked on - and rescale the matrix accordingly
 	int buttonCount = allButtons.size();
 	vec2 rescale = vec2(2.0f, 2.0f);
-	vec2 aspectRatio = vec2(aspect_x, aspect_y);
+	vec2 aspectRatio = vec2(aspectX, aspectY);
 	glBindVertexArray(buttonVAO);
 	for (int i = 0; i < buttonCount; i++) {
 		button currentButton = allButtons[i];
@@ -99,9 +101,9 @@ void registerClicks(){
 		int minX = 0, maxX = 0;
 		int minY = 0, maxY = 0;
 		//variables required to calculate minimum and maximum mouse positions for buttons to interact
-		float xDivided = (float)display_x / 10.0f;
-		float yDivided = (float)display_y / (float)aspect_y;
-		vec2 midScreen = vec2(display_x / 2, display_y / 2);
+		float xDivided = (float)displayX / 10.0f;
+		float yDivided = (float)displayY / (float)aspectY;
+		vec2 midScreen = vec2(displayX / 2, displayY / 2);
 		vec2 positionMultiplied = vec2(buttonPosition.x*buttonScale.x,
 			buttonPosition.y*buttonScale.y);
 		positionMultiplied = vec2(positionMultiplied.x*xDivided, positionMultiplied.y*yDivided);
@@ -196,8 +198,8 @@ void textsBegin(){
 	int fragShader = createShader(textFragSource, GL_FRAGMENT_SHADER);
 	textShader = createProgram({ vertShader, fragShader });
 	//shader details
-	mat4 projectionMatrix = ortho(0.0f, static_cast<GLfloat>(display_x),
-		0.0f, static_cast<GLfloat>(display_y));
+	mat4 projectionMatrix = ortho(0.0f, static_cast<GLfloat>(displayX),
+		0.0f, static_cast<GLfloat>(displayY));
 	int projectionLocation = glGetUniformLocation(textShader, "projection");
 	glUseProgram(textShader);
 	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, value_ptr(projectionMatrix));

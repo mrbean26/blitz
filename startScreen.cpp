@@ -20,7 +20,7 @@ void mouseInput(GLFWwindow * window, int button,
 	int action, int mods){
 	if (button == GLFW_MOUSE_BUTTON_RIGHT) {
 		if (action == GLFW_PRESS) {
-			lastKey = 256256;
+			lastKey = 256256; //unused ASCII values
 		}
 	}
 	if (button == GLFW_MOUSE_BUTTON_LEFT) {
@@ -35,7 +35,7 @@ void mouseInput(GLFWwindow * window, int button,
 	}
 }
 
-string startScreen::asciiToString(int ascii){
+string startScreen::asciiToString(int ascii){ // unrecognised ascii values -> string
 	if (ascii >= 'a' && ascii <= 'z') {
 		char returned = char(ascii);
 		return to_string(returned);
@@ -155,7 +155,7 @@ string startScreen::asciiToString(int ascii){
 void startScreen::changeInputs(){
 	vector<int> keyTextsInts = { forwardKey, leftKey, backKey, rightKey, aimKey,
 			shootKey, interactKey, sprintKey, crouchKey, jumpKey };
-	for (int i = forwardButton; i <= jumpButton; i++) {
+	for (int i = forwardButton; i <= jumpButton; i++) { // iterate over every button
 		//check for key
 		if (allButtons[i].clickUp && !checkKey) {
 			checkKey = true;
@@ -164,7 +164,7 @@ void startScreen::changeInputs(){
 			textChange = keyTextsInts[i - forwardButton];
 		}
 	}
-	if (checkKey) {
+	if (checkKey) { // check for key inputs if a button has been pressed previously
 		glfwSetKeyCallback(window, keyInput);
 		glfwSetMouseButtonCallback(window, mouseInput);
 		if (lastKey != -1) {
@@ -198,36 +198,26 @@ void startScreen::changeInputs(){
 
 void startScreen::begin(){
 	//title
-	titleImage = createButton();
+	titleImage = createButton(vec3(0.0f, 2.5f, 0.0f), vec2(1.5f, 0.712f));
 	allButtons[titleImage].texture = loadTexture("assets/images/blitzTitle.png");
-	allButtons[titleImage].scale = vec2(1.5f, 0.712f);
-	allButtons[titleImage].position = vec3(0.0f, 2.5f, 0.0f);
 	allButtons[titleImage].interactive = false;
 	//save one text
-	saveOneImage = createButton();
+	saveOneImage = createButton(vec3(-3.0f, 0.95f, 0.0f), vec2(1.1f, 0.295f));
 	allButtons[saveOneImage].texture = loadTexture("assets/images/saveOneTitle.png");
-	allButtons[saveOneImage].scale = vec2(1.1f, 0.295f);
-	allButtons[saveOneImage].position = vec3(-3.0f, 0.95f, 0.0f);
 	allButtons[saveOneImage].interactive = false;
 	//save two text
-	saveTwoImage = createButton();
+	saveTwoImage = createButton(vec3(-3.0f, -2.5f, 0.0f), vec2(1.1f, 0.295f));
 	allButtons[saveTwoImage].texture = loadTexture("assets/images/saveTwoTitle.png");
-	allButtons[saveTwoImage].scale = vec2(1.1f, 0.295f);
-	allButtons[saveTwoImage].position = vec3(-3.0f, -2.5f, 0.0f);
 	allButtons[saveTwoImage].interactive = false;
 	//play buttons
 	playOneButton = createButton();
 	playTwoButton = createButton();
 	//delete buttons
 	texture trashCan = loadTexture("assets/images/trashCan.png");
-	deleteOneButton = createButton();
+	deleteOneButton = createButton(vec3(2.0f, 0.95f, 0.0f), vec2(0.165f, 0.27f));
 	allButtons[deleteOneButton].texture = trashCan;
-	allButtons[deleteOneButton].scale = vec2(0.165f, 0.27f);
-	allButtons[deleteOneButton].position = vec3(2.0f, 0.95f, 0.0f);
-	deleteTwoButton = createButton();
+	deleteTwoButton = createButton(vec3(2.0f, -2.95f, 0.0f), vec2(0.165f, 0.278f));
 	allButtons[deleteTwoButton].texture = trashCan;
-	allButtons[deleteTwoButton].scale = vec2(0.165f, 0.278f);
-	allButtons[deleteTwoButton].position = vec3(2.0f, -2.95f, 0.0f);
 	//INPUT MANAGER
 	texture inputButtonBackground = loadTexture("assets/images/inputButtonBackground.png");
 	vec2 inputButtonScale = vec2(0.4f, 0.175f);
@@ -276,7 +266,7 @@ void startScreen::begin(){
 	for (int i = forwardText; i <= jumpText; i++) {
 		allTexts[i].fontPath = "assets/fonts/zekton.ttf";
 		allTexts[i].displayedText = displayedTexts[i - forwardText];
-		allTexts[i].fontSize = display_x / 50;
+		allTexts[i].fontSize = displayX / 50;
 	}
 	//key input texts (ontop of buttons)
 	forwardKey = createText();
@@ -293,67 +283,57 @@ void startScreen::begin(){
 	for (int i = forwardKey; i <= jumpKey; i++) {
 		allTexts[i].fontPath = "assets/fonts/zekton.ttf";
 		allTexts[i].colour = vec3(0.0f, 0.0f, 1.0f);
-		allTexts[i].fontSize = display_x / 55;
+		allTexts[i].fontSize = displayX / 55;
 		allTexts[i].displayedText = asciiToString(stoi(inputLines[i - forwardKey]));
 	}
 }
 
-void startScreen::mainloop(){
+void startScreen::mainloop(){ //change textures & check for inputs
 	if (!active) {
 		return;
 	}
 	vector<string> saveLinesOne = readLines("assets/saves/saveOne.save");
+	vector<string> saveLinesTwo = readLines("assets/saves/saveTwo.save");
 	vec2 createScale = vec2(0.8375f, 0.215f);
 	vec2 playScale = vec2(0.63f, 0.27f);
 	//check if savefiles are used - if true, change texture to "play" and enable delete button
-	if (saveLinesOne[0] == "NOT USED" && playOneTexture != 0) {
-		allButtons[playOneButton].texture =
-			loadTexture("assets/images/createTitle.png");
-		playOneTexture = 0;
-		allButtons[playOneButton].scale = createScale;
-		allButtons[playOneButton].position = vec3(-1.0f, 1.3f, 0.0f);
-		allButtons[deleteOneButton].active = false;
+	vector<vector<string>> bothVectors = {saveLinesOne, saveLinesTwo};
+	vector<int> bothTextures = {playOneTexture, playTwoTexture};
+	for(int v = 0; v < 2; v++){
+		vector<string> currentVector = bothVectors[v];
+		if (currentVector[0] == "NOT USED" && bothTextures[v] != 0) {
+			allButtons[playOneButton].texture =
+				loadTexture("assets/images/createTitle.png");
+			bothTextures[v] = 0;
+			allButtons[playOneButton].scale = createScale;
+			allButtons[playOneButton].position = vec3(-1.0f, 1.3f, 0.0f);
+			allButtons[deleteOneButton].active = false;
+		}
+		if (currentVector[0] == "IN USE" && bothTextures[v] != 1) {
+			allButtons[playOneButton].texture =
+				loadTexture("assets/images/playTitle.png");
+			bothTextures = 1;
+			allButtons[playOneButton].scale = playScale;
+			allButtons[playOneButton].position = vec3(-1.4f, 1.0f, 0.0f);
+			allButtons[deleteOneButton].active = true;
+		}
 	}
-	if (saveLinesOne[0] == "IN USE" && playOneTexture != 1) {
-		allButtons[playOneButton].texture =
-			loadTexture("assets/images/playTitle.png");
-		playOneTexture = 1;
-		allButtons[playOneButton].scale = playScale;
-		allButtons[playOneButton].position = vec3(-1.4f, 1.0f, 0.0f);
-		allButtons[deleteOneButton].active = true;
-	}
-	vector<string> saveLinesTwo = readLines("assets/saves/saveTwo.save");
-	if (saveLinesTwo[0] == "NOT USED" && playTwoTexture != 0) {
-		allButtons[playTwoButton].texture =
-			loadTexture("assets/images/createTitle.png");
-		playTwoTexture = 0;
-		allButtons[playTwoButton].scale = createScale;
-		allButtons[playTwoButton].position = vec3(-1.0f, -3.3f, 0.0f);
-		allButtons[deleteTwoButton].active = false;
-	}
-	if (saveLinesTwo[0] == "IN USE" && playTwoTexture != 1) {
-		allButtons[playTwoButton].texture =
-			loadTexture("assets/images/playTitle.png");
-		playTwoTexture = 1;
-		allButtons[playTwoButton].scale = playScale;
-		allButtons[playTwoButton].position = vec3(-1.4f, -3.0f, 0.0f);
-		allButtons[deleteTwoButton].active = true;
-	}
+	playOneTexture = bothTextures[0]; playTwoTexture = bothTextures[1];
 	//INPUT MANAGER
 	vector<int> buttonInts = { forwardButton, leftButton, backButton, rightButton,
 		aimButton, shootButton, interactButton, sprintButton, crouchButton, jumpButton };
 	for (int i = forwardText; i <= jumpText; i++) {
 		int index = buttonInts[i - forwardText];
 		float positionX = allButtons[index].minX * 1.005f;
-		float positionY = ((float)display_y - allButtons[index].minY) + (display_y*0.01f);
+		float positionY = ((float)displayY - allButtons[index].minY) + (displayY*0.01f);
 		allTexts[i].colour = vec3(0.18f, 0.82f, 0.86f);
-		allTexts[i].fontSize = display_x / 45;
+		allTexts[i].fontSize = displayX / 45;
 		allTexts[i].position = vec2(positionX, positionY);
 	}
 	for (int i = forwardKey; i <= jumpKey; i++) {
 		int index = buttonInts[i - forwardKey];
 		float positionX = allButtons[index].minX * 1.005f;
-		float positionY = ((float)display_y - allButtons[index].maxY) + (display_y*0.015f);
+		float positionY = ((float)displayY - allButtons[index].maxY) + (displayY*0.015f);
 		allTexts[i].position = vec2(positionX, positionY);
 	}
 	changeInputs();

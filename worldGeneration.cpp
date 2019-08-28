@@ -21,7 +21,7 @@ int randomInt(int min, int max) {
 	return min + (random % max);
 }
 
-vector<vec2> circleCoords(vec2 position, float radius, int pointCount, float scale) {
+vector<vec2> circleCoords(vec2 position, float radius, int pointCount, float scale) { //used for mountains, craters & camera rot
 	// math values
 	float pi = (float)atan(1) * 4;
 	float k = 2.0f * pi / pointCount;
@@ -47,14 +47,14 @@ vector<vec2> circleCoords(vec2 position, float radius, int pointCount, float sca
 
 int lineCount = 0;
 
-int newLinePos(vector<string>& usedVector) {
+int newLinePos(vector<string>& usedVector) { //resize vector & return next pos
 	int currentSize = usedVector.size();
 	lineCount++;
 	usedVector.resize(lineCount);
 	return lineCount - 1;
 }
 
-void createSave(const char * filePath, int saveType) {
+void createSave(const char * filePath, int saveType) { // write new world to save
 	vector<string> saveLines = { "IN USE" };
 	lineCount = 1; //including IN USE line
 	if (saveType == DEFAULT_SAVE) {
@@ -111,7 +111,7 @@ void createSave(const char * filePath, int saveType) {
 	writeLines(filePath, saveLines);
 }
 
-void worldGeneration::startTriangle() {
+void worldGeneration::startTriangle() { // reserve data in memory for triangle
 	glGenVertexArrays(1, &terrainVAO);
 	glGenBuffers(1, &terrainVBO);
 	glBindVertexArray(terrainVAO);
@@ -128,8 +128,15 @@ void worldGeneration::startShader() {
 	terrainShader = createProgram({ vertShader, fragShader });
 }
 
+vec3 colourDifference(float multiplier){
+	float colourDifferenceX = ((float)randomInt(-127, 127) / 255.0f) * multiplier;
+	float colourDifferenceY = ((float)randomInt(-127, 127) / 255.0f) * multiplier;
+	float colourDifferenceZ = ((float)randomInt(-127, 127) / 255.0f) * multiplier;
+	return vec3(colourDifferenceX, colourDifferenceY, colourDifferenceZ);
+}
+
 vector<triangle> flatTerrainTriangles;
-void worldGeneration::beginFlatTerrain() {
+void worldGeneration::beginFlatTerrain() { // simple x+y for loop
 	vec3 colour;
 	vec2 areaScale;
 	if (currentArea == PLANET_WORLD) {
@@ -152,10 +159,7 @@ void worldGeneration::beginFlatTerrain() {
 			// assign triangles to vector
 			for (int t = 0; t < 2; t++) {
 				// triangle colour
-				float colourDifferenceX = ((float)randomInt(-127, 127) / 255.0f) * 0.2f;
-				float colourDifferenceY = ((float)randomInt(-127, 127) / 255.0f) * 0.2f;
-				float colourDifferenceZ = ((float)randomInt(-127, 127) / 255.0f) * 0.2f;
-				vec3 colourDifference = vec3(colourDifferenceX, colourDifferenceY, colourDifferenceZ);
+				vec3 colourDifference = colourDifference(0.2f);
 				vec3 triangleColour = colour + colourDifference;
 
 				triangle newTriangle;
@@ -172,7 +176,7 @@ void worldGeneration::beginFlatTerrain() {
 }
 
 vector<triangle> mountainTriangles;
-void worldGeneration::beginMountains() {
+void worldGeneration::beginMountains() { // use circles 
 	vec3 colour;
 	string mountainName;
 	int lineCount = allWorldLines.size();
@@ -244,18 +248,8 @@ void worldGeneration::beginMountains() {
 					centralYPos = -centralYPos;
 					innerYPos = -innerYPos;
 				}
-				if (centralYPos > 1.0f) {
-					centralYPos = 1.0f;
-				}
-				if (innerYPos > 1.0f) {
-					innerYPos = 1.0f;
-				}
-				if (centralYPos < -1.0f) {
-					centralYPos = -1.0f;
-				}
-				if (innerYPos < -1.0f) {
-					innerYPos = -1.0f;
-				}
+				centralYPos = std:clamp(centralYPos, -1.0f, 1.0f);
+				innerYPos = std::clamp(innerYPos, -1.0f, 1.0f);
 				if (radius == radiuses[0]) {
 					centralYPos = 0.0f;
 				}
@@ -277,10 +271,7 @@ void worldGeneration::beginMountains() {
 				// create triangles
 				vec3 whichPoint[2] = { pointThree, pointFour };
 				for (int t = 0; t < 2; t++) {
-					float colourDifferenceX = ((float)randomInt(-127, 127) / 255.0f) * 0.2f;
-					float colourDifferenceY = ((float)randomInt(-127, 127) / 255.0f) * 0.2f;
-					float colourDifferenceZ = ((float)randomInt(-127, 127) / 255.0f) * 0.2f;
-					vec3 colourDifference = vec3(colourDifferenceX, colourDifferenceY, colourDifferenceZ);
+					vec3 colourDifference = colourDifference(0.2f);
 					vec3 triangleColour = colour + colourDifference;
 					triangle newTriangle;
 					newTriangle.allPoints = { pointOne, pointTwo, whichPoint[t] };
@@ -289,14 +280,13 @@ void worldGeneration::beginMountains() {
 					mountainTriangles.resize(triangleCount + 1);
 					mountainTriangles[triangleCount] = newTriangle;
 				}
-				float colourDifferenceX = ((float)randomInt(-127, 127) / 255.0f) * 0.2f;
-				float colourDifferenceY = ((float)randomInt(-127, 127) / 255.0f) * 0.2f;
-				float colourDifferenceZ = ((float)randomInt(-127, 127) / 255.0f) * 0.2f;
-				vec3 colourDifference = vec3(colourDifferenceX, colourDifferenceY, colourDifferenceZ);
+				vec3 colourDifference = colourDifference(0.2f);
 				vec3 triangleColour = colour + colourDifference;
+
 				triangle newTriangle;
 				newTriangle.allPoints = { pointOne, pointThree, pointFour };
 				newTriangle.colour = triangleColour;
+				
 				int triangleCount = mountainTriangles.size();
 				mountainTriangles.resize(triangleCount + 1);
 				mountainTriangles[triangleCount] = newTriangle;
@@ -309,15 +299,14 @@ void worldGeneration::beginMountains() {
 }
 
 int total = 0;
-void worldGeneration::beginTerrrain(){
+void worldGeneration::beginTerrrain(){ // update buffer data to hold new triangles
 	vector<float> allVertices;
 	// get triangles into float vector
 	vector<vector<triangle>> bothVectors = { flatTerrainTriangles, mountainTriangles };
-	for (int o = 0; o < 2; o++) {
-		vector<triangle> currentVector = bothVectors[o];
+	for (int vector = 0; vector < 2; vector++) {
+		vector<triangle> currentVector = bothVectors[vector];
 		int triangleCount = currentVector.size();
 		for (int f = 0; f < triangleCount; f++) {
-
 			vector<vec3> points = currentVector[f].allPoints;
 			for (vec3 point : points) {
 				for (int v = 0; v < 3; v++) {

@@ -8,7 +8,7 @@ worldGeneration earthWorldGeneration;
 startScreen mainStart;
 
 void frontendBegin(){
-	int emptyButton = createButton(); //first button does not show if this is not used
+	int emptyButton = createButton(); //first button does not show if this is not used, texts hold this texture slot
 	mainStart.begin();
 }
 

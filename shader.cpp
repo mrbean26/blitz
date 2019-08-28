@@ -56,13 +56,13 @@ const char * terrainVertSource = {
 	"#version 330 core\n"
 	"layout(location = 0) in vec3 vertex;\n"
 	"layout(location = 1) in vec3 inColour;\n"
-	"uniform mat4 model;\n"
-	"uniform mat4 view;\n"
-	"uniform mat4 projection;\n"
+	"uniform mat4 model;\n" // object rotation
+	"uniform mat4 view;\n" // camera 
+	"uniform mat4 projection;\n" // view distance 
 	"out vec3 aColour;\n"
 	"void main(){\n"
 	"    aColour = inColour;\n"
-	"    gl_Position =  projection * view * model * vec4(vertex, 1.0f);\n"
+	"    gl_Position =  projection * view * model * vec4(vertex, 1.0f);\n" 
 	"}\0"
 };
 const char * terrainFragSource = {
@@ -77,20 +77,20 @@ const char * terrainFragSource = {
 
 int createShader(const char * shaderSource, GLenum shaderType){
 	int newShader = glCreateShader(shaderType);
-	glShaderSource(newShader, 1, &shaderSource, NULL);
+	glShaderSource(newShader, 1, &shaderSource, NULL); // link const char to shader
 	glCompileShader(newShader);
 	int compileResult;
 	char infoLog[512];
 	glGetShaderiv(newShader, GL_COMPILE_STATUS, &compileResult);
 	if (!compileResult) {
-		glGetShaderInfoLog(newShader, 512, NULL, infoLog);
+		glGetShaderInfoLog(newShader, 512, NULL, infoLog); // output errors
 		cout << "Shader compilation error: " << infoLog << endl;
 		return 0;
 	}
 	return newShader;
 }
 
-int createProgram(vector<int> shaders){
+int createProgram(vector<int> shaders){ // link shaders
 	int newProgram = glCreateProgram();
 	int shaderCount = shaders.size();
 	for (int i = 0; i < shaderCount; i++) {

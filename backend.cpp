@@ -2,11 +2,11 @@
 
 GLFWwindow * window;
 
-void backendMainloop() {
+void backendMainloop() { // run every frame
 	interfaceMainloop();
 	displayMainloop();
 }
 
-void backendBegin() {
+void backendBegin() { // bind bufferdata to VAO & VBO
 	interfaceBegin();
 }

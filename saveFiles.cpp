@@ -3,7 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
 
-vector<string> readLines(const char * fileName){
+vector<string> readLines(const char * fileName){ // read all lines from an ifstream & place into vector
 	vector<string> allLines;
 	ifstream newFile(fileName);
 	string currentLine;
@@ -16,7 +16,7 @@ vector<string> readLines(const char * fileName){
 	return allLines;
 }
 
-void writeLines(const char * fileName, vector<string> fileLines){
+void writeLines(const char * fileName, vector<string> fileLines){ 
 	ofstream currentFile;
 	currentFile.open(fileName);
 	if (!currentFile) {
@@ -24,20 +24,20 @@ void writeLines(const char * fileName, vector<string> fileLines){
 		return;
 	}
 	int vectorSize = fileLines.size();
-	for (int i = 0; i < vectorSize; i++) {
+	for (int i = 0; i < vectorSize; i++) { // iterate over every line
 		currentFile << fileLines[i] << endl;
 	}
 	currentFile.close();
 }
 
-bool contains(string mainString, string substring) {
+bool contains(string mainString, string substring) { // check if string holds a substring
 	if (mainString.find(substring) != string::npos) {
 		return true;
 	}
 	return false;
 }
 
-string removeString(string currentString, string toRemove){
+string removeString(string currentString, string toRemove){ // return a string without 'toRemove'
 	string toReturn = currentString;
 	string::size_type pos = currentString.find(toRemove);
 	if (pos != string::npos) {
@@ -46,22 +46,22 @@ string removeString(string currentString, string toRemove){
 	return toReturn;
 }
 
-string removePosition(string currentString, int start, int size){
+string removePosition(string currentString, int start, int size){ // remove characters in a string for a count
 	string toReturn = currentString.erase(start, size);
 	return toReturn;
 }
 
-vec2 getVec2File(const char * fileName, string vec2Name, int pos) {
+vec2 getVec2File(const char * fileName, string vec2Name, int pos) { // 'pos' optional
 	vec2Name += " "; //clear ready for float values
 
 	vector<string> fileLines = readLines(fileName);
 	int lineCount = fileLines.size();
 	float floatOne = -1.0f, floatTwo = -1.0f;
 	if (pos == -1) {
-		for (int i = 0; i < lineCount; i++) {
+		for (int i = 0; i < lineCount; i++) { // iterate over every line & check for vector name
 			string currentLine = fileLines[i];
 			if (currentLine.find(vec2Name) != string::npos) {
-				string valueOnly = removeString(currentLine, vec2Name);
+				string valueOnly = removeString(currentLine, vec2Name); // trim line of all except data
 				int valueLength = valueOnly.length();
 				int midValuePosition;
 				// get values from string
@@ -84,7 +84,7 @@ vec2 getVec2File(const char * fileName, string vec2Name, int pos) {
 			}
 		}
 	}
-	if (pos > -1) {
+	if (pos > -1) { // check 'pos' line for vector name
 		if (contains(fileLines[pos], vec2Name)) {
 			string valueOnly = removeString(fileLines[pos], vec2Name);
 			int valueLength = valueOnly.length();

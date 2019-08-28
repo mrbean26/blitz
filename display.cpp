@@ -11,15 +11,15 @@
 using namespace std;
 using namespace glm;
 
-double aspect_x, aspect_y;
+double aspectX, aspectY;
 
-int display_x, display_y;
+int displayX, displayY;
 
 double frames, frameTime;
 
 vector<vec2> faceCirclePoints;
 vector<vec2> sideCirclePoints;
-int aspectDivider(int x, int y){
+int aspectDivider(int x, int y){ // get the highest common factor between to integers -  divide the display x & y to get an aspect ratio
 	int max = x;
 	if (y > x) {
 		max = y;
@@ -29,8 +29,8 @@ int aspectDivider(int x, int y){
 		float height = y / (float)i;
 		if (width == ceil(width)) {
 			if (height == ceil(height)) {
-				aspect_x = x / i;
-				aspect_y = y / i;
+				aspectX = x / i;
+				aspectY = y / i;
 				return i;
 			}
 		}
@@ -38,8 +38,8 @@ int aspectDivider(int x, int y){
 	return 1;
 }
 
-bool openglBegin(GLFWwindow *& used_window, bool fullscreen, 
-	int width, int height){
+bool openglBegin(GLFWwindow *& usedWindow, bool fullscreen, 
+	int width, int height){ // create window & setup gl variables
 	if (!glfwInit()) {
 		return false;
 	}
@@ -51,35 +51,35 @@ bool openglBegin(GLFWwindow *& used_window, bool fullscreen,
 	glewExperimental = GL_TRUE;
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 	//used variables
-	int used_x;
-	int used_y;
+	int usedX;
+	int usedY;
 	if (fullscreen) {
-		used_window = glfwCreateWindow(monitor_x, monitor_y, "Blitz",
+		usedWindow = glfwCreateWindow(monitor_x, monitor_y, "Blitz",
 			primary_monitor, NULL);
-		used_x = monitor_x;
-		used_y = monitor_y;
+		usedX = monitor_x;
+		usedY = monitor_y;
 	}
 	if (!fullscreen) {
-		used_window = glfwCreateWindow(width, height,
+		usedWindow = glfwCreateWindow(width, height,
 			"Blitz", NULL, NULL);
-		used_x = width;//
-		used_y = height;
+		usedX = width;//
+		usedY = height;
 	}
-	glfwMakeContextCurrent(used_window);
+	glfwMakeContextCurrent(usedWindow);
 	if (glewInit() != GLEW_OK) {
 		return false;
 	}
 	// assign variables
-	display_x = used_x;
-	display_y = used_y;
+	displayX = usedX;
+	displayY = usedY;
 	//get aspect ratio
-	aspect_x = used_x / aspectDivider(used_x, used_y); //gives 16:10
-	aspect_y = used_y / aspectDivider(used_x, used_y);
+	aspectX = usedX / aspectDivider(usedX, usedY); //gives 16:10
+	aspectY = usedY / aspectDivider(usedX, usedY);
 	//give 10:x
-	double divider = aspect_x / 10.0;
-	aspect_x = aspect_x / divider;
-	aspect_y = aspect_y / divider;
-	//glOrtho(0.0, aspect_x, 0.0, aspect_y, -1.0, 1.0);
+	double divider = aspectX / 10.0;
+	aspectX = aspectX / divider;
+	aspectY = aspectY / divider;
+	//glOrtho(0.0, aspectX, 0.0, aspectY, -1.0, 1.0);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
@@ -90,21 +90,19 @@ bool openglBegin(GLFWwindow *& used_window, bool fullscreen,
 	return true;
 }
 
-void resizeWindow(GLFWwindow *& used_window, 
+void resizeWindow(GLFWwindow *& usedWindow, 
 	int new_width, int new_height){
-	glfwSetWindowSize(used_window, new_width, new_height);
+	glfwSetWindowSize(usedWindow, new_width, new_height);
 	//aspect
-	int window_x, window_y;
-	glfwGetWindowSize(used_window, &window_x, &window_y);
-	int aspect_x = window_x / aspectDivider(window_x,
-		window_y);
-	int aspect_y = window_y / aspectDivider(window_x,
-		window_y);
+	aspectX = new_width / aspectDivider(new_width,
+		new_height);
+	aspectY = new_height / aspectDivider(new_width,
+		new_height);
 }
 
 double deltaTime, lastTime;
 
-double getFrames(){
+double getFrames(){ // do not use this to return fps - use frames variables
 	double currentTime = glfwGetTime();
 	deltaTime = currentTime - lastTime;
 	lastTime = currentTime;
@@ -115,20 +113,21 @@ void displayMainloop(){
 	frames = getFrames();
 }
 
+// view distances
 float nearPlane = 0.1f;
 float farPlane = 100.0f;
 
-vec3 cameraPosition = vec3(25.0f, 60.0f, -25.0f);
+vec3 cameraPosition = vec3(25.0f, 60.0f, -25.0f); // in center of world looking downwards
 vec3 cameraRotation = vec3(0.0f, 0.0f, 0.0f);
 
-mat4 projectionMatrix() {
+mat4 projectionMatrix() { // setting up view distances
 	mat4 newMatrix = mat4(1.0f);
-	newMatrix = perspective(radians(45.0f), (float) display_x / (float) display_y,
+	newMatrix = perspective(radians(45.0f), (float) displayX / (float) displayY,
 		nearPlane, farPlane);
 	return newMatrix;
 }
 
-mat4 modelMatrix() {
+mat4 modelMatrix() { // this can be used for rotating shapes & objects
 	mat4 newMatrix = mat4(1.0f);
 	return newMatrix;
 }
@@ -148,7 +147,10 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	zRot.x = faceCirclePoints[std::round(cameraRotation.z)].x;
 	zRot.z = faceCirclePoints[std::round(cameraRotation.z)].y;
 	//combine
-	vec3 cameraFront = xRot;
+	vec3 cameraFront = vec3(0.0f, 0.0f, 0.0f); // involved in the rotation of the camera
+	// cameraFront = (xRot+yRot+zRot) / vec3(3.0f, 3.0f, 3.0f); // this could be used
+	// cameraFront = vec3((yRot.x+zRot.x)/2.0f, (xRot.y+yRot.y)/2.0f, (xRot.z+zRot.z)/2.0f); // this may also work
+
 	// currently not possible to rotate more than one axis
 	newMatrix = lookAt(cameraPosition, cameraPosition + cameraFront, vec3(0.0f, 1.0f, 0.0f));
 	return newMatrix;

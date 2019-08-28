@@ -12,7 +12,7 @@ int main(){
 		
 		backendMainloop();
 		frontendMainloop();
-		cameraRotation.x += deltaTime * 5;
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
