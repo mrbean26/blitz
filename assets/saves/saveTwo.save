@@ -1,0 +1,65 @@
+IN USE
+saveType 1
+inventory -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+inventoryQuantity 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+currentWeapons 0 0 0 0
+currentTime 0.0
+playerPos 72.500000 0 -77.500000
+playerHealth 100
+currentPlanet earth
+currentPosition 0.0f, 0.0f, 0.0f
+planetEarthSize 145 155
+earthMountainPosition 92.000000 84.599998
+earthMountainScale 2.200000 3.700000
+earthMountainGradient 0.800000
+earthMountainPosition 23.300001 67.900002
+earthMountainScale 2.900000 2.100000
+earthMountainGradient 0.400000
+earthMountainPosition 56.799999 82.099998
+earthMountainScale 3.200000 3.000000
+earthMountainGradient 0.300000
+earthMountainPosition 75.900002 29.100000
+earthMountainScale 3.600000 2.200000
+earthMountainGradient 0.400000
+earthMountainPosition 43.200001 25.100000
+earthMountainScale 3.300000 5.600000
+earthMountainGradient 0.400000
+earthMountainPosition 27.600000 122.599998
+earthMountainScale 9.300000 5.900000
+earthMountainGradient 0.300000
+earthMountainPosition 121.000000 150.199997
+earthMountainScale 3.000000 5.000000
+earthMountainGradient 0.400000
+earthMountainPosition 122.300003 9.800000
+earthMountainScale 4.100000 2.500000
+earthMountainGradient 0.300000
+earthMountainPosition 106.200005 62.700001
+earthMountainScale 2.400000 2.300000
+earthMountainGradient 0.800000
+earthMountainPosition 124.300003 36.900002
+earthMountainScale 5.700000 4.800000
+earthMountainGradient 0.300000
+earthMountainPosition 112.700005 88.599998
+earthMountainScale 5.800000 4.000000
+earthMountainGradient 0.600000
+earthMountainPosition 17.300001 19.800001
+earthMountainScale 5.000000 3.400000
+earthMountainGradient 0.500000
+earthMountainPosition 88.900002 51.500000
+earthMountainScale 4.600000 3.500000
+earthMountainGradient 0.400000
+earthMountainPosition 142.900009 133.400009
+earthMountainScale 2.000000 3.200000
+earthMountainGradient 0.400000
+earthMountainPosition 88.400002 124.300003
+earthMountainScale 5.200000 4.500000
+earthMountainGradient 0.600000
+earthMountainPosition 30.100000 45.299999
+earthMountainScale 3.000000 5.100000
+earthMountainGradient 0.400000
+earthMountainPosition 44.100002 3.200000
+earthMountainScale 4.200000 2.900000
+earthMountainGradient -0.500000
+earthBuildingType 2
+earthBuildingPosition 144.000000 -77.500000
+earthBuildingRotation 0.0
