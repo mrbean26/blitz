@@ -34,7 +34,6 @@ vector<string> inputLines;
 int diedText, respawnButton;
 int pauseKey;
 void player::begin(){
-    createButton(); // new empty button
 	playerTexture = loadTexture("assets/models/player/skin.png");
 	startCharacterVertices();
 	playerView = true;
@@ -147,6 +146,8 @@ void exitToMenus() {
 	allButtons = previousAllButtons;
 	allTexts = previousAllTexts;
 	debugText = debugTextPlaceholder;
+    alertText = alertTextPlaceholder;
+    alertBackground = alertBackgroundPlaceholder;
 	loading = false;
 	mainPlayer.canMove = true;
 	paused = false;

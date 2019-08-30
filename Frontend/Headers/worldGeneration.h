@@ -17,7 +17,12 @@ using namespace glm;
 #define LARGE_WORLD 1
 #define PLANET_WORLD 0
 
-int randomInt(int min, int max); // quick maths
+#define RADIUS_DIFFERENCE 0.5f
+#define POINT_COUNT 32
+#define MOUNTAIN_SCALE_DEFAULT 0.025f
+#define TRIANGLE_SIZE_FLAT 1.0f
+
+int randomInt(int min, int max);
 
 bool insideCircle(vec2 circlePos, float radius, vec2 pointPos, bool terrain = false);
 
@@ -25,7 +30,7 @@ vec3 colourDifference(float multiplier);
 
 vector<vec2> circleCoords(vec2 position, float radius, int pointCount, float scale);
 
-void createSave(const char * filePath, int saveType); // a lot of code
+void createSave(const char * filePath, int saveType); 
 
 void beginRandom();
 void endRandom();

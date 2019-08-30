@@ -14,6 +14,10 @@ int main(){
 		backendMainloop();
 		frontendMainloop();
 		
+        if(checkKey(GLFW_KEY_P)){
+            alert("FUCKING ALERT CUNT LOOK AT THE FUCKING COMPUTER");
+        }
+        
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}

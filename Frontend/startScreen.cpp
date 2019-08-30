@@ -211,13 +211,20 @@ void loadWorld(const char * linesPath) {
 	allButtons[StartScreen.playTwoButton].clickUp = false;
 	previousAllButtons = allButtons;
 	previousAllTexts = allTexts;
+    button alertBackgroundHolder = allButtons[alertBackground];
 	allButtons.clear();
+    createButton(); // new empty button
+    allButtons[newVectorPos(&allButtons)] = alertBackgroundHolder;
+    alertBackground = 0;
+    
 	int textCount = allTexts.size();
 	allTexts[StartScreen.loadingText].active = true;
 	for (int i = 0; i < textCount; i++) {
 		if (i != StartScreen.loadingText) {
 			if(i != debugText){
-				allTexts[i].active = false;
+                if(i != alertText){
+                    allTexts[i].active = false;
+                }
 			}
 		}
 	}
@@ -230,9 +237,11 @@ void startWorld(const char * linesPath) {
 	WorldGeneration.active = true;
 	WorldGeneration.worldLinesPath = linesPath;
 	text debugTextHolder = allTexts[debugText];
+    text alertTextHolder = allTexts[alertText];
 	allTexts.clear();
-	allTexts = {debugTextHolder};
+	allTexts = {debugTextHolder, alertTextHolder};
 	debugText = 0;
+    alertText = 1;
 	mainPlayer.active = true;
 }
 
