@@ -173,9 +173,14 @@ void createSave(const char* filePath, int saveType) {
                 }
                 continue;
             }
+            // check if water in crater
+            bool waterInCrater = false;
+            if(mountainGradient < 0){
+                waterInCrater = randomInt(0, 1);
+            }
             //write to file
             saveLines[newVectorPos(&saveLines)] = "earthMountainPosition " +
-            to_string(mountainPositionX) + " " + to_string(mountainPositionY);
+            to_string(mountainPositionX) + " " + to_string(mountainPositionY) + " " + to_string(waterInCrater);
             saveLines[newVectorPos(&saveLines)] = "earthMountainScale " +
             to_string(mountainScaleX) + " " + to_string(mountainScaleZ);
             saveLines[newVectorPos(&saveLines)] = "earthMountainGradient " +
@@ -351,7 +356,7 @@ void worldGeneration::startShader() {
     terrainShader = createProgram({ vertShader, fragShader });
 }
 
-vector<triangle> flatTerrainTriangles, mountainTriangles;
+vector<triangle> flatTerrainTriangles, mountainTriangles, waterTriangles;
 vector<float> flatXPoints, flatZPoints;
 void worldGeneration::beginFlatTerrain() {
     vec2 areaScale = vec2(0.0f);
@@ -403,18 +408,56 @@ void worldGeneration::beginFlatTerrain() {
                     }
                 }
                 
-                if(insideMountainCount == 3){ continue; }
+                if(insideMountainCount == 3){
+                    waterTriangles[newVectorPos(&waterTriangles)] = newTriangle;
+                    continue;
+                }
                 
                 flatTerrainTriangles[newVectorPos(&flatTerrainTriangles)] = newTriangle;
             }
         }
     }
-    beginTerrrain();
+    beginWater();
 }
 
 vector<vec2> currentAllMountainPositions;
+vector<bool> currentAllMountainWaters;
 vector<vec3> currentAllMountainScales;
 vec2 currentPlanetScale;
+
+void worldGeneration::beginWater(){
+    vector<float> points;
+    
+    int tCount = waterTriangles.size();
+    for(int t = 0; t < tCount; t++){
+        triangle currentTriangle = waterTriangles[t];
+        currentTriangle.colour = vec3(0.0f, 0.0f, currentAreaColour.z) + colourDifference(0.2f);
+        
+        for(int p = 0; p < 3; p++){
+            points[newVectorPos(&points)] = currentTriangle.allPoints[p].x;
+            points[newVectorPos(&points)] = currentTriangle.allPoints[p].y;
+            points[newVectorPos(&points)] = currentTriangle.allPoints[p].z;
+            
+            points[newVectorPos(&points)] = currentTriangle.colour.x;
+            points[newVectorPos(&points)] = currentTriangle.colour.y;
+            points[newVectorPos(&points)] = currentTriangle.colour.z;
+        }
+    }
+    
+    // memory
+    glGenVertexArrays(1, &waterVAO);
+    glGenBuffers(1, &waterVBO);
+    glBindVertexArray(waterVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, waterVBO);
+    glBufferData(GL_ARRAY_BUFFER, points.size() * sizeof(float), points.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0); // position attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1); // colour attribute
+    waterSize = points.size() / 3;
+    
+    beginTerrrain();
+}
 
 vec4 terrainColliders(vec3 original, float yAddition){
     int mCount = currentAllMountainPositions.size();
@@ -463,16 +506,17 @@ void worldGeneration::beginMountains() {
     vector<float> mountainGradients;
     // run through each line
     for (int l = 0; l < lineCount; l++) {
-        vec2 currentLineMountainPos = getVec2File(worldLinesPath, mountainName + "Position", l);
-        if (currentLineMountainPos != vec2(-1.0f, -1.0f)) {
+        vec3 currentLineMountainPos = getVec3File(worldLinesPath, mountainName + "Position", l);
+        if (currentLineMountainPos != vec3(-1.0f, -1.0f, -1.0f)) {
             // mountain found
             vec2 mountainScale = getVec2File(worldLinesPath, mountainName + "Scale", l + 1);
             float mountainGradient = getFloatFile(worldLinesPath, mountainName + "Gradient", l + 2);
             // add to vector
             // add values
-            mountainPositions[newVectorPos(&mountainPositions)] = currentLineMountainPos;
+            mountainPositions[newVectorPos(&mountainPositions)] = vec2(currentLineMountainPos.x, currentLineMountainPos.y);
             mountainScales[newVectorPos(&mountainScales)] = mountainScale;
             mountainGradients[newVectorPos(&mountainGradients)] = mountainGradient;
+            currentAllMountainWaters[newVectorPos(&currentAllMountainWaters)] = (int) currentLineMountainPos.z;
         }
     }
     // assign to global
@@ -661,10 +705,34 @@ void worldGeneration::renderTerrain() {
         setShaderFloat(terrainShader, "lightRadius", lightRadius);
         setShaderInt(terrainShader, "useLight", 1);
         setShaderFloat(terrainShader, "lowestLight", lowestLight);
+        setShaderFloat(terrainShader, "alpha", 1.0f);
+        
+        setShaderVecThree(terrainShader, "multiplyColour", vec3(1.0f));
+        if(cameraThirdPos.y < 0.0f){
+            setShaderVecThree(terrainShader, "multiplyColour", vec3(0.0f, 0.0f, WorldGeneration.currentAreaColour.z * 2.0f));
+        }
         
         glBindVertexArray(terrainVAO);
         glDrawArrays(GL_TRIANGLES, 0, 3 * total);
     }
+}
+
+void worldGeneration::worldGenLast(){
+    glUseProgram(terrainShader);
+    
+    setMat4(terrainShader, "model", modelMatrix());
+    setMat4(terrainShader, "projection", projectionMatrix());
+    setMat4(terrainShader, "view", viewMatrix());
+    
+    setShaderVecThree(terrainShader, "lightPos", lightPos);
+    setShaderFloat(terrainShader, "lightIntensity", lightIntensity);
+    setShaderFloat(terrainShader, "lightRadius", lightRadius);
+    setShaderInt(terrainShader, "useLight", 1);
+    setShaderFloat(terrainShader, "lowestLight", lowestLight);
+    setShaderFloat(terrainShader, "alpha", 0.4f);
+    
+    glBindVertexArray(waterVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 3 * waterSize);
 }
 
 void worldGeneration::daynightCycle(){

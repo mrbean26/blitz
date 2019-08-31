@@ -49,6 +49,7 @@ void frontendMainloop(){
 	monstersMainloop();
 	inventoryMainloop();
 	peopleMainloop();
+    WorldGeneration.worldGenLast();
 	interfaceLastcall();
 	updateKeys(); // this has to be called last every frame / after last call of getkeydown
 }

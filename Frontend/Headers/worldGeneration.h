@@ -45,10 +45,11 @@ public:
 	vector<int> edgeVectorIndexes;
 };
 
-extern vector<triangle> flatTerrainTriangles, mountainTriangles;
+extern vector<triangle> flatTerrainTriangles, mountainTriangles, waterTriangles;
 extern vector<float> flatXPoints, flatZPoints;
 extern vector<vec2> currentAllMountainPositions;
 extern vector<vec3> currentAllMountainScales;
+extern vector<bool> currentAllMountainWaters;
 extern vec2 currentPlanetScale;
 
 vec4 terrainColliders(vec3 original, float yAddition);
@@ -82,7 +83,12 @@ public:
 
 	vector<string> allWorldLines;
 	const char * worldLinesPath;
-
+    
+    GLuint waterVAO, waterVBO;
+    GLuint waterSize;
+    void beginWater();
+    void worldGenLast();
+    
 	void beginFlatTerrain();
 	void beginMountains();
 
