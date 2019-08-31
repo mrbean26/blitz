@@ -71,7 +71,7 @@ void alertBegin(){
     alertText = createText();
     alertTextPlaceholder = alertText;
     allTexts[alertText].fontPath = "assets/fonts/zekton.ttf";
-    allTexts[alertText].fontSize = display_x / 17.5f;
+    allTexts[alertText].fontSize =(int)  (display_x / 25.0f);
     allTexts[alertText].alpha = 0.0f;
     allTexts[alertText].centered = true;
     
@@ -116,6 +116,11 @@ void alertMainloop(){
         allButtons[alertBackground].alpha = currentAlpha;
         allTexts[alertText].alpha = currentAlpha;
     }
+
+	// best fit text
+	if (allTexts[alertText].totalWidth > allButtons[alertBackground].maxX - allButtons[alertBackground].minX) {
+		allTexts[alertText].size = ((allButtons[alertBackground].maxX - allButtons[alertBackground].minX) / allTexts[alertText].totalWidth) - 0.05f;
+	}
 }
 
 void alert(string text, float time){

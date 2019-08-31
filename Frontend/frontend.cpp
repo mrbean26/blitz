@@ -38,6 +38,9 @@ void frontendMainloop(){
 		WorldGeneration.startedBegin = true;
 	}
 	renderSkybox(!WorldGeneration.startedBegin);
+	if (StartScreen.active) {
+		renderTexts();
+	}
 	StartScreen.mainloop();
 	WorldGeneration.mainloop();
 	StructuresMainloop();

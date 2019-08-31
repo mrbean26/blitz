@@ -350,7 +350,6 @@ void interfaceBegin(){
 }
 
 void interfaceMainloop(){
-    renderTexts();
 	updateMousePos();
 	registerClicks();
 }

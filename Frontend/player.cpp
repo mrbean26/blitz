@@ -580,6 +580,11 @@ void player::movement(){
 			armPositionTwo = vec3(0.9f, -0.55f, 0.0f);
 			armRotationTwo = vec3(0.0f);
 			aimingView = false;
+
+			equippingReloading = false;
+			totalGoneUpEquipping = 0.0f;
+			armRotationTwo.z = 0.0f;
+			equippingStep = 0;
 		}
 		armPositionTwo = vec3(0.72f, -0.55f, 0.0f);
 		aiming = false;
@@ -1107,6 +1112,7 @@ void player::equipReloadAnimation(float multiplier) {
 		}
 	}
     if(equippingStep == 2){
+		armRotationTwo.x = playerPitch + 90.0f;
         totalGoneUpEquipping += deltaTime * multiplier;
         armRotationTwo.z = -45.0f;
         armRotationTwo.z += totalGoneUpEquipping;
@@ -1116,6 +1122,7 @@ void player::equipReloadAnimation(float multiplier) {
         }
     }
     if(equippingStep == 3){
+		armRotationTwo.x = playerPitch + 90.0f;
         totalGoneUpEquipping -= deltaTime * multiplier;
         armRotationTwo.z = -45.0f;
         armRotationTwo.z += totalGoneUpEquipping;

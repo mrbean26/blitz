@@ -209,13 +209,16 @@ void loadWorld(const char * linesPath) {
 	loading = true;
 	allButtons[StartScreen.playOneButton].clickUp = false;
 	allButtons[StartScreen.playTwoButton].clickUp = false;
+	allButtons[alertBackground].alpha = 0.0f;
+	allTexts[alertText].alpha = 0.0f;
 	previousAllButtons = allButtons;
 	previousAllTexts = allTexts;
+
     button alertBackgroundHolder = allButtons[alertBackground];
 	allButtons.clear();
     createButton(); // new empty button
     allButtons[newVectorPos(&allButtons)] = alertBackgroundHolder;
-    alertBackground = 0;
+    alertBackground = 1;
     
 	int textCount = allTexts.size();
 	allTexts[StartScreen.loadingText].active = true;

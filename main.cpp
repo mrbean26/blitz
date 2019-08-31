@@ -2,10 +2,10 @@
 #include "frontend.h"
 
 int main(){
-	if (!openglBegin(window, false, 640, 360)) {
+	if (!openglBegin(window, true, 1280, 720)) {
 		return -1;
 	}
-    	beginRandom();
+    beginRandom();
 	frontendBegin();
 	backendBegin();
 	while (!glfwWindowShouldClose(window)){
@@ -15,7 +15,7 @@ int main(){
 		frontendMainloop();
 		
         if(checkKey(GLFW_KEY_P)){
-            alert("FUCKING ALERT CUNT LOOK AT THE FUCKING COMPUTER");
+            alert("No Charge. Alert Preview To Test. Why would do this.");
         }
         
 		glfwSwapBuffers(window);

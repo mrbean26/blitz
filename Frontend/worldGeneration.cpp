@@ -392,7 +392,11 @@ void worldGeneration::beginFlatTerrain() {
                         if(scaleMountain.z > 0.0f){
                             mountainRadius = mountainRadius * 0.9f;
                         }
-                        
+
+						if (scaleMountain.x > 4.0f && scaleMountain.z < 0.0f) {
+							mountainRadius -= (scaleMountain.x - 4.0f) * 0.75f;
+						}
+
                         if(insideCircle(positionMountain, mountainRadius, vec2(v.x, -v.z), true)){
                             insideMountainCount++;
                         }
@@ -474,9 +478,9 @@ void worldGeneration::beginMountains() {
     // assign to global
     currentAllMountainPositions = mountainPositions;
     int mCount = mountainPositions.size();
-    for (int i = 0; i < mCount; i++) {
-        currentAllMountainScales[newVectorPos(&currentAllMountainScales)] = vec3(mountainScales[i], mountainGradients[i]);
-    }
+	for (int i = 0; i < mCount; i++) {
+		currentAllMountainScales[newVectorPos(&currentAllMountainScales)] = vec3(mountainScales[i], mountainGradients[i]);
+	}
     // start triangles
     int index = -1;
     // start triangles
@@ -493,7 +497,7 @@ void worldGeneration::beginMountains() {
         float mainRad = (sca.x * 100.0f) * MOUNTAIN_SCALE_DEFAULT;
         for(int r = 0; r < (int) (mainRad / RADIUS_DIFFERENCE); r++){
             float rad = mainRad - r * RADIUS_DIFFERENCE;
-            radiuses[newVectorPos(&radiuses)] = rad;
+            radiuses[newVectorPos(&radiuses)] = (int) rad;
         }
         
         int rCount = radiuses.size();
@@ -503,7 +507,7 @@ void worldGeneration::beginMountains() {
             bool last = r + 1 == rCount;
             float nextRad = 0.0f;
             if(!last){
-                nextRad = radiuses[r + 1];
+                nextRad = (float) radiuses[r + 1];
             }
             
             for(int p = 0; p < POINT_COUNT; p++){
