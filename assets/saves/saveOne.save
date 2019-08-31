@@ -2,34 +2,34 @@ IN USE
 saveType 0
 inventory -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 inventoryQuantity 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-currentWeapons 0 1 0 0
-currentTime 142.905014
-playerPos 40.135693 2.160000 -22.194212
-playerHealth 84.000000
+currentWeapons 0 0 0 0
+currentTime 0.0
+playerPos 20.500000 0 -29.500000
+playerHealth 100
 currentPlanet earth
 currentPosition 0.0f, 0.0f, 0.0f
-planetEarthSize 52 48
-earthMountainPosition 31.600000 44.900002
-earthMountainScale 4.700000 2.500000
-earthMountainGradient 0.600000
-earthMountainPosition 26.700001 11.800000
-earthMountainScale 4.300000 4.900000
-earthMountainGradient 0.400000
-earthMountainPosition 3.800000 38.100002
-earthMountainScale 3.100000 4.600000
-earthMountainGradient 0.400000
-earthMountainPosition 51.200001 1.600000
-earthMountainScale 3.400000 2.700000
+planetEarthSize 41 59
+earthMountainPosition 32.100002 43.700001
+earthMountainScale 2.900000 4.800000
+earthMountainGradient 0.300000
+earthMountainPosition 37.900002 11.600000
+earthMountainScale 2.200000 2.300000
+earthMountainGradient 0.500000
+earthMountainPosition 5.400000 50.200001
+earthMountainScale 2.000000 5.400000
 earthMountainGradient 0.700000
-earthMountainPosition 0.500000 14.100000
-earthMountainScale 3.800000 5.500000
+earthMountainPosition 4.200000 29.000000
+earthMountainScale 2.300000 6.000000
+earthMountainGradient 0.500000
+earthMountainPosition 0.100000 12.800000
+earthMountainScale 2.800000 5.200000
+earthMountainGradient 0.600000
+earthMountainPosition 17.800001 0.700000
+earthMountainScale 2.400000 5.500000
+earthMountainGradient 0.400000
+earthMountainPosition 16.900000 20.400000
+earthMountainScale 3.800000 2.100000
 earthMountainGradient -0.600000
 earthBuildingType 2
-earthBuildingPosition 51.000000 -24.000000
+earthBuildingPosition 40.000000 -29.500000
 earthBuildingRotation 0.0
-earthMonster 36.844608 4.000000 -32.706047 2
-earthMonster 21.765524 0.242351 -20.747896 1
-earthMonster 23.000000 0.490853 -41.000000 1
-earthMonster 1.000000 2.814415 -37.000000 1
-earthMonster 28.000000 4.300471 -12.000000 1
-earthMonster 49.000000 4.847815 -7.000000 2
