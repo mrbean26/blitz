@@ -127,7 +127,7 @@ void createSave(const char* filePath, int saveType) {
         vector<float> craterScales;
         int earthMountainCount = randomInt(1, 8);
         if(saveType == LARGE_WORLD){
-            earthMountainCount = randomInt(1, 20);
+            earthMountainCount = randomInt(1, 11);
         }
         int earthCraterCount = 10 - earthMountainCount;
         if(saveType == LARGE_WORLD){
@@ -176,7 +176,7 @@ void createSave(const char* filePath, int saveType) {
             // check if water in crater
             bool waterInCrater = false;
             if(mountainGradient < 0){
-                waterInCrater = randomInt(0, 1);
+				waterInCrater = 1;
             }
             //write to file
             saveLines[newVectorPos(&saveLines)] = "earthMountainPosition " +
@@ -364,6 +364,7 @@ void worldGeneration::beginFlatTerrain() {
         currentAreaColour = vec3(0.35f, 0.78f, 0.31f);
         areaScale = getVec2File(worldLinesPath, "planetEarthSize");
     }
+	waterMultiplyColour = vec3(0.0f, 0.0f, currentAreaColour.z * 2.0f);
     for (int x = -50; x < (areaScale.x + 50) / TRIANGLE_SIZE_FLAT; x++) {
         for (int y = -50; y < (areaScale.y + 50) / TRIANGLE_SIZE_FLAT; y++) {
             // draw triangle
@@ -384,6 +385,7 @@ void worldGeneration::beginFlatTerrain() {
                 newTriangle.allPoints = { whichPoint[t], pointTwo, pointThree };
                 newTriangle.colour = triangleColour;
                 
+				int mIndex = -1;
                 int insideMountainCount = 0;
                 for (vec3 v : newTriangle.allPoints) {
                     flatXPoints[newVectorPos(&flatXPoints)] = v.x;
@@ -404,12 +406,15 @@ void worldGeneration::beginFlatTerrain() {
 
                         if(insideCircle(positionMountain, mountainRadius, vec2(v.x, -v.z), true)){
                             insideMountainCount++;
+							mIndex = m;
                         }
                     }
                 }
                 
                 if(insideMountainCount == 3){
-                    waterTriangles[newVectorPos(&waterTriangles)] = newTriangle;
+					if (currentAllMountainWaters[mIndex]) {
+						waterTriangles[newVectorPos(&waterTriangles)] = newTriangle;
+					}
                     continue;
                 }
                 
@@ -455,7 +460,7 @@ void worldGeneration::beginWater(){
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1); // colour attribute
     waterSize = points.size() / 3;
-    
+	
     beginTerrrain();
 }
 
@@ -490,6 +495,7 @@ vec4 terrainColliders(vec3 original, float yAddition){
     }
     return vec4(original.x, yHighest, original.z, (float) inMountainIndex);
 }
+
 #include "monsters.h"
 vector<vec2> negativeMountainCoords, positiveMountainCoords;
 void worldGeneration::beginMountains() {
@@ -706,14 +712,20 @@ void worldGeneration::renderTerrain() {
         setShaderInt(terrainShader, "useLight", 1);
         setShaderFloat(terrainShader, "lowestLight", lowestLight);
         setShaderFloat(terrainShader, "alpha", 1.0f);
+		setShaderInt(terrainShader, "water", 0);
         
         setShaderVecThree(terrainShader, "multiplyColour", vec3(1.0f));
-        if(cameraThirdPos.y < 0.0f){
-            setShaderVecThree(terrainShader, "multiplyColour", vec3(0.0f, 0.0f, WorldGeneration.currentAreaColour.z * 2.0f));
+        if(cameraThirdPos.y <= 0.05f){
+			int index = (int) terrainColliders(cameraThirdPos, 0.0f).w;
+			index = index - 1;
+			if (index > -1) {
+				setShaderInt(terrainShader, "cameraInWater", currentAllMountainWaters[index]);
+			}
+			setShaderVecThree(terrainShader, "waterMultiplyColour", waterMultiplyColour);
         }
         
         glBindVertexArray(terrainVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3 * total);
+		glDrawArrays(GL_TRIANGLES, 0, 3 * total);
     }
 }
 
@@ -730,9 +742,37 @@ void worldGeneration::worldGenLast(){
     setShaderInt(terrainShader, "useLight", 1);
     setShaderFloat(terrainShader, "lowestLight", lowestLight);
     setShaderFloat(terrainShader, "alpha", 0.4f);
+
+	setShaderFloat(terrainShader, "areaScaleX", currentAreaScale.x + 20.0f);
+	setShaderFloat(terrainShader, "waveWidth", waveWidth);
+	setShaderFloat(terrainShader, "waveHeight", waveHeight);
+	setShaderFloat(terrainShader, "wavePercentage", wavePercentage);
+	setShaderInt(terrainShader, "water", 1);
     
     glBindVertexArray(waterVAO);
     glDrawArrays(GL_TRIANGLES, 0, 3 * waterSize);
+}
+
+void worldGeneration::waveBegin(){
+	if (currentArea == PLANET_WORLD) {
+		waveWidth = EARTH_WAVE_WIDTH;
+		waveHeight = EARTH_WAVE_HEIGHT;
+		waveSpeed = EARTH_WAVE_SPEED;
+		waveDelayMax = EARTH_WAVE_DELAY;
+	}
+}
+
+void worldGeneration::waveMainloop(){
+	wavePercentage += deltaTime * waveSpeed;
+	waveDelayCurrent -= deltaTime;
+	if (wavePercentage > 100.0f && !setWaveDelay) {
+		waveDelayCurrent = waveDelayMax;
+		setWaveDelay = true;
+	}
+	if (setWaveDelay && waveDelayCurrent < 0.0f) {
+		wavePercentage = -20.0f;
+		setWaveDelay = false;
+	}
 }
 
 void worldGeneration::daynightCycle(){
@@ -773,6 +813,7 @@ void worldGeneration::begin() {
     currentTime = getFloatFile(worldLinesPath, "currentTime");
     mainPlayer.health = getFloatFile(WorldGeneration.worldLinesPath, "playerHealth");
     mainPlayer.position = getVec3File(WorldGeneration.worldLinesPath, "playerPos");
+	waveBegin();
 }
 
 void worldGeneration::mainloop() {
@@ -780,6 +821,7 @@ void worldGeneration::mainloop() {
     renderTerrain();
     renderAreaLimits();
     daynightCycle();
+	waveMainloop();
 }
 
 void worldGeneration::beginAreaLimits() {

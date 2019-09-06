@@ -336,6 +336,18 @@ void weapon::render(mat4 model){
 	setMat4(playerShader, "projection", projectionMatrix());
 	setMat4(playerShader, "view", viewMatrix());
 
+	bool inWater = false;
+	if (cameraThirdPos.y <= 0.05f) {
+		int index = (int)terrainColliders(cameraThirdPos, 0.0f).w;
+		index = index - 1;
+		if (index > -1) {
+			inWater = currentAllMountainWaters[index];
+		}
+	}
+
+	setShaderInt(playerShader, "cameraInWater", inWater);
+	setShaderVecThree(playerShader, "waterMultiplyColour", WorldGeneration.waterMultiplyColour);
+
 	setShaderVecThree(playerShader, "lightPos", lightPos);
 	setShaderFloat(playerShader, "lightIntensity", lightIntensity);
 	setShaderFloat(playerShader, "lightRadius", lightRadius);

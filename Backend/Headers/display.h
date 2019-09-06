@@ -42,6 +42,7 @@ extern bool playerView, aimingView;
 extern float playerYaw, playerPitch, lowestCameraY;
 extern float distanceFromCharacter;
 extern vec3 cameraThirdPos;
+extern int cameraMountainIndex;
 mat4 viewMatrix();
 
 #endif

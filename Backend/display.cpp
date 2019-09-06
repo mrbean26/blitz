@@ -127,7 +127,7 @@ void displayMainloop(){
 }
 
 float nearPlane = 0.1f;
-float farPlane = 100.0f;
+float farPlane = 500.0f;
 
 vec3 cameraPosition = vec3(0.0f, 4.5f, 10.0f);
 vec3 cameraRotation = vec3(-15.0f, -90.0f, 0.0f);
@@ -170,6 +170,8 @@ float distanceFromCharacter = 0.0f;
 float defaultDistance = DEFAULT_CAMERA_DISTANCE;
 vec3 cameraThirdPos;
 float var = 1.0f;
+int cameraMountainIndex = 0;
+
 mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	mat4 newMatrix = mat4(1.0f);
 	// third person camera
@@ -220,6 +222,8 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 			lookAt.x = pPos.x - 1.2f * sin(radians(pRot.y)) * glm::clamp(sin(radians(armRot.x)), 0.0f, 1.0f);
 			lookAt.y += 0.9f - sin(radians(armRot.x+ 90.0f)) * 1.2f;
 			lookAt.z = pPos.z - 1.2f * cos(radians(pRot.y)) * glm::clamp(sin(radians(armRot.x)), 0.0f, 1.0f);
+
+			cameraThirdPos = position;
 
 			newMatrix = glm::lookAt(position, lookAt, vec3(0.0f, 1.0f, 0.0f));
 		}

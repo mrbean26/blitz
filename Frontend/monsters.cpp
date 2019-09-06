@@ -158,6 +158,18 @@ void monster::render(){
 	setShaderInt(playerShader, "useLight", 1);
 	setShaderFloat(playerShader, "lowestLight", lowestLight);
 
+	bool inWater = false;
+	if (cameraThirdPos.y <= 0.05f) {
+		int index = (int)terrainColliders(cameraThirdPos, 0.0f).w;
+		index = index - 1;
+		if (index > -1) {
+			inWater = currentAllMountainWaters[index];
+		}
+	}
+
+	setShaderInt(playerShader, "cameraInWater", inWater);
+	setShaderVecThree(playerShader, "waterMultiplyColour", WorldGeneration.waterMultiplyColour);
+
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, size);
 	glLinkProgram(playerShader);

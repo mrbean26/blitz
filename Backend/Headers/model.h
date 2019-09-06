@@ -41,6 +41,7 @@ public:
 	GLuint VAO, VBO, size;
 };
 
+extern int modelTextureShader;
 //extern texture blankTexture;
 class readyTextureModel{
 public:
@@ -49,7 +50,7 @@ public:
 	texture modelTexture;
 	GLuint VAO, VBO, size;
 
-	void render(mat4 model, bool useLight, vec3 multiply = vec3(1.0f));
+	void render(mat4 model, bool useLight, vec3 multiply = vec3(1.0f), bool inWater = false, vec3 waterColour = vec3(1.0f));
 };
 
 void readyTextureModelfile(const char * filePath);

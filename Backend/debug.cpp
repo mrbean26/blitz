@@ -16,7 +16,7 @@ void debugBegin(){
     debugText = createText();
     debugTextPlaceholder = debugText;
     allTexts[debugText].fontPath = "assets/fonts/zekton.ttf";
-    allTexts[debugText].fontSize = display_x / 50.0f;
+    allTexts[debugText].fontSize = (int) (display_x / 50.0f);
     allTexts[debugText].position = vec2(display_x / 100, 
         -display_y / 27.5f + display_y);
     allTexts[debugText].colour = vec3(1.0f, 0.0f, 0.0f);

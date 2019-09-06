@@ -70,6 +70,12 @@ void player::mainloop(){
 	if(redDelay < 0.0f && !respawning){ multiplyColour=vec3(1.0f); }
 	if(health < 1){ multiplyColour = vec3(2.5f, 0.2f, 0.2f); }
 	redDelay -= deltaTime;
+	if (researching) {
+		researchAnimation(120.0f);
+	}
+	if (checkKeyDown(GLFW_KEY_P)) {
+		researching = true;
+	}
 }
 
 void player::respawn(){
@@ -135,8 +141,10 @@ void exitToMenus() {
 	// world generation
 	glDeleteVertexArrays(1, &WorldGeneration.terrainVAO);
 	glDeleteVertexArrays(1, &WorldGeneration.areaLimitVAO);
+	glDeleteVertexArrays(1, &WorldGeneration.waterVAO);
 	glDeleteBuffers(1, &WorldGeneration.terrainVBO);
 	glDeleteBuffers(1, &WorldGeneration.areaLimitVBO);
+	glDeleteBuffers(1, &WorldGeneration.waterVBO);
 	WorldGeneration.areaLimitCount = 0;
 	// bools
 	mainPlayer.active = false;
@@ -154,8 +162,10 @@ void exitToMenus() {
 	// worldGeneration.h
 	currentAllMountainPositions.clear();
 	currentAllMountainScales.clear();
+	currentAllMountainWaters.clear();
 	flatTerrainTriangles.clear();
 	mountainTriangles.clear();
+	waterTriangles.clear();
 	flatXPoints.clear();
 	flatZPoints.clear();
 	WorldGeneration.startedBegin = false;
@@ -392,7 +402,7 @@ void player::movement(){
 	}
 
 	if(changingCrouch){
-		if(!crouching){
+		if(!crouching && !researching){
 			rotation.x -= deltaTime * PLAYER_CROUCH_SPEED;
 			float clampedRotation = degreesClamp(rotation.x);
 			if(clampedRotation < 270.0f && clampedRotation > 90.0f){
@@ -442,7 +452,7 @@ void player::movement(){
 			}
 		}
 		crouchingInCrater = false;
-		if(mountainIndex != -1){
+		if(mountainIndex > -1){
 			vec2 floorPos = vec2(position.x, position.z);
 			vec2 mPosition = currentAllMountainPositions[mountainIndex];
 			mPosition.y = -mPosition.y;
@@ -540,7 +550,7 @@ void player::movement(){
 	if(crouching){
 		crouchMoveAnimation(movingMultiplier);
 	}
-	if (checkKey(aimButton) && !crouching) {
+	if (checkKey(aimButton) && !crouching && !researching) {
 		if (!aiming) {
 			armRotation.x = 90.0f;
 			armRotationTwo.x = 90.0f;
@@ -619,6 +629,7 @@ float lowestY = -999.0f;
 void player::collisions(){
 	// mountains and craters
 	vec4 cameraCollide = terrainColliders(cameraThirdPos, 0.0f);
+	cameraMountainIndex = (int) cameraCollide.w - 1;
 	float usedY = LEG_LENGTH;
 	if(crouching){ 
 		usedY = usedY - CROUCH_HEIGHT_TAKEAWAY;
@@ -651,7 +662,7 @@ void player::collisions(){
 vec3 cameraBuildingCollisions(vec3 original) {
 	int bCount = allColourBuildings.size();
 	float cameraDifference = -0.25f;
-	if (insideBuildingIndex != -1) {
+	if (insideBuildingIndex > -1) {
 		buildingColour current = allColourBuildings[insideBuildingIndex];
 		vec3 bPos = current.position;
 		vec3 bSca = current.scale;
@@ -819,9 +830,19 @@ void player::renderPlayer(){
 		if(i < 2 && aiming){
 			continue;
 		}
+
+		bool inWater = false;
+		if (cameraThirdPos.y <= 0.05f) {
+			int index = (int)terrainColliders(cameraThirdPos, 0.0f).w;
+			index = index - 1;
+			if (index > -1) {
+				inWater = currentAllMountainWaters[index];
+			}
+		}
+
 		vec3 combinedScale = scale * scales[i];
-		models[i].render(modelMatrix(positions[i], rotations[i], combinedScale, true, parentPositions[i], rotation), true);
-		//models[i].render(modelMatrix(positions[i], rotations[i], combinedScale, true, parentPositions[i], rotation), true, multiplyColour);
+		models[i].render(modelMatrix(positions[i], rotations[i], combinedScale, true, parentPositions[i], rotation), true, 
+			vec3(1.0f), inWater, WorldGeneration.waterMultiplyColour);
 	}
 	// laser
 	if (aiming) {
@@ -932,7 +953,7 @@ void player::runAnimation(float multiplier){
 		int upDown = 0;
 		if (legRotationTwo.x > 0) {
 			upDown = 1;
-			if (!aiming) {
+			if (!aiming && !researching) {
 				armRotation.x -= (float)deltaTime * 3 * 40.0f;
 				armRotationTwo.x += (float)deltaTime * 3 * 40.0f;
 			}
@@ -941,7 +962,7 @@ void player::runAnimation(float multiplier){
 		}
 		if (legRotationTwo.x < 0) {
 			upDown = -1;
-			if (!aiming) {
+			if (!aiming && !researching) {
 				armRotation.x += (float)deltaTime * 3 * 40.0f;
 				armRotationTwo.x -= (float)deltaTime * 3 * 40.0f;
 			}
@@ -950,7 +971,7 @@ void player::runAnimation(float multiplier){
 		}
 		if (upDown == -1) {
 			if (legRotationTwo.x > 0) {
-				if (!aiming) {
+				if (!aiming && !researching) {
 					armRotation.x = 0.0f;
 					armRotationTwo.x = 0.0f;
 				}
@@ -960,7 +981,7 @@ void player::runAnimation(float multiplier){
 		}
 		if (upDown == 1) {
 			if (legRotationTwo.x < 0) {
-				if (!aiming) {
+				if (!aiming && !researching) {
 					armRotation.x = 0.0f;
 					armRotationTwo.x = 0.0f;
 				}
@@ -971,7 +992,7 @@ void player::runAnimation(float multiplier){
 		return;
 	}
 	if (!finishedFirst) {
-		if (!aiming) {
+		if (!aiming && !researching) {
 			armRotation.x += (float)deltaTime * 3 * multiplier;
 			armRotationTwo.x -= (float)deltaTime * 3 * multiplier;
 		}
@@ -983,7 +1004,7 @@ void player::runAnimation(float multiplier){
 		}
 	}
 	if (!finishedSecond && finishedFirst) {
-		if (!aiming) {
+		if (!aiming && !researching) {
 			armRotation.x -= (float)deltaTime * 3 * multiplier;
 			armRotationTwo.x += (float)deltaTime * 3 * multiplier;
 		}
@@ -995,7 +1016,7 @@ void player::runAnimation(float multiplier){
 		}
 	}
 	if (finishedFirst && finishedSecond) {
-		if (!aiming) {
+		if (!aiming && !researching) {
 			armRotation.x += (float)deltaTime * 3 * multiplier;
 			armRotationTwo.x -= (float)deltaTime * 3 * multiplier;
 		}
@@ -1003,7 +1024,7 @@ void player::runAnimation(float multiplier){
 		legRotationTwo.x += deltaTime * 2.5f * multiplier;
 
 		if (legRotationTwo.x >= 0) {
-			if (!aiming) {
+			if (!aiming && !researching) {
 				armRotation.x = 0.0f;
 				armRotationTwo.x = 0.0f;
 			}
@@ -1195,6 +1216,54 @@ void player::monsterColliders(){
 				pos.z = position.z + cos(radians(bearing)) * colliderDistance;
 				allMonsters[m].position = pos;
 			}
+		}
+	}
+}
+
+void player::researchAnimation(float multiplier) {
+	if (multiplier == 0.0f || !researching) {
+		armRotation.x -= deltaTime * 120.0f;
+		armRotationTwo.x -= deltaTime * 120.0f;
+		if (armRotation.x < 0.0f) {
+			armRotation.x = 0.0f;
+			armRotationTwo.x = 0.0f;
+			totalGoneUpEquipping = 0;
+		}
+		return;
+	}
+	if (researchStep == 0) {
+		armRotation.x += deltaTime * multiplier;
+		armRotationTwo.x += deltaTime * multiplier;
+		if (degreesClamp(armRotation.x) > 90.0f) {
+			armRotation.x = 90.0f;
+			armRotationTwo.x = 90.0f;
+			researchStep = 1;
+		}
+	}
+	if (researchStep > 0 && researchStep < researchTicks + 1) {
+		if (!finishedResearchTick) { // odd
+			armRotationTwo.x += deltaTime * multiplier;
+			if (armRotationTwo.x > 120.0f) {
+				finishedResearchTick = true;
+			}
+		}
+		if (finishedResearchTick) { // even
+			armRotationTwo.x -= deltaTime * multiplier;
+			if (armRotationTwo.x < 90.0f) {
+				finishedResearchTick = false;
+				researchStep++;
+			}
+		}
+	}
+	if (researchStep == researchTicks + 1) {
+		armRotation.x -= deltaTime * multiplier;
+		armRotationTwo.x -= deltaTime * multiplier;
+		if (armRotation.x < 0.0f) {
+			armRotation.x = 0.0f;
+			armRotationTwo.x = 0.0f;
+
+			researching = false;
+			researchStep = 0;
 		}
 	}
 }

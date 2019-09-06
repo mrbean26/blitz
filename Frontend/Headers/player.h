@@ -136,6 +136,11 @@ public:
 	void runAnimation(float multiplier);
 	void crouchMoveAnimation(float multiplier);
 
+	bool researching = false;
+	bool finishedResearchTick = false;
+	int researchStep = 0; int researchTicks = 3;
+	void researchAnimation(float multiplier);
+
     int equippingStep = 0;
 	float totalGoneUpEquipping = 0.0f;
 

@@ -332,8 +332,11 @@ readyTextureModel::readyTextureModel(std::vector<float> usedVertices, texture us
 	size = usedVertices.size() / 5;
 }
 
-void readyTextureModel::render(mat4 model, bool useLight, vec3 multiply){
+void readyTextureModel::render(mat4 model, bool useLight, vec3 multiply, bool inWater, vec3 waterColour){
 	glUseProgram(modelTextureShader);
+
+	setShaderInt(modelTextureShader, "cameraInWater", inWater);
+	setShaderVecThree(modelTextureShader, "waterMultiplyColour", waterColour);
 
 	setShaderVecThree(modelTextureShader, "multiplyColour", multiply);
 	setShaderVecThree(modelTextureShader, "lightPos", lightPos);

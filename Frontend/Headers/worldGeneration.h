@@ -22,6 +22,11 @@ using namespace glm;
 #define MOUNTAIN_SCALE_DEFAULT 0.025f
 #define TRIANGLE_SIZE_FLAT 1.0f
 
+#define EARTH_WAVE_WIDTH 2.0f
+#define EARTH_WAVE_HEIGHT 0.5f
+#define EARTH_WAVE_DELAY 1.0f
+#define EARTH_WAVE_SPEED 10.0f
+
 int randomInt(int min, int max);
 
 bool insideCircle(vec2 circlePos, float radius, vec2 pointPos, bool terrain = false);
@@ -86,8 +91,20 @@ public:
     
     GLuint waterVAO, waterVBO;
     GLuint waterSize;
+	vec3 waterMultiplyColour = vec3(1.0f);
     void beginWater();
     void worldGenLast();
+
+	void waveBegin();
+	void waveMainloop();
+	bool setWaveDelay = false;
+
+	float wavePercentage = 0.0f;
+	float waveWidth = 0.0f;
+	float waveHeight = 0.0f;
+	float waveDelayMax = 0.0f;
+	float waveDelayCurrent = 0.0f;
+	float waveSpeed = 0.0f;
     
 	void beginFlatTerrain();
 	void beginMountains();
