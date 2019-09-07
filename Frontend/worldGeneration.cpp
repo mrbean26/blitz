@@ -121,6 +121,7 @@ void createSave(const char* filePath, int saveType) {
             earthScaleY = 300 - earthScaleX;
         }
         saveLines[newVectorPos(&saveLines)] = "planetEarthSize " + to_string(earthScaleX) + " " + to_string(earthScaleY);
+		saveLines[newVectorPos(&saveLines)] = "earthDataPoints 0";
         saveLines = rewriteLine(saveLines, "playerPos", to_string(earthScaleX / 2.0f) + " 0 " + to_string(earthScaleY / -2.0f));
         // lists to check if inside each other
         vector<vec2> craterPositions;
@@ -496,6 +497,18 @@ vec4 terrainColliders(vec3 original, float yAddition){
     return vec4(original.x, yHighest, original.z, (float) inMountainIndex);
 }
 
+int researchStatusText;
+void startResearchText(){
+	int dataPoints = getIntFile(WorldGeneration.worldLinesPath, WorldGeneration.currentAreaPrefix + "DataPoints");
+
+	researchStatusText = createText();
+	allTexts[researchStatusText].centered = true;
+	allTexts[researchStatusText].fontCharacters = getFont("assets/fonts/zekton.ttf", display_x / 30);
+	allTexts[researchStatusText].displayedText = "Data Points: " + to_string(dataPoints);
+	allTexts[researchStatusText].position.x = (allButtons[alertBackground].maxX + allButtons[alertBackground].minX) / 2.0f;
+	allTexts[researchStatusText].position.y = display_y - ((allButtons[alertBackground].maxY + allButtons[alertBackground].minY) / 2.0f) + (display_y / 10);
+}
+
 #include "monsters.h"
 vector<vec2> negativeMountainCoords, positiveMountainCoords;
 void worldGeneration::beginMountains() {
@@ -814,6 +827,7 @@ void worldGeneration::begin() {
     mainPlayer.health = getFloatFile(WorldGeneration.worldLinesPath, "playerHealth");
     mainPlayer.position = getVec3File(WorldGeneration.worldLinesPath, "playerPos");
 	waveBegin();
+	startResearchText();
 }
 
 void worldGeneration::mainloop() {

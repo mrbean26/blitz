@@ -6,6 +6,9 @@ in vec4 position;
 uniform float alpha = 1.0f;
 uniform vec3 multiplyColour = vec3(1.0f);
 
+uniform bool cameraInWater = false;
+uniform vec3 waterMultiplyColour = vec3(1.0f);
+
 vec3 lightMultiplier = vec3(1.0f);
 uniform vec3 lightPos = vec3(0.0f);
 uniform float lightIntensity = 1.0f;
@@ -26,5 +29,10 @@ void main(){
 	if(!useLight) { lightMultiplier = vec3(1.0f); }
 
     colour = vec4(aColour * multiplyColour, alpha);
-	colour = colour * vec4(lightMultiplier, 1.0f);
+    if(cameraInWater){
+	if(position.y < 0.0f){
+	    colour = colour * vec4(waterMultiplyColour, 1.0f);
+	}
+    }
+    colour = colour * vec4(lightMultiplier, 1.0f);
 }

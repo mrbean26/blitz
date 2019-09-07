@@ -31,6 +31,10 @@ using namespace std;
 #define WEAPON_RELOAD_MAX_ROT 7.5f
 #define WEAPON_RELOAD_SPEED 0.5f
 
+#define WATER_RESEARCH 0
+#define TERRAIN_RESEARCH 1
+#define AIR_GRAVITY_RESEARCH 2
+
 extern float lowestY;
 extern GLuint playerShader;
 void startPlayerShader();
@@ -50,6 +54,7 @@ float degreesDistance(float v1, float v2);
 
 class player {
 public:
+	string name = "Player ";
 	bool active = false, canMove = true, canMoveCamera = true;
 	void begin();
 	void mainloop();
@@ -138,7 +143,8 @@ public:
 
 	bool researching = false;
 	bool finishedResearchTick = false;
-	int researchStep = 0; int researchTicks = 3;
+	int researchStep = 0; int researchTicks = 5;
+	int researchType = WATER_RESEARCH;
 	void researchAnimation(float multiplier);
 
     int equippingStep = 0;

@@ -26,6 +26,9 @@ int createPlayer(int type, vec3 position, vec3 scale = vec3(0.8f));
 void getPeople();
 void peopleMovement(player * person);
 
+extern vector<texture> researcherTextures;
+extern readyTextureModel researcherModel;
+extern readyTextureModel researcherStick;
 extern vector<player> allPeople;
 
 #endif

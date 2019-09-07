@@ -13,7 +13,7 @@ int main() {
 
 		backendMainloop();
 		frontendMainloop();
-
+		
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}

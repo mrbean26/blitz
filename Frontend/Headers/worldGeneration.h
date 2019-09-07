@@ -59,6 +59,9 @@ extern vec2 currentPlanetScale;
 
 vec4 terrainColliders(vec3 original, float yAddition);
 
+extern int researchStatusText;
+void startResearchText();
+
 extern unsigned int skyboxVAO, skyboxVBO, skyboxTexture;
 unsigned int loadCubemapTexture(vector<string> faces);
 void startSkybox();
@@ -105,6 +108,8 @@ public:
 	float waveDelayMax = 0.0f;
 	float waveDelayCurrent = 0.0f;
 	float waveSpeed = 0.0f;
+
+	int dataPoints = 0;
     
 	void beginFlatTerrain();
 	void beginMountains();

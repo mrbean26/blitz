@@ -59,6 +59,7 @@ void player::mainloop(){
 	if (!WorldGeneration.startedBegin) { return; }
 	renderPlayer();
 	movement();
+	researchAnimation(120.0f);
 	cameraMovement();
 	monsterColliders();
 	collisions();
@@ -70,12 +71,6 @@ void player::mainloop(){
 	if(redDelay < 0.0f && !respawning){ multiplyColour=vec3(1.0f); }
 	if(health < 1){ multiplyColour = vec3(2.5f, 0.2f, 0.2f); }
 	redDelay -= deltaTime;
-	if (researching) {
-		researchAnimation(120.0f);
-	}
-	if (checkKeyDown(GLFW_KEY_P)) {
-		researching = true;
-	}
 }
 
 void player::respawn(){
@@ -187,6 +182,7 @@ void exitToMenus() {
 	currentAllLines = rewriteLine(currentAllLines, "playerHealth", to_string(mainPlayer.health));
 	currentAllLines = rewriteLine(currentAllLines, "inventory", inventorySaveLine()[0]);
 	currentAllLines = rewriteLine(currentAllLines, "inventoryQuantity", inventorySaveLine()[1]);
+	currentAllLines = rewriteLine(currentAllLines, WorldGeneration.currentAreaPrefix + "DataPoints", to_string(WorldGeneration.dataPoints));
 	mainPlayer.deleteMemory();
 	allSlots.clear();
 	allItems.clear();
@@ -395,7 +391,13 @@ void player::movement(){
 	int aimButton = stoi(inputLines[4]);
 	int crouchKey = stoi(inputLines[8]);
 
-	if(checkKeyDown(crouchKey)){
+	if (!checkKey(aimButton)) {
+		if (checkKey(shootButton)) {
+			researching = true;
+		}
+	}
+
+	if(checkKeyDown(crouchKey) && !researching){
 		if(!changingCrouch){
 			changingCrouch = true;
 		}
@@ -1221,14 +1223,34 @@ void player::monsterColliders(){
 }
 
 void player::researchAnimation(float multiplier) {
+	researcherModel.modelTexture = researcherTextures[researchType];
+	vec3 researcherPosition = position;
+	researcherPosition.x = position.x + sin(radians(armRotation.x)) * -sin(radians(rotation.y)) * 1.2f;
+	researcherPosition.y = (position.y - 0.6f) + ((degreesClamp(armRotation.x) / 90.0f) * 1.2f);
+	researcherPosition.z = position.z + sin(radians(armRotation.x)) * -cos(radians(rotation.y)) * 1.2f;
+
+	if (!researching) {
+		return;
+	}
+
+	float stickScale = ((degreesClamp(armRotation.x) / 90.0f)) * ((glm::clamp(researchStep - 1, 0, 20))) * 0.5f;
+	if (researchStep == researchTicks + 1) {
+		stickScale = 0.0f;
+	}
+
 	if (multiplier == 0.0f || !researching) {
 		armRotation.x -= deltaTime * 120.0f;
 		armRotationTwo.x -= deltaTime * 120.0f;
 		if (armRotation.x < 0.0f) {
 			armRotation.x = 0.0f;
 			armRotationTwo.x = 0.0f;
-			totalGoneUpEquipping = 0;
+			researchStep = 0;
+			researching = false;
 		}
+		researcherModel.render(modelMatrix(researcherPosition, vec3(0.0f, rotation.y - 90.0f, -armRotation.x + 90.0f), vec3(1.0f)),
+			true, vec3(1.0f), cameraThirdPos.y < 0.0f, WorldGeneration.waterMultiplyColour);
+		researcherStick.render(modelMatrix(vec3(0.0f, -stickScale, 0.0f), vec3(0.0f, rotation.y - 90.0f, 0.0f), vec3(0.05f, stickScale, 0.05f), true, 
+			researcherPosition, vec3(armRotation.x - 90.0f, 0.0f, 0.0f)), true, vec3(1.0f), cameraThirdPos.y < 0.0f, WorldGeneration.waterMultiplyColour);
 		return;
 	}
 	if (researchStep == 0) {
@@ -1264,6 +1286,37 @@ void player::researchAnimation(float multiplier) {
 
 			researching = false;
 			researchStep = 0;
+
+			bool foundData = false;
+			string dataType = "";
+			if (researchType == WATER_RESEARCH) {
+				dataType = "water";
+				if (randomInt(1, 2) == 1) {
+					foundData = true;
+				}
+			}
+			if (researchType == TERRAIN_RESEARCH || researchType == AIR_GRAVITY_RESEARCH) {
+				if (researchType == TERRAIN_RESEARCH) {
+					dataType = "terrain";
+				}
+				if (researchType == AIR_GRAVITY_RESEARCH) {
+					dataType = "air";
+				}
+				if (randomInt(1, 3) == 1) {
+					foundData = true;
+				}
+			}
+
+			if (foundData) {
+				alert(name + "found: " + dataType + " data");
+				WorldGeneration.dataPoints++;
+				allTexts[researchStatusText].displayedText = "Data Points: " + to_string(WorldGeneration.dataPoints);
+			}
 		}
 	}
+	// render
+	researcherModel.render(modelMatrix(researcherPosition, vec3(0.0f, rotation.y - 90.0f, -armRotation.x + 90.0f), vec3(1.0f)), 
+		true, vec3(1.0f), cameraThirdPos.y < 0.0f, WorldGeneration.waterMultiplyColour);
+	researcherStick.render(modelMatrix(vec3(0.0f, -stickScale, 0.0f), vec3(0.0f, rotation.y - 90.0f, 0.0f), vec3(0.05f, stickScale, 0.05f), true,
+		researcherPosition, vec3(armRotation.x - 90.0f, 0.0f, 0.0f)), true, vec3(1.0f), cameraThirdPos.y < 0.0f, WorldGeneration.waterMultiplyColour);
 }
