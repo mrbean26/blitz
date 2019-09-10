@@ -52,6 +52,8 @@ void exitToMenus();
 
 float degreesDistance(float v1, float v2);
 
+extern int ammoIcon, healthIcon;
+
 class player {
 public:
 	string name = "Player ";

@@ -18,6 +18,7 @@ using namespace glm;
 #include "saveFiles.h"
 #include "worldGeneration.h"
 #include "frontend.h"
+#include "player.h"
 
 bool insideCircle(vec2 circlePos, float radius, vec2 pointPos, bool terrain) {
     float xSquared = pow(pointPos.x - circlePos.x, 2);
@@ -79,6 +80,16 @@ bool insideBuildBench(vec2 currentPos, float currentScale, vec2 areaScale) {
         return true;
     }
     return false;
+}
+
+bool insideRocket(vec2 currentPos, float currentScale, vec2 areaScale) {
+	vec2 rocketPos = vec2(areaScale.x / 2.0f, 0.0f);
+	currentScale = currentScale * 1.5f;
+	currentScale = (currentScale * 100.0f) * 0.025f;
+	if (insideCircle(currentPos, currentScale, rocketPos)) {
+		return true;
+	}
+	return false;
 }
 
 bool insideMountain(vector<vec2> allPositions, vector<float> allScales,
@@ -174,6 +185,15 @@ void createSave(const char* filePath, int saveType) {
                 }
                 continue;
             }
+			if (insideRocket(pos, mountainScaleX, vec2(earthScaleX, earthScaleY))) {
+				i = i - 1;
+				failedCraterAttempts++;
+				if (failedCraterAttempts > 19) {
+					i = i + 1;
+					failedCraterAttempts = 0;
+				}
+				continue;
+			}
             // check if water in crater
             bool waterInCrater = false;
             if(mountainGradient < 0){
@@ -505,8 +525,7 @@ void startResearchText(){
 	allTexts[researchStatusText].centered = true;
 	allTexts[researchStatusText].fontCharacters = getFont("assets/fonts/zekton.ttf", display_x / 30);
 	allTexts[researchStatusText].displayedText = "Data Points: " + to_string(dataPoints);
-	allTexts[researchStatusText].position.x = (allButtons[alertBackground].maxX + allButtons[alertBackground].minX) / 2.0f;
-	allTexts[researchStatusText].position.y = display_y - ((allButtons[alertBackground].maxY + allButtons[alertBackground].minY) / 2.0f) + (display_y / 10);
+	allTexts[researchStatusText].colour = vec3(0.0f);
 }
 
 #include "monsters.h"
@@ -836,6 +855,9 @@ void worldGeneration::mainloop() {
     renderAreaLimits();
     daynightCycle();
 	waveMainloop();
+
+	allTexts[researchStatusText].position.x = allButtons[ammoIcon].minX - allButtons[healthIcon].minX;
+	allTexts[researchStatusText].position.y = display_y - ((allButtons[ammoIcon].maxY + allButtons[ammoIcon].minY) / 2.0f) + (display_y / 10);
 }
 
 void worldGeneration::beginAreaLimits() {

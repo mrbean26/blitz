@@ -17,6 +17,7 @@ player mainPlayer;
 #include "display.h"
 #include "inventory.h"
 #include "people.h"
+#include "rocket.h"
 
 void frontendBegin(){
 	int emptyButton = createButton(); //first button does not show if this is not used, also allows texts to show with skybox
@@ -35,12 +36,11 @@ void frontendMainloop(){
 		monstersBegin();
 		inventoryBegin();
 		peopleBegin();
+		rocketBegin();
 		WorldGeneration.startedBegin = true;
 	}
 	renderSkybox(!WorldGeneration.startedBegin);
-	if (StartScreen.active) {
-		renderTexts();
-	}
+	if (StartScreen.active) { renderTexts(); }
 	StartScreen.mainloop();
 	WorldGeneration.mainloop();
 	StructuresMainloop();
@@ -49,6 +49,7 @@ void frontendMainloop(){
 	monstersMainloop();
 	inventoryMainloop();
 	peopleMainloop();
+	rocketMainloop();
     WorldGeneration.worldGenLast();
 	interfaceLastcall();
 	updateKeys(); // this has to be called last every frame / after last call of getkeydown
