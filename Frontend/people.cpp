@@ -4,6 +4,7 @@
 #include "frontend.h"
 #include "structures.h"
 #include "monsters.h"
+#include "rocket.h"
 
 vector<player> allPeople;
 vector<texture> skinTextures;
@@ -47,6 +48,7 @@ void peopleMainloop(){
         allPeople[p].position = peoplePeopleCollider(allPeople[p].position, PEOPLE_PEOPLE_COLLIDE_DISTANCE);
         buildCollisions(allPeople[p].position, allPeople[p].personBuildingInside, emptyFloat, emptyBool, emptyBoolTwo, 1.5f);
         allPeople[p].position = peoplePlayerCollider(allPeople[p], PLAYER_COLLIDE_DISTANCE);
+		allPeople[p].position = rocketColliders(allPeople[p].position);
         
         allPeople[p].position.x = clamp(allPeople[p].position.x, 0.0f, currentPlanetScale.x); 
 		allPeople[p].position.z = clamp(allPeople[p].position.z, -currentPlanetScale.y, 0.0f);

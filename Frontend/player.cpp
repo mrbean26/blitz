@@ -10,6 +10,7 @@
 #include "monsters.h"
 #include "inventory.h"
 #include "people.h"
+#include "rocket.h"
 
 #include <glm/gtc/type_ptr.hpp>
 using namespace glm;
@@ -648,6 +649,7 @@ void player::collisions(){
 	lowestCameraY = cameraCollide.y + 0.5f;
 	bool useless = false;
 	buildCollisions(position, insideBuildingIndex, jumpVelocity, lastOnBench, useless);
+	position = rocketColliders(position);
 	// flat terrain collisions
 	float legPos = position.y - LEG_LENGTH;
 	if(crouching){
