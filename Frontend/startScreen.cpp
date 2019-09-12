@@ -469,6 +469,7 @@ void startScreen::mainloop(){
 	if (allButtons[playOneButton].clickUp) {
 		if (playOneTexture == 0) {
 			createSave("assets/saves/saveOne.save", DEFAULT_SAVE);
+			loadWorld("assets/saves/saveOne.save");
 		}
 		if (playOneTexture == 1) {
 			loadWorld("assets/saves/saveOne.save");
@@ -478,6 +479,7 @@ void startScreen::mainloop(){
 	if (allButtons[playTwoButton].clickUp) {
 		if (playTwoTexture == 0) {
 			createSave("assets/saves/saveTwo.save", LARGE_WORLD);
+			loadWorld("assets/saves/saveTwo.save");
 		}
 		if (playTwoTexture == 1) {
 			loadWorld("assets/saves/saveTwo.save");

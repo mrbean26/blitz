@@ -401,6 +401,20 @@ void player::movement(){
 	if(checkKeyDown(crouchKey) && !researching){
 		if(!changingCrouch){
 			changingCrouch = true;
+			aiming = false;
+
+			armRotation.x = 0.0f;
+			armPositionTwo = vec3(0.72f, -0.55f, 0.0f);
+			armRotationTwo = vec3(0.0f);
+			aimingView = false;
+
+			equippingReloading = false;
+			totalGoneUpEquipping = 0.0f;
+			armRotationTwo.z = 0.0f;
+			equippingStep = 0;
+
+			armScale = vec3(0.3f);
+			armScaleTwo = vec3(0.3f);
 		}
 	}
 
