@@ -36,7 +36,7 @@ extern vec3 cameraPosition;
 extern vec3 cameraRotation;
 
 mat4 projectionMatrix();
-mat4 modelMatrix(vec3 position = vec3(0.0f), vec3 rotation = vec3(0.0f), vec3 scale = vec3(1.0f), bool child = false, vec3 parentPosition = vec3(0.0f), vec3 parentRotation=vec3(0.0f));
+mat4 modelMatrix(vec3 position = vec3(0.0f), vec3 rotation = vec3(0.0f), vec3 scale = vec3(1.0f), bool child = false, vec3 parentPosition = vec3(0.0f), vec3 parentRotation=vec3(0.0f), bool newChildMat = false);
 
 extern bool playerView, aimingView;
 extern float playerYaw, playerPitch, lowestCameraY;

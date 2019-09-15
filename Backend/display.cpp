@@ -139,7 +139,7 @@ mat4 projectionMatrix() {
 	return newMatrix;
 }
 
-mat4 modelMatrix(vec3 position, vec3 rotation, vec3 scale, bool child, vec3 parentPosition, vec3 parentRotation) {
+mat4 modelMatrix(vec3 position, vec3 rotation, vec3 scale, bool child, vec3 parentPosition, vec3 parentRotation, bool newChildMat) {
 	mat4 newMatrix = mat4(1.0f);
 	if (!child) {
 		newMatrix = translate(newMatrix, position);
@@ -153,10 +153,15 @@ mat4 modelMatrix(vec3 position, vec3 rotation, vec3 scale, bool child, vec3 pare
 	newMatrix = rotate(newMatrix, radians(parentRotation.y), vec3(0.0f, 1.0f, 0.0f));
 	newMatrix = rotate(newMatrix, radians(parentRotation.x), vec3(1.0f, 0.0f, 0.0f));
 	newMatrix = rotate(newMatrix, radians(parentRotation.z), vec3(0.0f, 0.0f, 1.0f));
+	if (newChildMat) {
+		newMatrix = translate(newMatrix, position);
+	}
 	newMatrix = rotate(newMatrix, radians(rotation.x), vec3(1.0f, 0.0f, 0.0f));
 	newMatrix = rotate(newMatrix, radians(rotation.y), vec3(0.0f, 1.0f, 0.0f));
 	newMatrix = rotate(newMatrix, radians(rotation.z), vec3(0.0f, 0.0f, 1.0f));
-	newMatrix = translate(newMatrix, position);
+	if (!newChildMat) {
+		newMatrix = translate(newMatrix, position);
+	}
 	newMatrix = glm::scale(newMatrix, scale);
 	return newMatrix;
 }

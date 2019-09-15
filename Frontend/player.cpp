@@ -392,7 +392,7 @@ void player::movement(){
 	int aimButton = stoi(inputLines[4]);
 	int crouchKey = stoi(inputLines[8]);
 
-	if (!checkKey(aimButton)) {
+	if (!checkKey(aimButton) && !crouching) {
 		if (checkKey(shootButton)) {
 			researching = true;
 		}
