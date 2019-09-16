@@ -6,6 +6,15 @@
 #define ROCKET_COLLIDER_DISTANCE 4.25f
 #define ROCKET_OPEN_DISTANCE 20.0f
 #define ROCKET_OPEN_SPEED 30.0f
+#define ROCKET_DOOR_OPEN_ROT 140.0f
+#define ROCKET_DOOR_Z_COLLIDER_ADDITION 0.05f
+#define ROCKET_DOOR_COLLIDER_LENGTH 13.75f
+#define ROCKET_DOOR_WIDTH 1.8f
+
+#define SLIDE_LENGTH_DIVIDER 5.0f
+#define SLIDE_TOP_HEIGHT 5.5f
+
+
 
 buildingColour rocket;
 readyTextureModel rocketStatus;
@@ -30,16 +39,68 @@ void rocketBegin() {
 
 vec3 rocketColliders(vec3 original) {
 	vec3 newPosition = original;
+	bool onSlide = false;
+
+	if (doorRot > 0.0f && doorRot < ROCKET_DOOR_OPEN_ROT) {
+		if (newPosition.z > rocket.position.z - sin(radians(doorRot)) * ROCKET_DOOR_COLLIDER_LENGTH) {
+			if (newPosition.x < rocket.position.x && newPosition.x > rocket.position.x - ROCKET_DOOR_WIDTH - ROCKET_DOOR_Z_COLLIDER_ADDITION) {
+				newPosition.x = rocket.position.x - ROCKET_DOOR_WIDTH - ROCKET_DOOR_Z_COLLIDER_ADDITION;
+			}
+			if (newPosition.x >= rocket.position.x && newPosition.x < rocket.position.x + ROCKET_DOOR_WIDTH + ROCKET_DOOR_Z_COLLIDER_ADDITION) {
+				newPosition.x = rocket.position.x + ROCKET_DOOR_WIDTH + ROCKET_DOOR_Z_COLLIDER_ADDITION;
+			}
+		}
+		if (newPosition.x > rocket.position.x - ROCKET_DOOR_WIDTH && newPosition.x < rocket.position.x + ROCKET_DOOR_WIDTH) {
+			if (newPosition.z + ROCKET_DOOR_Z_COLLIDER_ADDITION > rocket.position.z - sin(radians(doorRot)) * ROCKET_DOOR_COLLIDER_LENGTH) {
+				newPosition.z = rocket.position.z - sin(radians(doorRot)) * ROCKET_DOOR_COLLIDER_LENGTH;
+				newPosition.z = newPosition.z - ROCKET_DOOR_Z_COLLIDER_ADDITION;
+			}
+		}
+	}
+
+	if (doorRot == ROCKET_DOOR_OPEN_ROT) {
+		if (newPosition.z > rocket.position.z - sin(radians(doorRot)) * ROCKET_DOOR_COLLIDER_LENGTH) {
+			if (newPosition.x < rocket.position.x - ROCKET_DOOR_WIDTH) {
+				if (newPosition.x > rocket.position.x - ROCKET_DOOR_WIDTH - ROCKET_DOOR_Z_COLLIDER_ADDITION) {
+					newPosition.x = rocket.position.x - ROCKET_DOOR_WIDTH - ROCKET_DOOR_Z_COLLIDER_ADDITION;
+				}
+			}
+			if (newPosition.x > rocket.position.x + ROCKET_DOOR_WIDTH) {
+				if (newPosition.x < rocket.position.x + ROCKET_DOOR_WIDTH + ROCKET_DOOR_Z_COLLIDER_ADDITION) {
+					newPosition.x = rocket.position.x + ROCKET_DOOR_WIDTH + ROCKET_DOOR_Z_COLLIDER_ADDITION;
+				}
+			}
+
+			// y position
+
+			if (newPosition.x > rocket.position.x - ROCKET_DOOR_WIDTH) {
+				if (newPosition.x < rocket.position.x + ROCKET_DOOR_WIDTH) {
+					float zRocketDoorEndPos = rocket.position.z - sin(radians(doorRot)) * ROCKET_DOOR_COLLIDER_LENGTH;
+					float zDistance = glm::distance(newPosition.z, zRocketDoorEndPos);
+					zDistance = glm::clamp(zDistance / SLIDE_LENGTH_DIVIDER, 0.0f, 1.1f);
+
+					newPosition.y += zDistance * SLIDE_TOP_HEIGHT;
+
+					onSlide = true;
+				}
+			}
+		}
+	}
+
 	vec2 floor = vec2(original.x, original.z);
-	
+
 	vec2 rocketFloor = vec2(rocket.position.x, rocket.position.z);
 	float distance = glm::distance(floor, rocketFloor);
 
-	if (distance < ROCKET_COLLIDER_DISTANCE) {
+	if (distance < ROCKET_COLLIDER_DISTANCE && !onSlide) {
 		float bearing = bearingTwo(rocketFloor, floor);
 
 		newPosition.x = rocketFloor.x + sin(radians(bearing)) * ROCKET_COLLIDER_DISTANCE;
 		newPosition.z = rocketFloor.y + cos(radians(bearing)) * ROCKET_COLLIDER_DISTANCE;
+	}
+
+	if (onSlide) {
+
 	}
 
 	return newPosition;
@@ -47,7 +108,7 @@ vec3 rocketColliders(vec3 original) {
 
 void openDoorAnimation(float multiplier) {
 	doorRot += multiplier * deltaTime;
-	doorRot = glm::clamp(doorRot, 0.0f, 140.0f);
+	doorRot = glm::clamp(doorRot, 0.0f, ROCKET_DOOR_OPEN_ROT);
 }
 
 void openDoor() {
