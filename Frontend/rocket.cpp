@@ -14,8 +14,6 @@
 #define SLIDE_LENGTH_DIVIDER 5.0f
 #define SLIDE_TOP_HEIGHT 5.5f
 
-
-
 buildingColour rocket;
 readyTextureModel rocketStatus;
 float doorRot = 0.0f;
@@ -40,6 +38,7 @@ void rocketBegin() {
 vec3 rocketColliders(vec3 original) {
 	vec3 newPosition = original;
 	bool onSlide = false;
+	bool inRocket = false;
 
 	if (doorRot > 0.0f && doorRot < ROCKET_DOOR_OPEN_ROT) {
 		if (newPosition.z > rocket.position.z - sin(radians(doorRot)) * ROCKET_DOOR_COLLIDER_LENGTH) {
@@ -77,7 +76,12 @@ vec3 rocketColliders(vec3 original) {
 				if (newPosition.x < rocket.position.x + ROCKET_DOOR_WIDTH) {
 					float zRocketDoorEndPos = rocket.position.z - sin(radians(doorRot)) * ROCKET_DOOR_COLLIDER_LENGTH;
 					float zDistance = glm::distance(newPosition.z, zRocketDoorEndPos);
+					float zBefore = zDistance / SLIDE_LENGTH_DIVIDER;
 					zDistance = glm::clamp(zDistance / SLIDE_LENGTH_DIVIDER, 0.0f, 1.1f);
+
+					if (zBefore > zDistance) {
+						inRocket = true;
+					}
 
 					newPosition.y += zDistance * SLIDE_TOP_HEIGHT;
 
@@ -100,7 +104,17 @@ vec3 rocketColliders(vec3 original) {
 	}
 
 	if (onSlide) {
-
+		if (inRocket) {
+			if (newPosition.x < rocket.position.x - 0.4f) {
+				newPosition.x = rocket.position.x - 0.4f;
+			}
+			if (newPosition.x > rocket.position.x + 0.4f) {
+				newPosition.x = rocket.position.x + 0.4f;
+			}
+			if (newPosition.z > rocket.position.z - 0.95f) {
+				newPosition.z = rocket.position.z - 0.95f;
+			}
+		}
 	}
 
 	return newPosition;
@@ -151,7 +165,7 @@ void renderRocket() {
 
 	//rocket.rotation += vec3(deltaTime * 20.0f);
 
-	rocketStatus.render(modelMatrix(vec3(0.0f, 4.1f, -2.5f), vec3(doorRot, 0.0f, 0.0f), vec3(1.3f, 1.8f, 5.0f), true, rocket.position, rocket.rotation + vec3(0.0f, 0.0f, 180.0f), true),
+	rocketStatus.render(modelMatrix(vec3(0.0f, 4.1f, -2.475f), vec3(doorRot, 0.0f, 0.0f), vec3(1.3f, 1.8f, 5.0f), true, rocket.position, rocket.rotation + vec3(0.0f, 0.0f, 180.0f), true),
 		true, vec3(1.0f), inWater, WorldGeneration.waterMultiplyColour);
 }
 

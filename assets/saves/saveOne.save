@@ -3,9 +3,9 @@ saveType 0
 inventory -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 inventoryQuantity 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 currentWeapons 0 0 0 0
-currentTime 0.0
-playerPos 28.500000 0 -21.500000
-playerHealth 100
+currentTime 2.034598
+playerPos 28.500000 2.897642 -21.500000
+playerHealth 100.000000
 currentPlanet earth
 currentPosition 0.0f, 0.0f, 0.0f
 planetEarthSize 57 43
