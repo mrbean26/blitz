@@ -331,7 +331,7 @@ void monsterInteractions() {
 				deadMonsters[newVectorPos(&deadMonsters)] = m;
 			}
 		}
-		if(allMonsters[m].attacking && mainPlayer.health > 0 && !mainPlayer.respawning){
+		if(allMonsters[m].attacking && mainPlayer.health > 0 && !mainPlayer.respawning && !mainPlayer.inRocket){
 			vec2 monsterTwo = vec2(monsterPos.x, monsterPos.z);
 			float bearing = bearingTwo(playerPos, monsterTwo);
 

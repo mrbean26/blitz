@@ -656,7 +656,7 @@ void buildBenchInteraction(){
 	}
 	float distance = glm::distance(mainPlayer.position, mainBench.position);
 	if (distance < BENCH_DISTANCE) {
-		if (checkKeyDown(interactKey)) {
+		if (checkKeyDown(interactKey) && !mainPlayer.insideRocketFixed) {
 			benchInUse = !benchInUse;
 			mainPlayer.canMove = !benchInUse;
 			int size = buildingSelectButtons.size();

@@ -8,10 +8,10 @@
 #define ROCKET_OPEN_SPEED 30.0f
 #define ROCKET_DOOR_OPEN_ROT 140.0f
 #define ROCKET_DOOR_Z_COLLIDER_ADDITION 0.05f
-#define ROCKET_DOOR_COLLIDER_LENGTH 13.75f
+#define ROCKET_DOOR_COLLIDER_LENGTH 13.25f
 #define ROCKET_DOOR_WIDTH 1.8f
 
-#define SLIDE_LENGTH_DIVIDER 5.0f
+#define SLIDE_END_POS_FOR_COLLIDER -3.85f
 #define SLIDE_TOP_HEIGHT 5.5f
 
 buildingColour rocket;
@@ -35,12 +35,14 @@ void rocketBegin() {
 	rocketStatus = newModel;
 }
 
-vec3 rocketColliders(vec3 original) {
+vec4 rocketColliders(vec3 original, bool player) {
 	vec3 newPosition = original;
+	float yOriginal = original.y;
+
 	bool onSlide = false;
 	bool inRocket = false;
 
-	if (doorRot > 0.0f && doorRot < ROCKET_DOOR_OPEN_ROT) {
+	if (doorRot > 0.0f && doorRot < ROCKET_DOOR_OPEN_ROT && !mainPlayer.insideRocketFixed) {
 		if (newPosition.z > rocket.position.z - sin(radians(doorRot)) * ROCKET_DOOR_COLLIDER_LENGTH) {
 			if (newPosition.x < rocket.position.x && newPosition.x > rocket.position.x - ROCKET_DOOR_WIDTH - ROCKET_DOOR_Z_COLLIDER_ADDITION) {
 				newPosition.x = rocket.position.x - ROCKET_DOOR_WIDTH - ROCKET_DOOR_Z_COLLIDER_ADDITION;
@@ -57,7 +59,7 @@ vec3 rocketColliders(vec3 original) {
 		}
 	}
 
-	if (doorRot == ROCKET_DOOR_OPEN_ROT) {
+	if (doorRot == ROCKET_DOOR_OPEN_ROT && !mainPlayer.insideRocketFixed) {
 		if (newPosition.z > rocket.position.z - sin(radians(doorRot)) * ROCKET_DOOR_COLLIDER_LENGTH) {
 			if (newPosition.x < rocket.position.x - ROCKET_DOOR_WIDTH) {
 				if (newPosition.x > rocket.position.x - ROCKET_DOOR_WIDTH - ROCKET_DOOR_Z_COLLIDER_ADDITION) {
@@ -76,16 +78,16 @@ vec3 rocketColliders(vec3 original) {
 				if (newPosition.x < rocket.position.x + ROCKET_DOOR_WIDTH) {
 					float zRocketDoorEndPos = rocket.position.z - sin(radians(doorRot)) * ROCKET_DOOR_COLLIDER_LENGTH;
 					float zDistance = glm::distance(newPosition.z, zRocketDoorEndPos);
-					float zBefore = zDistance / SLIDE_LENGTH_DIVIDER;
-					zDistance = glm::clamp(zDistance / SLIDE_LENGTH_DIVIDER, 0.0f, 1.1f);
-
-					if (zBefore > zDistance) {
+					float slideEndPos = glm::distance(zRocketDoorEndPos, SLIDE_END_POS_FOR_COLLIDER);
+					
+					zDistance = glm::clamp(zDistance / slideEndPos, 0.0f, 1.1f);
+					onSlide = true;
+					
+					if (zDistance == 1.1f) {
 						inRocket = true;
 					}
 
-					newPosition.y += zDistance * SLIDE_TOP_HEIGHT;
-
-					onSlide = true;
+					newPosition.y = zDistance * SLIDE_TOP_HEIGHT + LEG_LENGTH;
 				}
 			}
 		}
@@ -96,7 +98,7 @@ vec3 rocketColliders(vec3 original) {
 	vec2 rocketFloor = vec2(rocket.position.x, rocket.position.z);
 	float distance = glm::distance(floor, rocketFloor);
 
-	if (distance < ROCKET_COLLIDER_DISTANCE && !onSlide) {
+	if (distance < ROCKET_COLLIDER_DISTANCE && !onSlide && !mainPlayer.insideRocketFixed) {
 		float bearing = bearingTwo(rocketFloor, floor);
 
 		newPosition.x = rocketFloor.x + sin(radians(bearing)) * ROCKET_COLLIDER_DISTANCE;
@@ -116,8 +118,43 @@ vec3 rocketColliders(vec3 original) {
 			}
 		}
 	}
-
-	return newPosition;
+	if (player) {
+		if (mainPlayer.onRocketSlideLast && !onSlide) {
+			mainPlayer.jumpVelocity = 0.0f;
+			mainPlayer.jumping = true;
+			newPosition.y = yOriginal;
+		}
+		mainPlayer.onRocketSlideLast = onSlide;
+		mainPlayer.inRocket = inRocket;
+		if (onSlide || inRocket) {
+			if (!mainPlayer.canGoFixed) {
+				if (newPosition.z < -1.55f) {
+					mainPlayer.canGoFixed = true;
+				}
+			}
+		}
+		if (inRocket) {
+			if (newPosition.z > -1.55f && mainPlayer.canGoFixed) {
+				mainPlayer.insideRocketFixed = true;
+			}
+		}
+		if (mainPlayer.insideRocketFixed) {
+			if (newPosition.z < -1.2f) {
+				newPosition.z = -1.2f;
+			}
+			if (newPosition.z > rocket.position.z - 0.95f) {
+				newPosition.z = rocket.position.z - 0.95f;
+			}
+			if (newPosition.x < rocket.position.x - 0.4f) {
+				newPosition.x = rocket.position.x - 0.4f;
+			}
+			if (newPosition.x > rocket.position.x + 0.4f) {
+				newPosition.x = rocket.position.x + 0.4f;
+			}
+			newPosition.y = 1.1f * SLIDE_TOP_HEIGHT + LEG_LENGTH;
+		}
+	}
+	return vec4(newPosition, onSlide);
 }
 
 void openDoorAnimation(float multiplier) {
@@ -125,13 +162,30 @@ void openDoorAnimation(float multiplier) {
 	doorRot = glm::clamp(doorRot, 0.0f, ROCKET_DOOR_OPEN_ROT);
 }
 
+bool openDoorBackup = false;
 void openDoor() {
-	float distance = glm::distance(rocket.position, mainPlayer.position);
-	if (distance < ROCKET_OPEN_DISTANCE) {
-		openDoorAnimation(ROCKET_OPEN_SPEED);
+	if (!mainPlayer.insideRocketFixed) {
+		float distance = glm::distance(rocket.position, mainPlayer.position);
+		if (distance < ROCKET_OPEN_DISTANCE) {
+			openDoorAnimation(ROCKET_OPEN_SPEED);
+		}
+		if (distance > ROCKET_OPEN_DISTANCE) {
+			openDoorAnimation(-ROCKET_OPEN_SPEED);
+		}
 	}
-	if (distance > ROCKET_OPEN_DISTANCE) {
-		openDoorAnimation(-ROCKET_OPEN_SPEED);
+	if (mainPlayer.insideRocketFixed && !openDoorBackup) {
+		openDoorAnimation(-ROCKET_OPEN_SPEED * 2.0f);
+	}
+	if (checkKeyDown(interactKey)) {
+		openDoorBackup = true;
+	}
+	if (openDoorBackup) {
+		openDoorAnimation(ROCKET_OPEN_SPEED * 2.0f);
+		if (doorRot == ROCKET_DOOR_OPEN_ROT) {
+			openDoorBackup = false;
+			mainPlayer.insideRocketFixed = false;
+			mainPlayer.canGoFixed = false;
+		}
 	}
 }
 

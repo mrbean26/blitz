@@ -152,7 +152,7 @@ void inventoryMainloop(){
     collectItems();
     givePlayerEntity();
     swapItems();
-    if(checkKeyDown(interactKeyInv)){
+    if(checkKeyDown(interactKeyInv) && !mainPlayer.insideRocketFixed){
         float distance = glm::distance(mainPlayer.position, mainBench.position);
 
         if(!inventoryOpen && distance > BENCH_DISTANCE){

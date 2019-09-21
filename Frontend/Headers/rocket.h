@@ -6,7 +6,7 @@
 #include <glm.hpp>
 using namespace glm;
 
-vec3 rocketColliders(vec3 original);
+vec4 rocketColliders(vec3 original, bool player = false);
 void renderRocket();
 
 void openDoorAnimation(float multiplier);

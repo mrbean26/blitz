@@ -35,6 +35,7 @@ using namespace std;
 #define TERRAIN_RESEARCH 1
 #define AIR_GRAVITY_RESEARCH 2
 
+extern float CROUCH_HEIGHT_TAKEAWAY;
 extern float lowestY;
 extern GLuint playerShader;
 void startPlayerShader();
@@ -58,6 +59,12 @@ class player {
 public:
 	string name = "Player ";
 	bool active = false, canMove = true, canMoveCamera = true;
+
+	bool onRocketSlideLast = false;
+	bool insideRocketFixed = false;
+	bool inRocket = false;
+	bool canGoFixed = true;
+
 	void begin();
 	void mainloop();
 

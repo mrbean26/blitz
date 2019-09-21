@@ -34,7 +34,7 @@ vector<string> inputLines;
 
 int diedText, respawnButton;
 int pauseKey;
-void player::begin(){
+void player::begin() {
 	playerTexture = loadTexture("assets/models/player/skin.png");
 	startCharacterVertices();
 	playerView = true;
@@ -56,7 +56,7 @@ void player::begin(){
 	allButtons[respawnButton].active = false;
 }
 
-void player::mainloop(){
+void player::mainloop() {
 	if (!WorldGeneration.startedBegin) { return; }
 	renderPlayer();
 	movement();
@@ -68,14 +68,14 @@ void player::mainloop(){
 	shoot();
 	reload();
 	respawn();
-	if(allButtons[respawnButton].clickUp){ respawning=true; }
-	if(redDelay < 0.0f && !respawning){ multiplyColour=vec3(1.0f); }
-	if(health < 1){ multiplyColour = vec3(2.5f, 0.2f, 0.2f); }
+	if (allButtons[respawnButton].clickUp) { respawning = true; }
+	if (redDelay < 0.0f && !respawning) { multiplyColour = vec3(1.0f); }
+	if (health < 1) { multiplyColour = vec3(2.5f, 0.2f, 0.2f); }
 	redDelay -= deltaTime;
 }
 
-void player::respawn(){
-	if(!respawning){
+void player::respawn() {
+	if (!respawning) {
 		return;
 	}
 	multiplyColour = vec3(0.2f, 2.5f, 0.2f);
@@ -85,16 +85,16 @@ void player::respawn(){
 	allButtons[respawnButton].active = false;
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	rotation.x -= deltaTime * DYING_ROTATE_SPEED / 4.0f;
-	if(rotation.x < 0.0f){
+	if (rotation.x < 0.0f) {
 		rotation.x = 0.0f;
 		respawning = false;
-		
+
 		// kill monstyers within radius
 		int monsterCount = allMonsters.size();
-		for(int m = 0; m < monsterCount; m++){
+		for (int m = 0; m < monsterCount; m++) {
 			vec3 pos = allMonsters[m].position;
 			float distance = glm::distance(pos, position);
-			if(distance < PLAYER_RESPAWN_KILL_RADIUS){
+			if (distance < PLAYER_RESPAWN_KILL_RADIUS) {
 				allMonsters[m].health = -10.0f;
 			}
 		}
@@ -150,8 +150,8 @@ void exitToMenus() {
 	allButtons = previousAllButtons;
 	allTexts = previousAllTexts;
 	debugText = debugTextPlaceholder;
-    alertText = alertTextPlaceholder;
-    alertBackground = alertBackgroundPlaceholder;
+	alertText = alertTextPlaceholder;
+	alertBackground = alertBackgroundPlaceholder;
 	loading = false;
 	mainPlayer.canMove = true;
 	paused = false;
@@ -244,7 +244,7 @@ void exitToMenus() {
 	// write
 	vector<string> newEntityLines = entitySaveLines();
 	int eLines = newEntityLines.size();
-	for(int e = 0; e < eLines; e++){
+	for (int e = 0; e < eLines; e++) {
 		currentAllLines[newVectorPos(&currentAllLines)] = newEntityLines[e];
 	}
 	allEntities.clear();
@@ -291,7 +291,7 @@ void pauseUIInteraction() {
 		}
 		if (paused) {
 			paused = false;
-			if(mainPlayer.health < 1){
+			if (mainPlayer.health < 1) {
 				allTexts[diedText].active = true;
 				allButtons[respawnButton].active = true;
 			}
@@ -304,26 +304,26 @@ void pauseUIInteraction() {
 }
 
 float startedLowestY = -999.0f;
-void player::deleteMemory(){
+void player::deleteMemory() {
 	position = vec3(0.0f);
 	rotation = vec3(0.0f);
 	health = 100;
 }
 
-void player::crouchMoveAnimation(float multiplier){
-	if(!finishedFirst){
+void player::crouchMoveAnimation(float multiplier) {
+	if (!finishedFirst) {
 		armRotation.z -= deltaTime * multiplier;
 		legRotation.z -= deltaTime * multiplier;
 
 		armRotationTwo.z += deltaTime * multiplier;
 		legRotationTwo.z += deltaTime * multiplier;
-		
+
 		float compare = degreesClamp(legRotationTwo.z);
-		if(compare > 30.0f){
+		if (compare > 30.0f) {
 			finishedFirst = true;
 		}
 	}
-	if(finishedFirst){
+	if (finishedFirst) {
 		armRotation.z += deltaTime * multiplier;
 		legRotation.z += deltaTime * multiplier;
 
@@ -331,18 +331,18 @@ void player::crouchMoveAnimation(float multiplier){
 		legRotationTwo.z -= deltaTime * multiplier;
 
 		float compare = degreesClamp(legRotationTwo.z);
-		if(compare < 360.0f && compare > 180.0f){
+		if (compare < 360.0f && compare > 180.0f) {
 			finishedFirst = false;
 		}
 	}
 }
 
-float degreesDistance(float v1, float v2){
+float degreesDistance(float v1, float v2) {
 	float one = degreesClamp(v1);
 	float two = degreesClamp(v2);
 	float distance = glm::distance(one, two);
-	if(distance > 180.0f){
-        distance = glm::distance(glm::max(one, two) - 360.0f, glm::min(one, two));
+	if (distance > 180.0f) {
+		distance = glm::distance(glm::max(one, two) - 360.0f, glm::min(one, two));
 	}
 	return distance;
 }
@@ -350,21 +350,21 @@ float degreesDistance(float v1, float v2){
 bool lastOnBench = false;
 float lastPitch;
 bool crouchingInCrater = false;
-void player::movement(){
-	if(health < 1){
+void player::movement() {
+	if (health < 1) {
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		rotation.x += deltaTime * DYING_ROTATE_SPEED;
 		allTexts[diedText].active = true;
 		allButtons[respawnButton].active = true;
-		if(rotation.x > 90.0f){
+		if (rotation.x > 90.0f) {
 			rotation.x = glm::clamp(rotation.x, 0.0f, 90.0f);
 			dead = true;
 			// drop items
-			for(int s = 0; s < SLOT_COUNT; s++){
-				if(allSlots[s].itemType != -1){
+			for (int s = 0; s < SLOT_COUNT; s++) {
+				if (allSlots[s].itemType != -1) {
 					// drop
 					item newEntity = allItems[allSlots[s].itemType];
-					newEntity.itemType = allSlots[s].itemType; 
+					newEntity.itemType = allSlots[s].itemType;
 					newEntity.modelPosition = position;
 					newEntity.quantity = allSlots[s].itemQuantity;
 					allItems[0].removeButton(allSlots[s].buttonIconIndex);
@@ -386,7 +386,7 @@ void player::movement(){
 	int leftKey = stoi(inputLines[1]);
 	int backKey = stoi(inputLines[2]);
 	int rightKey = stoi(inputLines[3]);
-	
+
 	int sprintKey = stoi(inputLines[7]);
 	int jumpKey = stoi(inputLines[9]);
 	int aimButton = stoi(inputLines[4]);
@@ -398,8 +398,8 @@ void player::movement(){
 		}
 	}
 
-	if(checkKeyDown(crouchKey) && !researching){
-		if(!changingCrouch){
+	if (checkKeyDown(crouchKey) && !researching) {
+		if (!changingCrouch) {
 			changingCrouch = true;
 			aiming = false;
 
@@ -418,11 +418,11 @@ void player::movement(){
 		}
 	}
 
-	if(changingCrouch){
-		if(!crouching && !researching){
+	if (changingCrouch) {
+		if (!crouching && !researching) {
 			rotation.x -= deltaTime * PLAYER_CROUCH_SPEED;
 			float clampedRotation = degreesClamp(rotation.x);
-			if(clampedRotation < 270.0f && clampedRotation > 90.0f){
+			if (clampedRotation < 270.0f && clampedRotation > 90.0f) {
 				rotation.x = 270.0f;
 				changingCrouch = false;
 				crouching = true;
@@ -431,15 +431,15 @@ void player::movement(){
 				armRotationTwo.x = 0.0f;
 				legRotation.x = 0.0f;
 				legRotationTwo.x = 0.0f;
-				finishedFirst = false; 
+				finishedFirst = false;
 				finishedSecond = false;
 				return;
 			}
 		}
-		if(crouching){
+		if (crouching) {
 			rotation.x += deltaTime * PLAYER_CROUCH_SPEED;
 			float clampedRotation = degreesClamp(rotation.x);
-			if(clampedRotation > 0.0f && clampedRotation < 270.0f){
+			if (clampedRotation > 0.0f && clampedRotation < 270.0f) {
 				rotation.x = 0.0f;
 				changingCrouch = false;
 				crouching = false;
@@ -448,28 +448,28 @@ void player::movement(){
 				armRotationTwo.z = 0.0f;
 				legRotation.z = 0.0f;
 				legRotationTwo.z = 0.0f;
-				finishedFirst = false; 
+				finishedFirst = false;
 				finishedSecond = false;
 			}
 		}
 		return;
 	}
-	if(crouching){
+	if (crouching) {
 		vec2 playerFloor = vec2(position.x, position.z);
 
 		int mountainIndex = -1;
 		int mCount = currentAllMountainPositions.size();
-		for(int m = 0; m < mCount; m++){
+		for (int m = 0; m < mCount; m++) {
 			vec2 pos = currentAllMountainPositions[m]; pos.y *= -1.0f;
 			vec3 sca = currentAllMountainScales[m];
 			float currentRad = (sca.x * 100.0f) * 0.025f;
 			float distance = glm::distance(pos, playerFloor);
-			if(currentRad - distance > 0){
+			if (currentRad - distance > 0) {
 				mountainIndex = m;
 			}
 		}
 		crouchingInCrater = false;
-		if(mountainIndex > -1){
+		if (mountainIndex > -1) {
 			vec2 floorPos = vec2(position.x, position.z);
 			vec2 mPosition = currentAllMountainPositions[mountainIndex];
 			mPosition.y = -mPosition.y;
@@ -487,18 +487,18 @@ void player::movement(){
 			main = -((main - 90.0f) / 90.0f);
 
 			float angle = -upAngle + 90.0f;
-			if(main < 0){
+			if (main < 0) {
 				angle = -downAngle + 90.0f;
 				main = -main;
 			}
-			if(scale.z < 0){ 
+			if (scale.z < 0) {
 				angle = -angle;
 				crouchingInCrater = true;
 			}
 			rotation.x = angle * main - 90.0f;
 			position.y += 0.5f;
 		}
-		if(mountainIndex ==  -1){
+		if (mountainIndex == -1) {
 			rotation.x = 270.0f;
 			rotation.z = 0.0f;
 		}
@@ -508,20 +508,20 @@ void player::movement(){
 	if (checkKey(backKey) && !checkKey(forwardKey)) {
 		movingMultiplier = 25.0f;
 		velocity = vec3(BACKWARD_SPEED);
-		if(crouching){
+		if (crouching) {
 			velocity = vec3(BACKWARD_SPEED / 3.0f);
 		}
 	}
 	if (checkKey(forwardKey) && !checkKey(backKey)) {
 		velocity = vec3(WALK_SPEED);
-		if(crouching){
+		if (crouching) {
 			velocity = vec3(WALK_SPEED / 3.0f);
 		}
 		movingMultiplier = 30.0f;
 		if (checkKey(sprintKey)) {
 			movingMultiplier = 50.0f;
 			velocity = vec3(RUN_SPEED);
-			if(crouching){
+			if (crouching) {
 				velocity = vec3(RUN_SPEED / 3.0f);
 			}
 		}
@@ -537,13 +537,13 @@ void player::movement(){
 			jumpVelocity = 0.0f;
 			jumping = false;
 		}
-		/* I don't think this affects jumping mechanics 
+		/* I don't think this affects jumping mechanics
 		if (lowestY > startedLowestY) {
 			if (position.y < lowestY + 0.02f) {
 				jumpVelocity = 0.0f;
 				jumping = false;
 			}
-			
+
 		}
 		if (lowestY < startedLowestY) {
 			if (position.y < lowestY + 0.02f) {
@@ -555,16 +555,16 @@ void player::movement(){
 	}
 	velocity.y = jumpVelocity;
 	// rotations
-	if (checkKey(rightKey)) { 
+	if (checkKey(rightKey)) {
 		rotation.y -= deltaTime * PLAYER_ROTATE_SPEED;
 	}
 	if (checkKey(leftKey)) {
 		rotation.y += deltaTime * PLAYER_ROTATE_SPEED;
 	}
-	if(!crouching){
+	if (!crouching) {
 		runAnimation(movingMultiplier);
 	}
-	if(crouching){
+	if (crouching) {
 		crouchMoveAnimation(movingMultiplier);
 	}
 	if (checkKey(aimButton) && !crouching && !researching) {
@@ -582,17 +582,17 @@ void player::movement(){
 		if (!equippingReloading) {
 			armRotationTwo.z = -45.0f;
 		}
-        armRotation.x = playerPitch + 90.0f;
-        if(!equippingReloading){
-            armRotationTwo.x = playerPitch + 90.0f;
-        }
-		if(crouching){
+		armRotation.x = playerPitch + 90.0f;
+		if (!equippingReloading) {
+			armRotationTwo.x = playerPitch + 90.0f;
+		}
+		if (crouching) {
 			armRotation.x += 135.0f;
 			armRotationTwo.x += 135.0f;
 			armRotation.x = glm::clamp(armRotation.x, 250.0f, 360.0f);
 			armRotationTwo.x = glm::clamp(armRotationTwo.x, 250.0f, 360.0f);
 		}
-		if(!crouching){
+		if (!crouching) {
 			armRotation.x = glm::clamp(armRotation.x, 10.0f, 170.0f);
 			armRotationTwo.x = glm::clamp(armRotationTwo.x, 10.0f, 170.0f);
 		}
@@ -620,7 +620,7 @@ void player::movement(){
 	}
 
 	if (equippingReloading) {
-        equipReloadAnimation(allWeapons[currentWeapon].equipTime);
+		equipReloadAnimation(allWeapons[currentWeapon].equipTime);
 	}
 
 	// physical movement
@@ -643,34 +643,45 @@ float distanceIntoCircle(float radius, vec2 circlePos, vec2 playerPos) {
 
 int insideBuildingIndex = -1;
 float lowestY = -999.0f;
-void player::collisions(){
+void player::collisions() {
 	// mountains and craters
 	vec4 cameraCollide = terrainColliders(cameraThirdPos, 0.0f);
-	cameraMountainIndex = (int) cameraCollide.w - 1;
+	cameraMountainIndex = (int)cameraCollide.w - 1;
 	float usedY = LEG_LENGTH;
-	if(crouching){ 
+	if (crouching) {
 		usedY = usedY - CROUCH_HEIGHT_TAKEAWAY;
-		if(crouchingInCrater){
+		if (crouchingInCrater) {
 			usedY += CROUCH_CRATER_ADD;
 		}
 	}
+
+	vec4 rocketCollide = rocketColliders(position, true);
+	lowestY = rocketCollide.y;
+	position.x = rocketCollide.x;
+	if (position.y < rocketCollide.y && jumping) {
+		position.y = rocketCollide.y;
+	}
+	if (!jumping) {
+		position.y = rocketCollide.y;
+	}
+	position.z = rocketCollide.z;
+
 	vec4 playerCollide = terrainColliders(position, usedY);
-	bool inMountain = (int) playerCollide.w > 0;
-	bool cameraInMountain = (int) cameraCollide.w > 0;
-	if (position.y < playerCollide.y && jumping) { position.y = playerCollide.y; }
-	if (!jumping) { position.y = playerCollide.y; }
+	bool inMountain = (int)playerCollide.w > 0;
+	bool cameraInMountain = (int)cameraCollide.w > 0;
+	if (position.y < playerCollide.y && jumping && !rocketCollide.w) { position.y = playerCollide.y; }
+	if (!jumping && !rocketCollide.w) { position.y = playerCollide.y; }
 	lowestY = playerCollide.y;
 	lowestCameraY = cameraCollide.y + 0.5f;
 	bool useless = false;
 	buildCollisions(position, insideBuildingIndex, jumpVelocity, lastOnBench, useless);
-	position = rocketColliders(position);
 	// flat terrain collisions
 	float legPos = position.y - LEG_LENGTH;
-	if(crouching){
+	if (crouching) {
 		legPos += CROUCH_HEIGHT_TAKEAWAY;
 	}
 	if (legPos < 0 && !inMountain && !jumping) { position.y += -legPos; }
-	if (!inMountain) { lowestY = 2.2f; }
+	if (!inMountain && rocketCollide.y == LEG_LENGTH) { lowestY = 2.2f; }
 	if (!cameraInMountain) { lowestCameraY = 0.5f; }
 	// distance outside of area scale
 	position.x = clamp(position.x, 0.0f, currentPlanetScale.x);
@@ -716,7 +727,7 @@ vec3 cameraBuildingCollisions(vec3 original) {
 			if (bType == 0 || bType == 1) {
 				// side 1
 				if (original.x >= bPos.x - 4.0f * bSca.x && original.x <= bPos.x + 4.0f * bSca.x ||
-						playerPos.x >= bPos.x - 4.0f * bSca.x && playerPos.x <= bPos.x + 4.0f * bSca.x) {
+					playerPos.x >= bPos.x - 4.0f * bSca.x && playerPos.x <= bPos.x + 4.0f * bSca.x) {
 					if (playerPos.z <= bPos.z - 4.0f * bSca.z) {
 						if (original.z >= cameraDifference + bPos.z - 4.0f * bSca.z) {
 							original.z = cameraDifference + bPos.z - 4.0f * bSca.z;
@@ -725,7 +736,7 @@ vec3 cameraBuildingCollisions(vec3 original) {
 				}
 				// side 2
 				if (original.x >= bPos.x - 4.0f * bSca.x && original.x <= bPos.x + 4.0f * bSca.x ||
-						playerPos.x >= bPos.x - 4.0f * bSca.x && playerPos.x <= bPos.x + 4.0f * bSca.x) {
+					playerPos.x >= bPos.x - 4.0f * bSca.x && playerPos.x <= bPos.x + 4.0f * bSca.x) {
 					if (playerPos.z >= bPos.z + 4.0f * bSca.z) {
 						if (original.z <= -cameraDifference + bPos.z + 4.0f + bSca.z) {
 							original.z = -cameraDifference + bPos.z + 4.0f * bSca.z;
@@ -753,9 +764,9 @@ vec3 cameraBuildingCollisions(vec3 original) {
 			}
 			if (bType == 1) {
 				if ((original.x >= bPos.x - 6.0f * bSca.x && original.x <= bPos.x + 6.0f * bSca.x) ||
-						(playerPos.x >= bPos.x - 6.0f * bSca.x && playerPos.x <= bPos.x + 6.0f * bSca.x)) {
+					(playerPos.x >= bPos.x - 6.0f * bSca.x && playerPos.x <= bPos.x + 6.0f * bSca.x)) {
 					if ((original.z >= bPos.z - 6.0f * bSca.z && original.z <= bPos.z + 6.0f * bSca.z) ||
-							(playerPos.z >= bPos.z - 6.0f * bSca.z && playerPos.z <= bPos.z + 6.0f * bSca.z)) {
+						(playerPos.z >= bPos.z - 6.0f * bSca.z && playerPos.z <= bPos.z + 6.0f * bSca.z)) {
 						if (original.y >= cameraDifference + bPos.y + 6.0f * bSca.y) {
 							original.y = cameraDifference + bPos.y + 6.0f * bSca.y;
 						}
@@ -808,10 +819,10 @@ vec3 cameraBuildingCollisions(vec3 original) {
 }
 
 bool lastFrameMove = true;
-void player::cameraMovement(){
-	if (!canMove || !canMoveCamera) { 
+void player::cameraMovement() {
+	if (!canMove || !canMoveCamera) {
 		lastFrameMove = false;
-		return; 
+		return;
 	}
 	vec2 mouseDiffer = mouseDifferences();
 	if (lastFrameMove && health > 0) {
@@ -825,27 +836,27 @@ void player::cameraMovement(){
 	lastFrameMove = true;
 }
 
-void player::renderPlayer(){
+void player::renderPlayer() {
 	vector<vec3> positions = { headPosition, torsoPosition, armPosition, legPosition, armPositionTwo, legPositionTwo };
 	vector<vec3> rotations = { headRotation, torsoRotation, armRotation, legRotation, armRotationTwo, legRotationTwo };
 	vector<vec3> scales = { headScale, torsoScale, armScale, legScale, armScaleTwo, legScaleTwo };
 
 	vector<readyTextureModel> models = { headModel, torsoModel, armModel, legModel, armModel, legModel };
 	vec3 headParentPos = position - vec3(
-		sin(radians(rotation.y)) * sin(radians(rotation.x)) * -1.2f, 
+		sin(radians(rotation.y)) * sin(radians(rotation.x)) * -1.2f,
 		-1.2f * cos(radians(rotation.x)),
 		cos(radians(rotation.y)) * sin(radians(rotation.x)) * -1.2f);
 	vec3 legParentPos = position - vec3(
-		sin(radians(rotation.y)) * sin(radians(rotation.x)) * 0.72f, 
+		sin(radians(rotation.y)) * sin(radians(rotation.x)) * 0.72f,
 		0.72f * cos(radians(rotation.x)),
 		cos(radians(rotation.y)) * sin(radians(rotation.x)) * 0.72f);
 	vec3 armParentPos = position + vec3(
-		0.55f * sin(radians(rotation.x)) * sin(radians(rotation.y)), 
-		0.55f * cos(radians(rotation.x)), 
+		0.55f * sin(radians(rotation.x)) * sin(radians(rotation.y)),
+		0.55f * cos(radians(rotation.x)),
 		0.55f * sin(radians(rotation.x)) * cos(radians(rotation.y)));
 	vector<vec3> parentPositions = { headParentPos, position, armParentPos, legParentPos, armParentPos, legParentPos };
 	for (int i = 0; i < 6; i++) {
-		if(i < 2 && aiming){
+		if (i < 2 && aiming) {
 			continue;
 		}
 
@@ -859,7 +870,7 @@ void player::renderPlayer(){
 		}
 
 		vec3 combinedScale = scale * scales[i];
-		models[i].render(modelMatrix(positions[i], rotations[i], combinedScale, true, parentPositions[i], rotation), true, 
+		models[i].render(modelMatrix(positions[i], rotations[i], combinedScale, true, parentPositions[i], rotation), true,
 			vec3(1.0f), inWater, WorldGeneration.waterMultiplyColour);
 	}
 	// laser
@@ -870,7 +881,7 @@ void player::renderPlayer(){
 		glBindVertexArray(laserVAO);
 		setShaderFloat(playerShader, "alpha", 0.5f);
 		float xRot = playerPitch;
-		if(crouching){
+		if (crouching) {
 			xRot += 135.0f;
 		}
 		setMat4(playerShader, "model", modelMatrix(vec3(2.0f, 0.0f, -0.65f), vec3(armRotation.x - 90.0f, 90.0f, 0.0f), vec3(250.0f, 0.1f, 0.1f),
@@ -879,9 +890,9 @@ void player::renderPlayer(){
 		glLinkProgram(playerShader);
 		// weapon
 		if (currentWeapon == 0) {
-			allWeapons[currentWeapon].render(modelMatrix(vec3(1.2f, -0.3f, -0.7f), 
-				vec3(armRotation.x - 90.0f, 90.0f, 0.0f), vec3(0.4f), true, 
-					armParentPos, rotation));
+			allWeapons[currentWeapon].render(modelMatrix(vec3(1.2f, -0.3f, -0.7f),
+				vec3(armRotation.x - 90.0f, 90.0f, 0.0f), vec3(0.4f), true,
+				armParentPos, rotation));
 		}
 		if (currentWeapon == 1) {
 			allWeapons[currentWeapon].render(modelMatrix(vec3(0.6f, 0.0f, 1.2f),
@@ -891,7 +902,7 @@ void player::renderPlayer(){
 	}
 }
 
-void player::startCharacterVertices(){
+void player::startCharacterVertices() {
 	startHead();
 	startArm();
 	startTorso();
@@ -948,7 +959,7 @@ void player::startLaserForBullets() {
 	glEnableVertexAttribArray(1);
 }
 
-void player::startHead(){
+void player::startHead() {
 	vector<float> headVerts = { -2.000000f, -2.000000f, 2.000000f, 0.214239f, 0.703683f, 2.000000f, -2.000000f, 2.000000f, 0.355532f, 0.703684f, 2.000000f, 2.000000f, 2.000000f, 0.355533f, 0.844979f, -2.000000f, -2.000000f, 2.000000f, 0.214239f, 0.703683f, 2.000000f, 2.000000f, 2.000000f, 0.355533f, 0.844979f, -2.000000f, 2.000000f, 2.000000f, 0.214239f, 0.844978f, -2.000000f, 2.000000f, 2.000000f, 0.214239f, 0.844978f, 2.000000f, 2.000000f, 2.000000f, 0.355533f, 0.844979f, 2.000000f, 2.000000f, -2.000000f, 0.355532f, 0.986273f, -2.000000f, 2.000000f, 2.000000f, 0.214239f, 0.844978f, 2.000000f, 2.000000f, -2.000000f, 0.355532f, 0.986273f, -2.000000f, 2.000000f, -2.000000f, 0.214239f, 0.986273f, -2.000000f, 2.000000f, -2.000000f, 0.638122f, 0.844978f, 2.000000f, 2.000000f, -2.000000f, 0.496827f, 0.844978f, 2.000000f, -2.000000f, -2.000000f, 0.496827f, 0.703683f, -2.000000f, 2.000000f, -2.000000f, 0.638122f, 0.844978f, 2.000000f, -2.000000f, -2.000000f, 0.496827f, 0.703683f, -2.000000f, -2.000000f, -2.000000f, 0.638122f, 0.703684f, -2.000000f, -2.000000f, -2.000000f, 0.214239f, 0.562390f, 2.000000f, -2.000000f, -2.000000f, 0.355533f, 0.562389f, 2.000000f, -2.000000f, 2.000000f, 0.355532f, 0.703684f, -2.000000f, -2.000000f, -2.000000f, 0.214239f, 0.562390f, 2.000000f, -2.000000f, 2.000000f, 0.355532f, 0.703684f, -2.000000f, -2.000000f, 2.000000f, 0.214239f, 0.703683f, 2.000000f, -2.000000f, 2.000000f, 0.355532f, 0.703684f, 2.000000f, -2.000000f, -2.000000f, 0.496827f, 0.703683f, 2.000000f, 2.000000f, -2.000000f, 0.496827f, 0.844978f, 2.000000f, -2.000000f, 2.000000f, 0.355532f, 0.703684f, 2.000000f, 2.000000f, -2.000000f, 0.496827f, 0.844978f, 2.000000f, 2.000000f, 2.000000f, 0.355533f, 0.844979f, -2.000000f, -2.000000f, -2.000000f, 0.072944f, 0.703683f, -2.000000f, -2.000000f, 2.000000f, 0.214239f, 0.703683f, -2.000000f, 2.000000f, 2.000000f, 0.214239f, 0.844978f, -2.000000f, -2.000000f, -2.000000f, 0.072944f, 0.703683f, -2.000000f, 2.000000f, 2.000000f, 0.214239f, 0.844978f, -2.000000f, 2.000000f, -2.000000f, 0.072944f, 0.844979f, };
 	readyTextureModel newHead(headVerts, playerTexture, true);
 	headModel = newHead;
@@ -963,10 +974,10 @@ void player::startArm() {
 void player::startLeg() {
 	vector<float> legVerts = { -1.000000f, -0.000000f, 1.000000f, 0.839335f, 0.203811f, 1.000000f, -0.000000f, 1.000000f, 0.908730f, 0.203811f, 1.000000f, 3.000000f, 1.000000f, 0.908730f, 0.307904f, -1.000000f, -0.000000f, 1.000000f, 0.839335f, 0.203811f, 1.000000f, 3.000000f, 1.000000f, 0.908730f, 0.307904f, -1.000000f, 3.000000f, 1.000000f, 0.839335f, 0.307904f, -1.000000f, -3.000000f, 1.000000f, 0.839335f, 0.099718f, 1.000000f, -0.000000f, 1.000000f, 0.908730f, 0.203811f, -1.000000f, -0.000000f, 1.000000f, 0.839335f, 0.203811f, -1.000000f, -3.000000f, 1.000000f, 0.839335f, 0.099718f, 1.000000f, -3.000000f, 1.000000f, 0.908731f, 0.099718f, 1.000000f, -0.000000f, 1.000000f, 0.908730f, 0.203811f, -1.000000f, 3.000000f, 1.000000f, 0.839335f, 0.307904f, 1.000000f, 3.000000f, 1.000000f, 0.908730f, 0.307904f, 1.000000f, 3.000000f, -1.000000f, 0.908730f, 0.377299f, -1.000000f, 3.000000f, 1.000000f, 0.839335f, 0.307904f, 1.000000f, 3.000000f, -1.000000f, 0.908730f, 0.377299f, -1.000000f, 3.000000f, -1.000000f, 0.839335f, 0.377299f, -1.000000f, 3.000000f, -1.000000f, 0.769940f, 0.307904f, 1.000000f, 3.000000f, -1.000000f, 0.700545f, 0.307904f, 1.000000f, 0.000000f, -1.000000f, 0.700545f, 0.203811f, -1.000000f, 3.000000f, -1.000000f, 0.769940f, 0.307904f, 1.000000f, 0.000000f, -1.000000f, 0.700545f, 0.203811f, -1.000000f, 0.000000f, -1.000000f, 0.769940f, 0.203811f, -1.000000f, 0.000000f, -1.000000f, 0.769940f, 0.203811f, 1.000000f, 0.000000f, -1.000000f, 0.700545f, 0.203811f, 1.000000f, -3.000000f, -1.000000f, 0.700545f, 0.099718f, -1.000000f, 0.000000f, -1.000000f, 0.769940f, 0.203811f, 1.000000f, -3.000000f, -1.000000f, 0.700545f, 0.099718f, -1.000000f, -3.000000f, -1.000000f, 0.769940f, 0.099718f, 1.000000f, -0.000000f, 1.000000f, 0.908730f, 0.203811f, 1.000000f, 0.000000f, -1.000000f, 0.978126f, 0.203811f, 1.000000f, 3.000000f, -1.000000f, 0.978126f, 0.307904f, 1.000000f, -0.000000f, 1.000000f, 0.908730f, 0.203811f, 1.000000f, 3.000000f, -1.000000f, 0.978126f, 0.307904f, 1.000000f, 3.000000f, 1.000000f, 0.908730f, 0.307904f, 1.000000f, -3.000000f, 1.000000f, 0.908731f, 0.099718f, 1.000000f, 0.000000f, -1.000000f, 0.978126f, 0.203811f, 1.000000f, -0.000000f, 1.000000f, 0.908730f, 0.203811f, 1.000000f, -3.000000f, 1.000000f, 0.908731f, 0.099718f, 1.000000f, -3.000000f, -1.000000f, 0.978126f, 0.099718f, 1.000000f, 0.000000f, -1.000000f, 0.978126f, 0.203811f, -1.000000f, 0.000000f, -1.000000f, 0.769940f, 0.203811f, -1.000000f, -0.000000f, 1.000000f, 0.839335f, 0.203811f, -1.000000f, 3.000000f, 1.000000f, 0.839335f, 0.307904f, -1.000000f, 0.000000f, -1.000000f, 0.769940f, 0.203811f, -1.000000f, 3.000000f, 1.000000f, 0.839335f, 0.307904f, -1.000000f, 3.000000f, -1.000000f, 0.769940f, 0.307904f, -1.000000f, -3.000000f, -1.000000f, 0.769940f, 0.099718f, -1.000000f, -0.000000f, 1.000000f, 0.839335f, 0.203811f, -1.000000f, 0.000000f, -1.000000f, 0.769940f, 0.203811f, -1.000000f, -3.000000f, -1.000000f, 0.769940f, 0.099718f, -1.000000f, -3.000000f, 1.000000f, 0.839335f, 0.099718f, -1.000000f, -0.000000f, 1.000000f, 0.839335f, 0.203811f, 1.000000f, -3.000000f, 1.000000f, 0.908731f, 0.099718f, -1.000000f, -3.000000f, 1.000000f, 0.839335f, 0.099718f, -1.000000f, -3.000000f, -1.000000f, 0.839335f, 0.030323f, 1.000000f, -3.000000f, 1.000000f, 0.908731f, 0.099718f, -1.000000f, -3.000000f, -1.000000f, 0.839335f, 0.030323f, 1.000000f, -3.000000f, -1.000000f, 0.908730f, 0.030323f, };
 	readyTextureModel newLeg(legVerts, playerTexture, true);
-	legModel = newLeg;	
+	legModel = newLeg;
 }
 
-void player::runAnimation(float multiplier){
+void player::runAnimation(float multiplier) {
 	if (multiplier == 0.0f) {
 		int upDown = 0;
 		if (legRotationTwo.x > 0) {
@@ -1016,7 +1027,7 @@ void player::runAnimation(float multiplier){
 		}
 		legRotation.x -= deltaTime * 2.5f * multiplier;
 		legRotationTwo.x += deltaTime * 2.5f * multiplier;
-		
+
 		if (legRotationTwo.x >= 30.0f) {
 			finishedFirst = true;
 		}
@@ -1058,10 +1069,10 @@ void player::runAnimation(float multiplier){
 void player::startTorso() {
 	vector<float> torsoVerts = { -2.002170f, -3.000000f, 1.000000f, 0.465780f, 0.391188f, 1.997840f, -3.000000f, 1.000000f, 0.607623f, 0.391188f, 1.997840f, 3.000000f, 1.000000f, 0.607623f, 0.603950f, -2.002170f, -3.000000f, 1.000000f, 0.465780f, 0.391188f, 1.997840f, 3.000000f, 1.000000f, 0.607623f, 0.603950f, -2.002170f, 3.000000f, 1.000000f, 0.465781f, 0.603950f, -2.002170f, 3.000000f, 1.000000f, 0.465781f, 0.603950f, 1.997840f, 3.000000f, 1.000000f, 0.607623f, 0.603950f, 2.002170f, 3.000000f, -1.000000f, 0.607776f, 0.674871f, -2.002170f, 3.000000f, 1.000000f, 0.465781f, 0.603950f, 2.002170f, 3.000000f, -1.000000f, 0.607776f, 0.674871f, -1.997840f, 3.000000f, -1.000000f, 0.465934f, 0.674871f, -1.997840f, 3.000000f, -1.000000f, 0.820385f, 0.603950f, 2.002170f, 3.000000f, -1.000000f, 0.678543f, 0.603950f, 2.002170f, -3.000000f, -1.000000f, 0.678543f, 0.391188f, -1.997840f, 3.000000f, -1.000000f, 0.820385f, 0.603950f, 2.002170f, -3.000000f, -1.000000f, 0.678543f, 0.391188f, -1.997840f, -3.000000f, -1.000000f, 0.820385f, 0.391188f, -1.997840f, -3.000000f, -1.000000f, 0.465934f, 0.320267f, 2.002170f, -3.000000f, -1.000000f, 0.607776f, 0.320268f, 1.997840f, -3.000000f, 1.000000f, 0.607623f, 0.391188f, -1.997840f, -3.000000f, -1.000000f, 0.465934f, 0.320267f, 1.997840f, -3.000000f, 1.000000f, 0.607623f, 0.391188f, -2.002170f, -3.000000f, 1.000000f, 0.465780f, 0.391188f, 1.997840f, -3.000000f, 1.000000f, 0.607623f, 0.391188f, 2.002170f, -3.000000f, -1.000000f, 0.678543f, 0.391188f, 2.002170f, 3.000000f, -1.000000f, 0.678543f, 0.603950f, 1.997840f, -3.000000f, 1.000000f, 0.607623f, 0.391188f, 2.002170f, 3.000000f, -1.000000f, 0.678543f, 0.603950f, 1.997840f, 3.000000f, 1.000000f, 0.607623f, 0.603950f, -1.997840f, -3.000000f, -1.000000f, 0.394860f, 0.391188f, -2.002170f, -3.000000f, 1.000000f, 0.465780f, 0.391188f, -2.002170f, 3.000000f, 1.000000f, 0.465781f, 0.603950f, -1.997840f, -3.000000f, -1.000000f, 0.394860f, 0.391188f, -2.002170f, 3.000000f, 1.000000f, 0.465781f, 0.603950f, -1.997840f, 3.000000f, -1.000000f, 0.394860f, 0.603950f, };
 	readyTextureModel newTorso(torsoVerts, playerTexture, true);
-	torsoModel = newTorso;	
+	torsoModel = newTorso;
 }
 
-void startPlayerShader(){
+void startPlayerShader() {
 	int vertShad = createShader("assets/shaders/terrainVert.txt", GL_VERTEX_SHADER);
 	int fragShad = createShader("assets/shaders/terrainFrag.txt", GL_FRAGMENT_SHADER);
 	playerShader = createProgram({ vertShad, fragShad });
@@ -1108,7 +1119,7 @@ void player::shoot() {
 		bulletRot.y = rotation.y + 90.0f;
 		bulletRot.z = playerPitch;
 
-		if(crouching){
+		if (crouching) {
 			bulletRot.z += 45.0f;
 		}
 
@@ -1126,74 +1137,74 @@ void player::shoot() {
 
 void player::equipReloadAnimation(float multiplier) {
 	canShoot = false;
-    float maxSpeed = (WEAPON_RELOAD_MAX_ROT * 6.0f) / 0.5f;
-    int maxStep = 5;
-    if(multiplier > maxSpeed){
-        multiplier = (WEAPON_RELOAD_MAX_ROT * 4.0f) / 0.5f;
-        maxStep = 3;
-    }
+	float maxSpeed = (WEAPON_RELOAD_MAX_ROT * 6.0f) / 0.5f;
+	int maxStep = 5;
+	if (multiplier > maxSpeed) {
+		multiplier = (WEAPON_RELOAD_MAX_ROT * 4.0f) / 0.5f;
+		maxStep = 3;
+	}
 	if (equippingStep == 0) {
 		totalGoneUpEquipping += deltaTime * multiplier;
-        armRotationTwo.x = playerPitch + 90.0f;
-        armRotationTwo.x += totalGoneUpEquipping;
+		armRotationTwo.x = playerPitch + 90.0f;
+		armRotationTwo.x += totalGoneUpEquipping;
 		if (totalGoneUpEquipping > WEAPON_RELOAD_MAX_ROT) {
-            equippingStep = 1;
+			equippingStep = 1;
 		}
 	}
 	if (equippingStep == 1) {
 		totalGoneUpEquipping -= deltaTime * multiplier;
-        armRotationTwo.x = playerPitch + 90.0f;
-        armRotationTwo.x += totalGoneUpEquipping;
+		armRotationTwo.x = playerPitch + 90.0f;
+		armRotationTwo.x += totalGoneUpEquipping;
 		if (totalGoneUpEquipping < 0.0f) {
-            equippingStep = 2;
+			equippingStep = 2;
 			resetArms();
 			totalGoneUpEquipping = 0.0f;
 		}
 	}
-    if(equippingStep == 2){
+	if (equippingStep == 2) {
 		armRotationTwo.x = playerPitch + 90.0f;
-        totalGoneUpEquipping += deltaTime * multiplier;
-        armRotationTwo.z = -45.0f;
-        armRotationTwo.z += totalGoneUpEquipping;
-        if(totalGoneUpEquipping > WEAPON_RELOAD_MAX_ROT){
-            equippingStep = 3;
-            armRotationTwo.z = WEAPON_RELOAD_MAX_ROT;
-        }
-    }
-    if(equippingStep == 3){
+		totalGoneUpEquipping += deltaTime * multiplier;
+		armRotationTwo.z = -45.0f;
+		armRotationTwo.z += totalGoneUpEquipping;
+		if (totalGoneUpEquipping > WEAPON_RELOAD_MAX_ROT) {
+			equippingStep = 3;
+			armRotationTwo.z = WEAPON_RELOAD_MAX_ROT;
+		}
+	}
+	if (equippingStep == 3) {
 		armRotationTwo.x = playerPitch + 90.0f;
-        totalGoneUpEquipping -= deltaTime * multiplier;
-        armRotationTwo.z = -45.0f;
-        armRotationTwo.z += totalGoneUpEquipping;
-        if(totalGoneUpEquipping < 0.0f){
-            totalGoneUpEquipping = 0.0f;
-            equippingStep = 4;
-            if(maxStep == 3){
-                equippingReloading = false;
-                totalGoneUpEquipping = 0.0f;
-                equippingStep = 0;
-                return;
-            }
-        }
-    }
-    if(equippingStep == 4){
-        totalGoneUpEquipping += deltaTime * multiplier;
-        armRotationTwo.x = playerPitch + 90.0f;
-        armRotationTwo.x -= totalGoneUpEquipping;
-        if (totalGoneUpEquipping > WEAPON_RELOAD_MAX_ROT) {
-            equippingStep = 5;
-        }
-    }
-    if(equippingStep == 5){
-        totalGoneUpEquipping -= deltaTime * multiplier;
-        armRotationTwo.x = playerPitch + 90.0f;
-        armRotationTwo.x -= totalGoneUpEquipping;
-        if(totalGoneUpEquipping < 0.0f){
-            equippingReloading = false;
-            totalGoneUpEquipping = 0.0f;
-            equippingStep = 0;
-        }
-    }
+		totalGoneUpEquipping -= deltaTime * multiplier;
+		armRotationTwo.z = -45.0f;
+		armRotationTwo.z += totalGoneUpEquipping;
+		if (totalGoneUpEquipping < 0.0f) {
+			totalGoneUpEquipping = 0.0f;
+			equippingStep = 4;
+			if (maxStep == 3) {
+				equippingReloading = false;
+				totalGoneUpEquipping = 0.0f;
+				equippingStep = 0;
+				return;
+			}
+		}
+	}
+	if (equippingStep == 4) {
+		totalGoneUpEquipping += deltaTime * multiplier;
+		armRotationTwo.x = playerPitch + 90.0f;
+		armRotationTwo.x -= totalGoneUpEquipping;
+		if (totalGoneUpEquipping > WEAPON_RELOAD_MAX_ROT) {
+			equippingStep = 5;
+		}
+	}
+	if (equippingStep == 5) {
+		totalGoneUpEquipping -= deltaTime * multiplier;
+		armRotationTwo.x = playerPitch + 90.0f;
+		armRotationTwo.x -= totalGoneUpEquipping;
+		if (totalGoneUpEquipping < 0.0f) {
+			equippingReloading = false;
+			totalGoneUpEquipping = 0.0f;
+			equippingStep = 0;
+		}
+	}
 }
 
 void player::resetArms() {
@@ -1216,20 +1227,20 @@ void player::reload() {
 	}
 }
 
-void player::monsterColliders(){
+void player::monsterColliders() {
 	vec2 playerFloorPos = vec2(position.x, position.z);
 	float colliderDistance = 3.0f;
 
 	int mCount = allMonsters.size();
-	for(int m = 0; m < mCount; m++){
+	for (int m = 0; m < mCount; m++) {
 		vec3 pos = allMonsters[m].position;
 		vec2 floorPos = vec2(pos.x, pos.z);
 
 		float bearing = bearingTwo(playerFloorPos, floorPos);
 		float distance = glm::distance(playerFloorPos, floorPos);
-		
-		if(!allMonsters[m].attacking){
-			if(distance < colliderDistance){
+
+		if (!allMonsters[m].attacking) {
+			if (distance < colliderDistance) {
 				pos.x = position.x + sin(radians(bearing)) * colliderDistance;
 				pos.z = position.z + cos(radians(bearing)) * colliderDistance;
 				allMonsters[m].position = pos;
@@ -1265,7 +1276,7 @@ void player::researchAnimation(float multiplier) {
 		}
 		researcherModel.render(modelMatrix(researcherPosition, vec3(0.0f, rotation.y - 90.0f, -armRotation.x + 90.0f), vec3(1.0f)),
 			true, vec3(1.0f), cameraThirdPos.y < 0.0f, WorldGeneration.waterMultiplyColour);
-		researcherStick.render(modelMatrix(vec3(0.0f, -stickScale, 0.0f), vec3(0.0f, rotation.y - 90.0f, 0.0f), vec3(0.05f, stickScale, 0.05f), true, 
+		researcherStick.render(modelMatrix(vec3(0.0f, -stickScale, 0.0f), vec3(0.0f, rotation.y - 90.0f, 0.0f), vec3(0.05f, stickScale, 0.05f), true,
 			researcherPosition, vec3(armRotation.x - 90.0f, 0.0f, 0.0f)), true, vec3(1.0f), cameraThirdPos.y < 0.0f, WorldGeneration.waterMultiplyColour);
 		return;
 	}
@@ -1331,7 +1342,7 @@ void player::researchAnimation(float multiplier) {
 		}
 	}
 	// render
-	researcherModel.render(modelMatrix(researcherPosition, vec3(0.0f, rotation.y - 90.0f, -armRotation.x + 90.0f), vec3(1.0f)), 
+	researcherModel.render(modelMatrix(researcherPosition, vec3(0.0f, rotation.y - 90.0f, -armRotation.x + 90.0f), vec3(1.0f)),
 		true, vec3(1.0f), cameraThirdPos.y < 0.0f, WorldGeneration.waterMultiplyColour);
 	researcherStick.render(modelMatrix(vec3(0.0f, -stickScale, 0.0f), vec3(0.0f, rotation.y - 90.0f, 0.0f), vec3(0.05f, stickScale, 0.05f), true,
 		researcherPosition, vec3(armRotation.x - 90.0f, 0.0f, 0.0f)), true, vec3(1.0f), cameraThirdPos.y < 0.0f, WorldGeneration.waterMultiplyColour);

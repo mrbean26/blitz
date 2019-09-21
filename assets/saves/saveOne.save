@@ -3,25 +3,31 @@ saveType 0
 inventory -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 inventoryQuantity 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 currentWeapons 0 0 0 0
-currentTime 2.034598
-playerPos 28.500000 2.897642 -21.500000
+currentTime 21.730259
+playerPos 19.400000 8.210000 -0.950000
 playerHealth 100.000000
 currentPlanet earth
 currentPosition 0.0f, 0.0f, 0.0f
-planetEarthSize 57 43
+planetEarthSize 38 62
 earthDataPoints 0
-earthMountainPosition 19.600000 22.100000 0
-earthMountainScale 5.500000 2.100000
-earthMountainGradient 0.800000
-earthMountainPosition 50.299999 28.500000 0
-earthMountainScale 2.100000 3.800000
-earthMountainGradient 0.800000
-earthMountainPosition 55.900002 12.800000 0
-earthMountainScale 2.900000 4.100000
+earthMountainPosition 27.200001 40.600002 0
+earthMountainScale 2.100000 3.100000
 earthMountainGradient 0.700000
-earthMountainPosition 54.900002 42.200001 1
-earthMountainScale 3.300000 4.800000
-earthMountainGradient -0.800000
+earthMountainPosition 32.700001 7.900000 0
+earthMountainScale 3.500000 5.300000
+earthMountainGradient 0.400000
+earthMountainPosition 9.200000 6.800000 0
+earthMountainScale 3.100000 5.500000
+earthMountainGradient 0.600000
+earthMountainPosition 1.600000 49.600002 0
+earthMountainScale 3.100000 5.500000
+earthMountainGradient 0.700000
+earthMountainPosition 31.400000 58.500000 1
+earthMountainScale 3.400000 3.800000
+earthMountainGradient -0.400000
+earthMountainPosition 8.900001 30.800001 1
+earthMountainScale 3.200000 5.300000
+earthMountainGradient -0.600000
 earthBuildingType 2
-earthBuildingPosition 56.000000 -21.500000
+earthBuildingPosition 37.000000 -31.000000
 earthBuildingRotation 0.0
