@@ -4,6 +4,7 @@
 #include "frontend.h"
 #include "structures.h"
 #include "monsters.h"
+#include "rocket.h"
 
 #include <math.h>
 #include <vector>
@@ -182,6 +183,14 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	// third person camera
 	distanceFromCharacter = defaultDistance;
 	float distanceAboveCharacter = 0.5f;
+
+	if (playerView) {
+		if (mainPlayer.insideRocketFixed) {
+			distanceFromCharacter = 40.0f;
+			distanceAboveCharacter = 0.0f;
+		}
+	}
+
 	// camera positions
 	float cameraXPos = -(distanceFromCharacter * (-sin(radians(playerYaw)) * 
 		cos(radians(playerPitch)))) + mainPlayer.position.x;
@@ -196,7 +205,7 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	cameraYPos = glm::clamp(cameraYPos, lowestCameraY, 10000.0f);
 	cameraThirdPos = vec3(cameraXPos, cameraYPos, cameraZPos);
 	float newDistance = monsterCameraColliders(cameraThirdPos, lookAtPos,
-		defaultDistance);
+		distanceFromCharacter);
 	 cameraXPos = -(newDistance * (-sin(radians(playerYaw)) * 
 		cos(radians(playerPitch)))) + mainPlayer.position.x;
 	 cameraZPos = -(newDistance * (-cos(radians(playerYaw)) * 
@@ -209,6 +218,7 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	cameraYPos = glm::clamp(cameraYPos, lowestCameraY, 10000.0f);
 	cameraThirdPos = vec3(cameraXPos, cameraYPos, cameraZPos);
 	cameraThirdPos = cameraBuildingCollisions(cameraThirdPos);
+	cameraThirdPos = rocketCameraColliders(cameraThirdPos, mainPlayer.position);
 	// matrix
 	newMatrix = glm::lookAt(cameraThirdPos, 
 		lookAtPos, vec3(0.0f, 1.0f, 0.0f));

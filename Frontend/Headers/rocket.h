@@ -7,6 +7,7 @@
 using namespace glm;
 
 vec4 rocketColliders(vec3 original, bool player = false);
+vec3 rocketCameraColliders(vec3 original, vec3 playerPos);
 void renderRocket();
 
 void openDoorAnimation(float multiplier);

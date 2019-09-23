@@ -381,7 +381,10 @@ void player::movement() {
 			position.z = -currentPlanetScale.y / 2.0f;
 		}
 	}
-	if (!canMove || health < 1) { return; }
+	if (!canMove || health < 1 || insideRocketFixed) { 
+		runAnimation(0.0f);
+		return;
+	}
 	int forwardKey = stoi(inputLines[0]);
 	int leftKey = stoi(inputLines[1]);
 	int backKey = stoi(inputLines[2]);
@@ -392,13 +395,13 @@ void player::movement() {
 	int aimButton = stoi(inputLines[4]);
 	int crouchKey = stoi(inputLines[8]);
 
-	if (!checkKey(aimButton) && !crouching) {
+	if (!checkKey(aimButton) && !crouching && !(onRocketSlideLast || insideRocketFixed || inRocket)) {
 		if (checkKey(shootButton)) {
 			researching = true;
 		}
 	}
 
-	if (checkKeyDown(crouchKey) && !researching) {
+	if (checkKeyDown(crouchKey) && !researching && !(onRocketSlideLast || inRocket || insideRocketFixed)) {
 		if (!changingCrouch) {
 			changingCrouch = true;
 			aiming = false;
@@ -567,7 +570,7 @@ void player::movement() {
 	if (crouching) {
 		crouchMoveAnimation(movingMultiplier);
 	}
-	if (checkKey(aimButton) && !crouching && !researching) {
+	if (checkKey(aimButton) && !crouching && !researching && !(inRocket || insideRocketFixed)) {
 		if (!aiming) {
 			armRotation.x = 90.0f;
 			armRotationTwo.x = 90.0f;

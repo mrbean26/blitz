@@ -12,6 +12,7 @@
 #define ROCKET_DOOR_WIDTH 1.8f
 
 #define SLIDE_END_POS_FOR_COLLIDER -3.85f
+#define ROCKET_CAMERA_WORLD_DISTANCE 17.5f
 #define SLIDE_TOP_HEIGHT 5.5f
 
 buildingColour rocket;
@@ -155,6 +156,24 @@ vec4 rocketColliders(vec3 original, bool player) {
 		}
 	}
 	return vec4(newPosition, onSlide);
+}
+
+vec3 rocketCameraColliders(vec3 original, vec3 playerPos) {
+	vec3 newPosition = original;
+
+	vec2 floor = vec2(original.x, original.z);
+	vec2 rocketFloor = vec2(rocket.position.x, rocket.position.z);
+	float distance = glm::distance(floor, rocketFloor);
+	float worldDistance = glm::distance(rocket.position, newPosition);
+	
+	if (distance < ROCKET_COLLIDER_DISTANCE && worldDistance < ROCKET_CAMERA_WORLD_DISTANCE) {
+		float bearing = bearingTwo(rocketFloor, floor);
+
+		newPosition.x = rocketFloor.x + sin(radians(bearing)) * ROCKET_COLLIDER_DISTANCE;
+		newPosition.z = rocketFloor.y + cos(radians(bearing)) * ROCKET_COLLIDER_DISTANCE;
+	}
+
+	return newPosition;
 }
 
 void openDoorAnimation(float multiplier) {
