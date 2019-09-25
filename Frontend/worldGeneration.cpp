@@ -118,6 +118,7 @@ void createSave(const char* filePath, int saveType) {
         saveLines[newVectorPos(&saveLines)] = "currentTime 0.0";
         saveLines[newVectorPos(&saveLines)] = "playerPos 0 0 0";
         saveLines[newVectorPos(&saveLines)] = "playerHealth 100";
+		saveLines[newVectorPos(&saveLines)] = "playerInRocket 0";
         //"current" data
         saveLines[newVectorPos(&saveLines)] = "currentPlanet earth"; //basic science base on earth
         saveLines[newVectorPos(&saveLines)] = "currentPosition 0.0f, 0.0f, 0.0f";

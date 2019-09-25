@@ -41,6 +41,7 @@ void player::begin() {
 	inputLines = readLines("assets/saves/inputs.save");
 	pauseKey = stoi(inputLines[10]);
 	startPlayerUI();
+	onRocketSlideLast = inRocket = insideRocketFixed = getIntFile(WorldGeneration.worldLinesPath, "playerInRocket");
 
 	diedText = createText();
 	allTexts[diedText].fontCharacters = getFont("assets/fonts/zekton.ttf", 40);
@@ -142,19 +143,6 @@ void exitToMenus() {
 	glDeleteBuffers(1, &WorldGeneration.areaLimitVBO);
 	glDeleteBuffers(1, &WorldGeneration.waterVBO);
 	WorldGeneration.areaLimitCount = 0;
-	// bools
-	mainPlayer.active = false;
-	allButtons.clear();
-	allTexts.clear();
-	StartScreen.active = true;
-	allButtons = previousAllButtons;
-	allTexts = previousAllTexts;
-	debugText = debugTextPlaceholder;
-	alertText = alertTextPlaceholder;
-	alertBackground = alertBackgroundPlaceholder;
-	loading = false;
-	mainPlayer.canMove = true;
-	paused = false;
 	// worldGeneration.h
 	currentAllMountainPositions.clear();
 	currentAllMountainScales.clear();
@@ -184,6 +172,7 @@ void exitToMenus() {
 	currentAllLines = rewriteLine(currentAllLines, "inventory", inventorySaveLine()[0]);
 	currentAllLines = rewriteLine(currentAllLines, "inventoryQuantity", inventorySaveLine()[1]);
 	currentAllLines = rewriteLine(currentAllLines, WorldGeneration.currentAreaPrefix + "DataPoints", to_string(WorldGeneration.dataPoints));
+	currentAllLines = rewriteLine(currentAllLines, "playerInRocket", to_string(mainPlayer.insideRocketFixed));
 	mainPlayer.deleteMemory();
 	allSlots.clear();
 	allItems.clear();
@@ -254,6 +243,26 @@ void exitToMenus() {
 	mountainLimits.clear();
 	allMiniBuildings.clear();
 	newBuildingLines.clear();
+
+	// bools
+	mainPlayer.active = false;
+	allButtons.clear();
+	allTexts.clear();
+	StartScreen.active = true;
+	allButtons = previousAllButtons;
+	allTexts = previousAllTexts;
+	debugText = debugTextPlaceholder;
+	alertText = alertTextPlaceholder;
+	alertBackground = alertBackgroundPlaceholder;
+	loading = false;
+	mainPlayer.canMove = true;
+	paused = false;
+	mainPlayer.onRocketSlideLast = false;
+	mainPlayer.inRocket = false;
+	mainPlayer.insideRocketFixed = false;
+	mainPlayer.canGoFixed = true;
+	doorRot = 0.0f;
+	
 }
 
 void pauseUIInteraction() {
