@@ -23,6 +23,7 @@ public:
 	mat4 modelMat = mat4(1.0f);
 
 	void outputVertices();
+	void vertsToFile(const char *  filePath);
 	GLuint VAO, VBO, size;
 };
 

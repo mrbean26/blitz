@@ -1,6 +1,7 @@
 #version 330 core
 
 in vec3 aColour;
+in vec3 originalPos;
 in vec4 position;
 
 uniform float alpha = 1.0f;
@@ -19,8 +20,8 @@ uniform float lowestLight = 0.0f;
 out vec4 colour;
 void main(){
 	vec3 usedPosition = vec3(position.x, 0.0f, position.z);
-	float distance = distance(usedPosition, lightPos);
-	float multiply = (1.0f - (distance / lightRadius)) * lightIntensity;
+	float distanceLight = distance(usedPosition, lightPos);
+	float multiply = (1.0f - (distanceLight / lightRadius)) * lightIntensity;
 	if(multiply < lowestLight){
 		multiply = lowestLight;
 	}

@@ -5,6 +5,7 @@
 
 buildingColour rocket;
 buildingColour rocketHolder;
+
 readyTextureModel rocketStatus;
 float doorRot = 0.0f;
 vector<texture> statusTextures;
@@ -26,6 +27,8 @@ void rocketBegin() {
 
 	vector<float> rocketHolderVerts = { 0.023149f, 0.703511f, 0.050000f, 0.435039f, 0.865196f, 0.966765f, -0.148111f, -0.703511f, 0.050000f, 0.435039f, 0.865196f, 0.966765f, 0.316567f, 0.703511f, 0.050000f, 0.435039f, 0.865196f, 0.966765f, 0.023149f, 0.703511f, -0.050000f, 0.443471f, 0.878333f, 0.965196f, -0.191605f, -0.703511f, 0.050000f, 0.443471f, 0.878333f, 0.965196f, 0.023149f, 0.703511f, 0.050000f, 0.443471f, 0.878333f, 0.965196f, 0.023149f, 0.703511f, -0.050000f, 0.436412f, 0.859118f, 0.952451f, -0.148111f, -0.703511f, -0.050000f, 0.436412f, 0.859118f, 0.952451f, -0.191605f, -0.703511f, -0.050000f, 0.436412f, 0.859118f, 0.952451f, 0.316567f, 0.703511f, 0.050000f, 0.442686f, 0.877941f, 0.960294f, -0.148111f, -0.703511f, -0.050000f, 0.442686f, 0.877941f, 0.960294f, 0.316567f, 0.703511f, -0.050000f, 0.442686f, 0.877941f, 0.960294f, -0.191605f, -0.703511f, 0.050000f, 0.434843f, 0.867353f, 0.955784f, -0.148111f, -0.703511f, -0.050000f, 0.434843f, 0.867353f, 0.955784f, -0.148111f, -0.703511f, 0.050000f, 0.434843f, 0.867353f, 0.955784f, 0.023149f, 0.703511f, -0.050000f, 0.448569f, 0.869510f, 0.945784f, 0.316567f, 0.703511f, 0.050000f, 0.448569f, 0.869510f, 0.945784f, 0.316567f, 0.703511f, -0.050000f, 0.448569f, 0.869510f, 0.945784f, 0.023149f, 0.703511f, 0.050000f, 0.427196f, 0.875000f, 0.946176f, -0.191605f, -0.703511f, 0.050000f, 0.427196f, 0.875000f, 0.946176f, -0.148111f, -0.703511f, 0.050000f, 0.427196f, 0.875000f, 0.946176f, 0.023149f, 0.703511f, -0.050000f, 0.451706f, 0.873039f, 0.950098f, -0.191605f, -0.703511f, -0.050000f, 0.451706f, 0.873039f, 0.950098f, -0.191605f, -0.703511f, 0.050000f, 0.451706f, 0.873039f, 0.950098f, 0.023149f, 0.703511f, -0.050000f, 0.434451f, 0.867353f, 0.949314f, 0.316567f, 0.703511f, -0.050000f, 0.434451f, 0.867353f, 0.949314f, -0.148111f, -0.703511f, -0.050000f, 0.434451f, 0.867353f, 0.949314f, 0.316567f, 0.703511f, 0.050000f, 0.436216f, 0.861471f, 0.961275f, -0.148111f, -0.703511f, 0.050000f, 0.436216f, 0.861471f, 0.961275f, -0.148111f, -0.703511f, -0.050000f, 0.436216f, 0.861471f, 0.961275f, -0.191605f, -0.703511f, 0.050000f, 0.449157f, 0.856765f, 0.952647f, -0.191605f, -0.703511f, -0.050000f, 0.449157f, 0.856765f, 0.952647f, -0.148111f, -0.703511f, -0.050000f, 0.449157f, 0.856765f, 0.952647f, 0.023149f, 0.703511f, -0.050000f, 0.448176f, 0.872843f, 0.964608f, 0.023149f, 0.703511f, 0.050000f, 0.448176f, 0.872843f, 0.964608f, 0.316567f, 0.703511f, 0.050000f, 0.448176f, 0.872843f, 0.964608f, };
 	startColorBuilding(rocketHolderVerts, &rocketHolder);
+
+	fireBegin();
 }
 
 vec4 rocketColliders(vec3 original, bool player) {
@@ -237,6 +240,8 @@ void renderRocket() {
 		glDrawArrays(GL_TRIANGLES, 0, rocketHolder.size);
 	}
 
+	glLinkProgram(playerShader);
+
 	rocketStatus.render(modelMatrix(vec3(0.0f, 4.1f, -2.475f), vec3(doorRot, 0.0f, 0.0f), vec3(1.3f, 1.8f, 5.0f), true, rocket.position, rocket.rotation + vec3(0.0f, 0.0f, 180.0f), true),
 		true, vec3(1.0f), inWater, WorldGeneration.waterMultiplyColour);
 }
@@ -247,4 +252,97 @@ void rocketMainloop() {
 	}
 	renderRocket();
 	openDoor();
+	fireMainloop();
+	spawnParticles();
+}
+
+buildingColour flameCube;
+vector<fireParticle> allParticles;
+
+void fireBegin() {
+	vector<float> cubeFlameVerts = { 1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, -1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, 1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, 0.999999f, 1.000000f, 1.000001f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -0.999999f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -0.999999f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, 0.999999f, 1.000000f, 1.000001f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, 1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, -1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, 1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -0.999999f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, -1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, 1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 0.999999f, 1.000000f, 1.000001f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -0.999999f, 1.000000f, 1.000000f, 1.000000f, 0.999999f, 1.000000f, 1.000001f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 0.999999f, 1.000000f, 1.000001f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, 1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, -1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, -1.000000f, 1.000000f, -1.000000f, 1.000000f, 1.000000f, 1.000000f, };
+	startColorBuilding(cubeFlameVerts, &flameCube);
+}
+
+void fireMainloop() {
+	int count = allParticles.size();
+	for (int i = 0; i < count; i++) {
+		if (!allParticles[i].active) {
+			continue;
+		}
+
+		allParticles[i].move();
+		allParticles[i].render();
+
+		allParticles[i].lifetimeLeft -= deltaTime * allParticles[i].dyingSpeed;
+		if (allParticles[i].lifetimeLeft < 0.0f) {
+			allParticles[i].active = false;
+		}
+	}
+}
+
+void fireParticle::move() {
+	vec3 direction = vec3(0.0f);
+	direction.x = cos(radians(rotation.y)) * cos(radians(rotation.x));
+	direction.y = sin(radians(rotation.x));
+	direction.z = -sin(radians(rotation.y)) * cos(radians(rotation.x));
+
+	direction = direction * deltaTime;
+	direction = direction * speed;
+
+	position = position + direction;
+	rotation.z += deltaTime * speed;
+}
+
+void fireParticle::render() {
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
+	glUseProgram(playerShader);
+
+	setMat4(playerShader, "model", modelMatrix(position, rotation, scale));
+	setMat4(playerShader, "view", viewMatrix());
+	setMat4(playerShader, "projection", projectionMatrix());
+
+	setShaderFloat(playerShader, "alpha", lifetimeLeft);
+	setShaderVecThree(playerShader, "multiplyColour", colour);
+	
+	setShaderVecThree(playerShader, "lightPos", lightPos);
+	setShaderFloat(playerShader, "lightIntensity", lightIntensity);
+	setShaderFloat(playerShader, "lightRadius", lightRadius);
+	setShaderInt(playerShader, "useLight", 1);
+	setShaderFloat(playerShader, "lowestLight", lowestLight);
+
+	glBindVertexArray(flameCube.VAO);
+	glDrawArrays(GL_TRIANGLES, 0, flameCube.size);
+
+	glLinkProgram(playerShader);
+	glDisable(GL_CULL_FACE);
+}
+
+void createParticle(vec3 position, vec3 rotation) {
+	fireParticle newParticle;
+	newParticle.position = position;
+
+	vec3 usedRotation = rotation;
+	usedRotation.x += randomInt(0, (int) FIRE_ROT_RANDOMNESS) - (FIRE_ROT_RANDOMNESS / 2.0f);
+	usedRotation.y += randomInt(0, (int) FIRE_ROT_RANDOMNESS) - (FIRE_ROT_RANDOMNESS / 2.0f);
+	newParticle.rotation = usedRotation;
+
+	int colourType = randomInt(1, 3);
+	vector<vec3> allFireColours = { vec3(1.0f, 0.0f, 0.0f), vec3(0.92f, 0.9f, 0.0f), vec3(0.92f, 0.341f, 0.0f)};
+	newParticle.colour = allFireColours[colourType - 1];
+
+	allParticles[newVectorPos(&allParticles)] = newParticle;
+}
+
+void spawnParticles() {
+	vec3 posOne = rocket.position - vec3(0.0f, 6.0f, 1.0f);
+	vec3 posTwo = rocket.position - vec3(0.0f, 6.0f, -1.0f);
+
+
+	if (randomInt(1, FIRE_SPAWN_RATE) == 1) {
+		createParticle(posOne, rocket.rotation + vec3(-90.0f, 0.0f, 0.0f));
+		createParticle(posTwo, rocket.rotation + vec3(-90.0f, 0.0f, 0.0f));
+	}
 }

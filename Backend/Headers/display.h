@@ -16,6 +16,8 @@ extern int display_x, display_y;
 
 extern double frames, frameTime;
 
+extern int totalFrames;
+
 int aspectDivider(int x, int y); //return highest common factor between x and y
 
 bool openglBegin(GLFWwindow* &used_window, bool fullscreen,

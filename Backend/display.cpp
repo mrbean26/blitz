@@ -22,6 +22,7 @@ double aspect_x, aspect_y;
 int display_x, display_y;
 
 double frames, frameTime;
+int totalFrames;
 
 vector<vec2> faceCirclePoints;
 vector<vec2> sideCirclePoints;
@@ -125,6 +126,7 @@ double getFrames(){
 
 void displayMainloop(){
 	frames = getFrames();
+	totalFrames = totalFrames + 1;
 }
 
 float nearPlane = 0.1f;

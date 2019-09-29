@@ -41,6 +41,9 @@ model::model(float colourMultiplier, const char* filePath) { // load model (dont
 			names[newVectorPos(&names)] = to_string(i) + line;
 			shapeCount++;
 		}
+		if ((float) i / 1000.0f == floor((float) i / 1000.0f)) {
+			cout << i << " " << glfwGetTime() << endl;
+		}
 	}
 	// add colours
 	int fCount = faceIndexes.size();
@@ -107,6 +110,21 @@ void model::outputVertices() { // used for getting verts used for main game
 	}
 
 	cout << "}" << endl;
+}
+
+void model::vertsToFile(const char* filePath){
+	string vertsLine = "{ ";
+	
+	int vCount = vertices.size();
+	for (int v = 0; v < vCount; v++) {
+		vertsLine += to_string(vertices[v]);
+		vertsLine += ", ";
+	}
+
+	vertsLine += "}";
+
+	vector<string> lines = { vertsLine };
+	writeLines(filePath, lines);
 }
 
 void readyModel(const char* filePath) { // change file format to readable
