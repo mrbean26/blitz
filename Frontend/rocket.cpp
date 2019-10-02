@@ -337,12 +337,23 @@ void createParticle(vec3 position, vec3 rotation) {
 }
 
 void spawnParticles() {
-	vec3 posOne = rocket.position - vec3(0.0f, 6.0f, 1.0f);
-	vec3 posTwo = rocket.position - vec3(0.0f, 6.0f, -1.0f);
+	vector<vec3> positions = {
+		vec3(0.5f, -1.5f, 0.5f),
+		vec3(-0.5f, -1.5f, 0.5f),
+		vec3(-0.5f, -1.5f, -0.5f),
+		vec3(0.5f, -1.5f, -0.5f),
 
+		vec3(0.0f, -1.2f, -0.25f),
+		vec3(0.0f, -1.2f, 0.25f)
+	};
 
-	if (randomInt(1, FIRE_SPAWN_RATE) == 1) {
-		createParticle(posOne, rocket.rotation + vec3(-90.0f, 0.0f, 0.0f));
-		createParticle(posTwo, rocket.rotation + vec3(-90.0f, 0.0f, 0.0f));
+	for (int p = 0; p < 6; p++) {
+		vec4 position = vec4(positions[p], 1.0f);
+		position = modelMatrix(vec3(0.0f), vec3(0.0f), rocket.scale, true, rocket.position, rocket.rotation) * position;
+
+		if (randomInt(1, FIRE_SPAWN_RATE) == 1) {
+			createParticle(vec3(position), rocket.rotation + vec3(-90.0f, 90.0f, 0.0f));
+		}
 	}
+
 }

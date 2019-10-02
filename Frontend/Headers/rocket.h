@@ -3,6 +3,7 @@
 #ifndef ROCKET_H
 #define ROCKET_H
 
+#include "structures.h"
 #include <glm.hpp>
 using namespace glm;
 
@@ -17,8 +18,8 @@ using namespace glm;
 #define SLIDE_END_POS_FOR_COLLIDER -3.85f
 #define ROCKET_CAMERA_WORLD_DISTANCE 17.5f
 #define SLIDE_TOP_HEIGHT 5.5f
-#define FIRE_SPAWN_RATE 8
-#define FIRE_ROT_RANDOMNESS 10.0f
+#define FIRE_SPAWN_RATE 20
+#define FIRE_ROT_RANDOMNESS 50.0f
 
 void createParticle(vec3 position, vec3 rotation);
 void fireBegin();
@@ -42,6 +43,8 @@ public:
 	bool active = true;
 };
 
+extern buildingColour rocket;
+extern buildingColour rocketHolder;
 extern float doorRot;
 vec4 rocketColliders(vec3 original, bool player = false);
 vec3 rocketCameraColliders(vec3 original, vec3 playerPos);

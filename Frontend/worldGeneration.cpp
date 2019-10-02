@@ -857,7 +857,7 @@ void worldGeneration::mainloop() {
     daynightCycle();
 	waveMainloop();
 
-	allTexts[researchStatusText].position.x = allButtons[ammoIcon].minX - allButtons[healthIcon].minX;
+	allTexts[researchStatusText].position.x = (float) allButtons[ammoIcon].minX - (float) allButtons[healthIcon].minX;
 	allTexts[researchStatusText].position.y = display_y - ((allButtons[ammoIcon].maxY + allButtons[ammoIcon].minY) / 2.0f) + (display_y / 10);
 }
 
