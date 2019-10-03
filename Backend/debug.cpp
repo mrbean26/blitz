@@ -26,6 +26,8 @@ void debugBegin(){
 }
 
 void debugMainloop(){
+	allTexts[debugText].position = vec2(display_x / 100,
+		-display_y / 27.5f + display_y);
     alertMainloop();
     if(checkKeyDown(GLFW_KEY_F3)){
         allTexts[debugText].active = !allTexts[debugText].active;

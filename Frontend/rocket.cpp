@@ -352,7 +352,7 @@ void spawnParticles() {
 		position = modelMatrix(vec3(0.0f), vec3(0.0f), rocket.scale, true, rocket.position, rocket.rotation) * position;
 
 		if (randomInt(1, FIRE_SPAWN_RATE) == 1) {
-			createParticle(vec3(position), rocket.rotation + vec3(-90.0f, 90.0f, 0.0f));
+			//createParticle(vec3(position), rocket.rotation + vec3(-90.0f, 90.0f, 0.0f));
 		}
 	}
 

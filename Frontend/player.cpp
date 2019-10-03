@@ -670,8 +670,10 @@ void player::collisions() {
 	vec4 rocketCollide = rocketColliders(position, true);
 	lowestY = rocketCollide.y;
 	position.x = rocketCollide.x;
-	if (position.y < rocketCollide.y && jumping) {
+	if (position.y < rocketCollide.y && jumping && jumpVelocity < 0.0f) {
 		position.y = rocketCollide.y;
+		jumping = false;
+		jumpVelocity = 0.0f;
 	}
 	if (!jumping) {
 		position.y = rocketCollide.y;

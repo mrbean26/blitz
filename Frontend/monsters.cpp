@@ -89,7 +89,7 @@ void monsterBuildCollisions(){
 	for(int m = 0; m < mCount; m++){
 		int waste = 0; float wasteF = 0.0f; bool wasteB = false; bool wasteB2 = false;
 		buildCollisions(allMonsters[m].position, waste, wasteF, wasteB, wasteB2);
-		allMonsters[m].position = rocketColliders(allMonsters[m].position);
+		allMonsters[m].position = vec3(rocketColliders(allMonsters[m].position));
 	}
 }
 
