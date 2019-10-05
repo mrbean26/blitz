@@ -134,6 +134,7 @@ void startPlayerUI() {
 }
 
 void exitToMenus() {
+	playerView = false;
 	// exit to main menu
 	// world generation
 	glDeleteVertexArrays(1, &WorldGeneration.terrainVAO);

@@ -27,6 +27,13 @@ using namespace glm;
 #define EARTH_WAVE_DELAY 1.0f
 #define EARTH_WAVE_SPEED 10.0f
 
+#define CLOUD_X_SLOTS 16
+#define CLOUD_Z_SLOTS 16
+#define CLOUD_DEFAULT_SCALE 250
+#define CLOUD_SPEED 1.0f
+#define CLOUD_DEFAULT_HEIGHT 30.0f
+#define CLOUD_FLOATING_MULTIPLIER 30.0f
+
 int randomInt(int min, int max);
 
 bool insideCircle(vec2 circlePos, float radius, vec2 pointPos, bool terrain = false);
@@ -66,6 +73,12 @@ extern unsigned int skyboxVAO, skyboxVBO, skyboxTexture;
 unsigned int loadCubemapTexture(vector<string> faces);
 void startSkybox();
 void renderSkybox(bool startScreen = false);
+
+void spawnClouds();
+void cloudMainloop(bool startScreen);
+void startClouds();
+void renderClouds(bool startScreen);
+void moveClouds();
 
 extern vec3 lightPos;
 extern float lightIntensity, lightRadius, 

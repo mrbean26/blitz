@@ -2,7 +2,7 @@
 #include "frontend.h"
 
 int main() {
-	if (!openglBegin(window, false, 1280, 720)) {
+	if (!openglBegin(window, false, 1600, 900)) {
 		return -1;
 	}
 	beginRandom();

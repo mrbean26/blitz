@@ -24,6 +24,7 @@ void frontendBegin(){
 	StartScreen.begin();
 	startPlayerShader();
 	startSkybox();
+	startClouds();
 	beginRandom();
 }
 
@@ -40,6 +41,7 @@ void frontendMainloop(){
 		WorldGeneration.startedBegin = true;
 	}
 	renderSkybox(!WorldGeneration.startedBegin);
+	cloudMainloop(!WorldGeneration.startedBegin);
 	if (StartScreen.active) { renderTexts(); }
 	StartScreen.mainloop();
 	WorldGeneration.mainloop();

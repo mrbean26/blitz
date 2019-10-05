@@ -132,8 +132,8 @@ void displayMainloop(){
 float nearPlane = 0.1f;
 float farPlane = 500.0f;
 
-vec3 cameraPosition = vec3(0.0f, 4.5f, 10.0f);
-vec3 cameraRotation = vec3(-15.0f, -90.0f, 0.0f);
+vec3 cameraPosition = vec3(CLOUD_DEFAULT_SCALE / 10.0f, 90.0f, -CLOUD_DEFAULT_SCALE / 7.5f);
+vec3 cameraRotation = vec3(270.05f, 0.0f, 0.0f);
 
 mat4 projectionMatrix() {
 	mat4 newMatrix = mat4(1.0f);
@@ -247,39 +247,11 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	}
 	// not 3rd person
 	if (!playerView) {
-		// clamp 0-360
-		vec3 rotation = cameraRotation;
-		for (int point = 0; point < 3; point++) {
-			float currentValue = rotation[point];
-			bool negative = false;
-			if (currentValue < 0) {
-				currentValue = currentValue * -1.0f;
-				negative = true;
-			}
-			// for over 360
-			float lowestFullTurn = floor(currentValue / 360.0f);
-			lowestFullTurn = lowestFullTurn * 360.0f;
-			currentValue = currentValue - lowestFullTurn;
-			if (negative) {
-				currentValue = 360 - currentValue;
-			}
-			// assign
-			rotation[point] = currentValue;
-		}
-		// make not integers
-		for (int point = 0; point < 3; point++) {
-			float currentValue = rotation[point];
-			if (floor(currentValue) == currentValue) {
-				currentValue = currentValue + 0.05f;
-			}
-			// assign
-			rotation[point] = currentValue;
-		}
 		// front
 		vec3 cameraFront;
-		cameraFront.x = cos(radians(rotation.x)) * cos(radians(rotation.y));
-		cameraFront.y = sin(radians(rotation.x));
-		cameraFront.z = cos(radians(rotation.x)) * sin(radians(rotation.y));
+		cameraFront.x = cos(radians(cameraRotation.x)) * cos(radians(cameraRotation.y));
+		cameraFront.y = sin(radians(cameraRotation.x));
+		cameraFront.z = cos(radians(cameraRotation.x)) * sin(radians(cameraRotation.y));
 		// currently not possible to rotate more than one axis
 		newMatrix = lookAt(cameraPosition, cameraPosition + cameraFront, vec3(0.0f, 1.0f, 0.0f));
 	}
