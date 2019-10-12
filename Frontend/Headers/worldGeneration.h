@@ -21,6 +21,7 @@ using namespace glm;
 #define POINT_COUNT 32
 #define MOUNTAIN_SCALE_DEFAULT 0.025f
 #define TRIANGLE_SIZE_FLAT 1.0f
+#define EXTERNAL_TERRAIN_CHUNKS_HALF 10
 
 #define EARTH_WAVE_WIDTH 2.0f
 #define EARTH_WAVE_HEIGHT 0.5f
@@ -105,6 +106,9 @@ public:
 	vector<string> allWorldLines;
 	const char * worldLinesPath;
     
+	GLuint externalVAO, externalVBO, externalSize;
+	void beginExternalFlat();
+
     GLuint waterVAO, waterVBO;
     GLuint waterSize;
 	vec3 waterMultiplyColour = vec3(1.0f);

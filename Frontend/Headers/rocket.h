@@ -18,8 +18,15 @@ using namespace glm;
 #define SLIDE_END_POS_FOR_COLLIDER -3.85f
 #define ROCKET_CAMERA_WORLD_DISTANCE 17.5f
 #define SLIDE_TOP_HEIGHT 5.5f
-#define FIRE_SPAWN_RATE 20
+#define FIRE_SPAWN_RATE 10
 #define FIRE_ROT_RANDOMNESS 50.0f
+
+#define ROCKET_MAX_ROTATE_SPEED 60.0f
+#define ROCKET_ROTATE_SPEED_INCREASE 50.0f
+#define ROTATION_DECREASE_MULTIPLIER 6.0f
+#define ROCKET_SPEED_INCREASE 2.0f
+#define ROCKET_SPEED_MAX 15.0f
+#define ROCKET_ROTATION_CUTOFF 5.0f
 
 void createParticle(vec3 position, vec3 rotation);
 void fireBegin();
@@ -52,6 +59,15 @@ void renderRocket();
 
 void openDoorAnimation(float multiplier);
 void openDoor();
+
+void startRocket();
+void flyRocket();
+vector<string> saveRocket(vector<string> current);
+
+extern bool rocketFlying;
+extern float rocketSpeed;
+extern vec3 originalRocketPos;
+extern float holderRot;
 
 void rocketBegin();
 void rocketMainloop();

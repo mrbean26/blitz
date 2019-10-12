@@ -313,7 +313,7 @@ void monsterInteractions() {
 				allMonsters[m].position += gap;
 			}
 			// damaging
-			if(distance < MONSTER_MOVE_DISTANCE_MAX){
+			if(distance < MONSTER_MOVE_DISTANCE_MAX && !mainPlayer.insideRocketFixed){
 				if(allMonsters[m].attackChanceDelay < 0.0f){
 					allMonsters[m].attackChanceDelay = allMonsters[m].defaultAttackDelay;
 					int chance = randomInt(1, 2);

@@ -238,13 +238,20 @@ void exitToMenus() {
 		currentAllLines[newVectorPos(&currentAllLines)] = newEntityLines[e];
 	}
 	allEntities.clear();
+	// rocket
+	currentAllLines = saveRocket(currentAllLines);
+	rocket.position = vec3(0.0f);
+	rocket.rotation = vec3(0.0f);
+	currentAllLines = rewriteLine(currentAllLines, "flyingRocket", to_string(rocketFlying));
+	currentAllLines = rewriteLine(currentAllLines, "rocketSpeed", to_string(rocketSpeed));
+	rocketFlying = false;
+	mainPlayer.insideRocketFixed = false;
 	// write
 	writeLines(WorldGeneration.worldLinesPath, currentAllLines);
 	// structures.h
 	mountainLimits.clear();
 	allMiniBuildings.clear();
 	newBuildingLines.clear();
-
 	// bools
 	mainPlayer.active = false;
 	allButtons.clear();
@@ -699,8 +706,10 @@ void player::collisions() {
 	if (!inMountain && rocketCollide.y == LEG_LENGTH) { lowestY = 2.2f; }
 	if (!cameraInMountain) { lowestCameraY = 0.5f; }
 	// distance outside of area scale
-	position.x = clamp(position.x, 0.0f, currentPlanetScale.x);
-	position.z = clamp(position.z, -currentPlanetScale.y, 0.0f);
+	if (!rocketFlying) {
+		position.x = clamp(position.x, 0.0f, currentPlanetScale.x);
+		position.z = clamp(position.z, -currentPlanetScale.y, 0.0f);
+	}
 }
 
 vec3 cameraBuildingCollisions(vec3 original) {

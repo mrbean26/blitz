@@ -20,6 +20,7 @@ using namespace glm;
 #include "frontend.h"
 #include "player.h"
 #include "structures.h"
+#include "rocket.h"
 
 bool insideCircle(vec2 circlePos, float radius, vec2 pointPos, bool terrain) {
     float xSquared = pow(pointPos.x - circlePos.x, 2);
@@ -120,19 +121,23 @@ void createSave(const char* filePath, int saveType) {
         saveLines[newVectorPos(&saveLines)] = "playerPos 0 0 0";
         saveLines[newVectorPos(&saveLines)] = "playerHealth 100";
 		saveLines[newVectorPos(&saveLines)] = "playerInRocket 0";
+		saveLines[newVectorPos(&saveLines)] = "flyingRocket 0";
+		//land scale
+		int earthScaleX = randomInt(35, 65);
+		if (saveType == LARGE_WORLD) {
+			earthScaleX = randomInt(100, 200);
+		}
+		int earthScaleY = 100 - earthScaleX;
+		if (saveType == LARGE_WORLD) {
+			earthScaleY = 300 - earthScaleX;
+		}
         //"current" data
         saveLines[newVectorPos(&saveLines)] = "currentPlanet earth"; //basic science base on earth
         saveLines[newVectorPos(&saveLines)] = "currentPosition 0.0f, 0.0f, 0.0f";
+		saveLines[newVectorPos(&saveLines)] = "rocketPos " + to_string(earthScaleX / 2.0f) + " 10.1 " + "0.0";
+		saveLines[newVectorPos(&saveLines)] = "rocketRot 0.0 0.0 0.0";
+		saveLines[newVectorPos(&saveLines)] = "rocketSpeed 0.0";
         //EARTH SAVED DATA----------------------------------------------------------------------
-        //land scale
-        int earthScaleX = randomInt(35, 65);
-        if(saveType == LARGE_WORLD){
-            earthScaleX = randomInt(100, 200);
-        }
-        int earthScaleY = 100 - earthScaleX;
-        if(saveType == LARGE_WORLD){
-            earthScaleY = 300 - earthScaleX;
-        }
         saveLines[newVectorPos(&saveLines)] = "planetEarthSize " + to_string(earthScaleX) + " " + to_string(earthScaleY);
 		saveLines[newVectorPos(&saveLines)] = "earthDataPoints 0";
         saveLines = rewriteLine(saveLines, "playerPos", to_string(earthScaleX / 2.0f) + " 0 " + to_string(earthScaleY / -2.0f));
@@ -499,8 +504,8 @@ void worldGeneration::beginFlatTerrain() {
         areaScale = getVec2File(worldLinesPath, "planetEarthSize");
     }
 	waterMultiplyColour = vec3(0.0f, 0.0f, currentAreaColour.z * 2.0f);
-    for (int x = -50; x < (areaScale.x + 50) / TRIANGLE_SIZE_FLAT; x++) {
-        for (int y = -50; y < (areaScale.y + 50) / TRIANGLE_SIZE_FLAT; y++) {
+    for (int x = (int) -areaScale.x; x < (areaScale.x * 2.0f) / TRIANGLE_SIZE_FLAT; x++) {
+        for (int y = (int) -areaScale.y; y < (areaScale.y * 2.0f) / TRIANGLE_SIZE_FLAT; y++) {
             // draw triangle
             // multipliers
             float xMultiplied = x * TRIANGLE_SIZE_FLAT;
@@ -563,6 +568,41 @@ vector<vec2> currentAllMountainPositions;
 vector<bool> currentAllMountainWaters;
 vector<vec3> currentAllMountainScales;
 vec2 currentPlanetScale;
+
+void worldGeneration::beginExternalFlat(){
+	vector<float> vertices;
+	for (int x = (int)(currentAreaScale.x / -2.0f); x < (int)((currentAreaScale.x / 2.0f) / TRIANGLE_SIZE_FLAT); x++) {
+		for (int z = int(currentAreaScale.y / -2.0f); z < (int)((currentAreaScale.y / 2.0f) / TRIANGLE_SIZE_FLAT); z++) {
+			float xMultiplied = x * TRIANGLE_SIZE_FLAT;
+			float zMultiplied = z * TRIANGLE_SIZE_FLAT;
+
+			vec3 pointOne = vec3(xMultiplied, 0.0f, -zMultiplied);
+			vec3 pointTwo = vec3(xMultiplied + TRIANGLE_SIZE_FLAT, 0.0f, -zMultiplied);
+			vec3 pointThree = vec3(xMultiplied, 0.0f, -(zMultiplied + TRIANGLE_SIZE_FLAT));
+			vec3 pointFour = vec3(xMultiplied + TRIANGLE_SIZE_FLAT, 0.0f, -(zMultiplied + TRIANGLE_SIZE_FLAT));
+			vector<vec3> whichPoint = { pointOne, pointFour };
+
+			for (int t = 0; t < 2; t++) {
+				vec3 colour = WorldGeneration.currentAreaColour + colourDifference(0.2f);
+				vec3 points[] = { whichPoint[t], pointTwo, pointThree };
+
+				for (int v = 0; v < 3; v++) {
+					vec3 point = points[v];
+
+					vertices[newVectorPos(&vertices)] = point.x;
+					vertices[newVectorPos(&vertices)] = point.y;
+					vertices[newVectorPos(&vertices)] = point.z;
+
+					vertices[newVectorPos(&vertices)] = colour.x;
+					vertices[newVectorPos(&vertices)] = colour.y;
+					vertices[newVectorPos(&vertices)] = colour.z;
+				}
+			}
+		}
+	}
+
+	startIrregularColorBuilding(vertices, externalVAO, externalVBO, externalSize);
+}
 
 void worldGeneration::beginWater(){
     vector<float> points;
@@ -870,7 +910,51 @@ void worldGeneration::renderTerrain() {
         }
         
         glBindVertexArray(terrainVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3 * total);
+		glDrawArrays(GL_TRIANGLES, 0, total * 3);
+
+		vector<vec3> externalPositions;
+		vec3 centerChunkPos = vec3(
+			(glm::floor(mainPlayer.position.x / currentAreaScale.x) * currentAreaScale.x) + (currentAreaScale.x / 2.0f),
+			0.0f,
+			(glm::floor(mainPlayer.position.z / currentAreaScale.y) * currentAreaScale.y) + (currentAreaScale.y / 2.0f)
+		);
+
+		vec3 mainChunkPos = vec3(
+			currentAreaScale.x / 2.0f,
+			0.0f,
+			currentAreaScale.y / -2.0f
+		);
+
+		for (int x = -EXTERNAL_TERRAIN_CHUNKS_HALF; x <= EXTERNAL_TERRAIN_CHUNKS_HALF; x++) {
+			for (int y = -EXTERNAL_TERRAIN_CHUNKS_HALF; y <= EXTERNAL_TERRAIN_CHUNKS_HALF; y++) {
+				vec3 newPosition = centerChunkPos;
+				newPosition.x += currentAreaScale.x * (float) x;
+				newPosition.z += currentAreaScale.y * (float) y;
+
+				// check not inside original flat terrain
+				float distanceLowest = glm::distance(mainChunkPos + vec3(currentAreaScale.x, 0.0f, currentAreaScale.y), mainChunkPos);
+				if (glm::distance(newPosition, mainChunkPos) < distanceLowest) {
+					continue;
+				}
+				if (glm::distance(newPosition, mainChunkPos) == distanceLowest) {
+					if (newPosition.x != mainChunkPos.x) {
+						continue;
+					}
+					if (newPosition.z != mainChunkPos.z) {
+						continue;
+					}
+				}
+
+				externalPositions[newVectorPos(&externalPositions)] = newPosition;
+			}
+		}
+
+		glBindVertexArray(externalVAO);
+		int posCount = externalPositions.size();
+		for(int p = 0; p < posCount; p++){
+			setMat4(terrainShader, "model", modelMatrix(externalPositions[p]));
+			glDrawArrays(GL_TRIANGLES, 0, externalSize);
+		}
     }
 }
 
@@ -955,6 +1039,7 @@ void worldGeneration::begin() {
     reserveMemory();
     beginMountains();
     beginAreaLimits();
+	beginExternalFlat();
     currentTime = getFloatFile(worldLinesPath, "currentTime");
     mainPlayer.health = getFloatFile(WorldGeneration.worldLinesPath, "playerHealth");
     mainPlayer.position = getVec3File(WorldGeneration.worldLinesPath, "playerPos");
