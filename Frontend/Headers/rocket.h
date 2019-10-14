@@ -18,8 +18,9 @@ using namespace glm;
 #define SLIDE_END_POS_FOR_COLLIDER -3.85f
 #define ROCKET_CAMERA_WORLD_DISTANCE 17.5f
 #define SLIDE_TOP_HEIGHT 5.5f
-#define FIRE_SPAWN_RATE 10
+#define FIRE_SPAWN_RATE 5
 #define FIRE_ROT_RANDOMNESS 50.0f
+#define PARTICLE_SCALE 0.4f
 
 #define ROCKET_MAX_ROTATE_SPEED 60.0f
 #define ROCKET_ROTATE_SPEED_INCREASE 50.0f
@@ -27,6 +28,8 @@ using namespace glm;
 #define ROCKET_SPEED_INCREASE 2.0f
 #define ROCKET_SPEED_MAX 15.0f
 #define ROCKET_ROTATION_CUTOFF 5.0f
+#define PARTICLE_DYING_SPEED 2.5f
+#define PARTICLE_LIFETIME 1.0f
 
 void createParticle(vec3 position, vec3 rotation);
 void fireBegin();
@@ -40,11 +43,11 @@ public:
 
 	vec3 position = vec3(0.0f);
 	vec3 rotation = vec3(0.0f);
-	vec3 scale = vec3(0.15f);
+	vec3 scale = vec3(PARTICLE_SCALE);
 
 	vec3 colour = vec3(1.0f, 0.0f, 0.0f);
-	float lifetimeLeft = 1.0f;
-	float dyingSpeed = 0.33f;
+	float lifetimeLeft = PARTICLE_LIFETIME;
+	float dyingSpeed = PARTICLE_DYING_SPEED;
 	float speed = 6.0f;
 
 	bool active = true;
