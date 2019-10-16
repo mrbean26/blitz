@@ -1007,7 +1007,7 @@ void worldGeneration::waveMainloop(){
 void worldGeneration::daynightCycle(){
     currentTime += deltaTime * timeMultiplier * 50.0f;
     float valueX = tan(radians(currentTime)) * currentAreaScale.x;
-    lightRadius = currentAreaScale.x * 2;
+    lightRadius = currentAreaScale.x * 5.0f;
     lightPos.x = valueX;
     lightPos.z = -currentAreaScale.y / 2.0f;
     // lightPos.z = valueZ;

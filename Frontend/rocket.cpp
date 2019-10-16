@@ -293,7 +293,7 @@ void flyRocket() {
 	rocketSpeed += deltaTime * ROCKET_SPEED_INCREASE;
 	rocketSpeed = glm::clamp(rocketSpeed, 0.0f, ROCKET_SPEED_MAX);
 
-	holderRot += deltaTime * 15.0f;
+	holderRot = glm::clamp(holderRot + deltaTime * HOLDER_ROTATION_MULTIPLIER, 0.0f, 140.0f);
 }
 
 vector<string> saveRocket(vector<string> current){
@@ -336,12 +336,16 @@ void renderRocket() {
 	glBindVertexArray(rocket.VAO);
 	glDrawArrays(GL_TRIANGLES, 0, rocket.size);
 
-	vec3 mainPos = vec3(WorldGeneration.currentAreaScale.x / 2.0f, 10.1f, 0.0f);
-	vec3 holderPositions[] = { vec3(-3.25f, -7.0f, 0.0f), vec3(3.25f, -7.0f, 0.0f), vec3(0.0f, -7.0f, 3.25f), vec3(0.0f, -7.0f, -3.25f) };
+	vec3 mainPos = vec3(WorldGeneration.currentAreaScale.x / 2.0f, 0.0f, 0.0f);
+	vec3 holderPositions[] = { vec3(-3.25f, 0.0f, 0.0f), vec3(3.25f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 3.25f), vec3(0.0f, 0.0f, -3.25f) };
 	vec3 rocketRotations[] = { vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 180.0f, 0.0f), vec3(0.0f, 90.0f, 0.0f), vec3(0.0f, 270.0f, 0.0f) };
-
+	vec3 rocketParentRots[] = { vec3(0.0f, 0.0f, holderRot), vec3(0.0f, 0.0f, -holderRot), vec3(holderRot, 0.0f, 0.0f), vec3(-holderRot, 0.0f, 0.0f) };
+	
 	for (int h = 0; h < 4; h++) {
-		setMat4(playerShader, "model", modelMatrix(mainPos + holderPositions[h], rocketRotations[h], vec3(4.0f)));
+		vec3 parentPos = mainPos + holderPositions[h];
+
+		setMat4(playerShader, "model", modelMatrix(vec3(0.0f, 3.1f, 0.0f), rocketRotations[h], 
+			vec3(4.0f), true, parentPos, rocketParentRots[h], true));
 		glBindVertexArray(rocketHolder.VAO);
 		glDrawArrays(GL_TRIANGLES, 0, rocketHolder.size);
 	}
@@ -418,7 +422,7 @@ void fireParticle::render() {
 	setShaderVecThree(playerShader, "lightPos", lightPos);
 	setShaderFloat(playerShader, "lightIntensity", lightIntensity);
 	setShaderFloat(playerShader, "lightRadius", lightRadius);
-	setShaderInt(playerShader, "useLight", 1);
+	setShaderInt(playerShader, "useLight", 0);
 	setShaderFloat(playerShader, "lowestLight", lowestLight);
 
 	glBindVertexArray(flameCube.VAO);
@@ -439,7 +443,14 @@ void createParticle(vec3 position, vec3 rotation) {
 
 	int colourType = randomInt(1, 3);
 	vector<vec3> allFireColours = { vec3(1.0f, 0.0f, 0.0f), vec3(0.92f, 0.9f, 0.0f), vec3(0.92f, 0.341f, 0.0f)};
-	newParticle.colour = allFireColours[colourType - 1];
+	
+	vec3 chosenColour = allFireColours[colourType - 1];
+	vec3 usedColour = vec3(0.0f, chosenColour.y, 0.0f);
+
+	usedColour.x = (rocketSpeed / ROCKET_SPEED_MAX) * chosenColour.x;
+	usedColour.z = ((ROCKET_SPEED_MAX - rocketSpeed) / ROCKET_SPEED_MAX) * chosenColour.x;
+	
+	newParticle.colour = usedColour;
 
 	allParticles[newVectorPos(&allParticles)] = newParticle;
 }
