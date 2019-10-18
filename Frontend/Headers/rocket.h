@@ -32,6 +32,9 @@ using namespace glm;
 #define PARTICLE_DYING_SPEED 2.5f
 #define PARTICLE_LIFETIME 1.0f
 
+#define WEAPON_LAUNCH_MULTIPLIER 3.0f
+#define WEAPON_GUN_MAX_X 3.0f
+
 void createParticle(vec3 position, vec3 rotation);
 void fireBegin();
 void fireMainloop();
@@ -56,6 +59,9 @@ public:
 
 extern buildingColour rocket;
 extern buildingColour rocketHolder;
+
+extern buildingColour rocketGun;
+
 extern float doorRot;
 vec4 rocketColliders(vec3 original, bool player = false);
 vec3 rocketCameraColliders(vec3 original, vec3 playerPos);

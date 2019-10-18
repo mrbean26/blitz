@@ -884,6 +884,9 @@ void worldGeneration::renderAreaLimits(){
 }
 
 void worldGeneration::renderTerrain() {
+	if (!WorldGeneration.startedBegin) {
+		return;
+	}
     if (currentArea == PLANET_WORLD) {
         glUseProgram(terrainShader);
         
@@ -924,9 +927,10 @@ void worldGeneration::renderTerrain() {
 			0.0f,
 			currentAreaScale.y / -2.0f
 		);
-
-		for (int x = -EXTERNAL_TERRAIN_CHUNKS_HALF; x <= EXTERNAL_TERRAIN_CHUNKS_HALF; x++) {
-			for (int y = -EXTERNAL_TERRAIN_CHUNKS_HALF; y <= EXTERNAL_TERRAIN_CHUNKS_HALF; y++) {
+		int xDivided = (int)glm::ceil(100.0f / currentAreaScale.x);
+		int yDivided = (int)glm::ceil(100.0f / currentAreaScale.y);
+		for (int x = -xDivided; x <= xDivided; x++) {
+			for (int y = -yDivided; y <= yDivided; y++) {
 				vec3 newPosition = centerChunkPos;
 				newPosition.x += currentAreaScale.x * (float) x;
 				newPosition.z += currentAreaScale.y * (float) y;
