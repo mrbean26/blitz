@@ -3,36 +3,28 @@ saveType 0
 inventory -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 inventoryQuantity 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 currentWeapons 0 0 0 0
-currentTime 34.584522
-playerPos 29.000000 24.730171 -323.749237
-playerHealth 100.000000
-playerInRocket 1
-flyingRocket 1
+currentTime 0.0
+playerPos 32.000000 0 -18.000000
+playerHealth 100
+playerInRocket 0
+flyingRocket 0
+rocketSpeed 0.0
 currentPlanet earth
 currentPosition 0.0f, 0.0f, 0.0f
-rocketPos 29.000000 24.730171 -322.799225
-rocketRot -88.796051 0.000000 0.000000
-rocketSpeed 36.070766
-planetEarthSize 58 42
+rocketPos 32.000000 10.1 0.0
+rocketRot 0.0 0.0 0.0
+rocketSpeed 0.0
+planetEarthSize 64 36
 earthDataPoints 0
-earthMountainPosition 29.400000 34.000000 0
-earthMountainScale 3.700000 4.900000
-earthMountainGradient 0.400000
-earthMountainPosition 9.800000 14.000000 0
-earthMountainScale 3.000000 6.000000
-earthMountainGradient 0.300000
-earthMountainPosition 44.299999 16.700001 0
-earthMountainScale 2.500000 4.700000
-earthMountainGradient 0.700000
-earthMountainPosition 56.000000 34.100002 1
-earthMountainScale 2.100000 3.200000
-earthMountainGradient -0.500000
-earthMountainPosition 39.000000 1.400000 1
-earthMountainScale 2.400000 3.000000
+earthMountainPosition 44.100002 20.800001 0
+earthMountainScale 5.700000 5.200000
+earthMountainGradient 0.500000
+earthMountainPosition 3.200000 7.700000 1
+earthMountainScale 4.200000 5.700000
+earthMountainGradient -0.600000
+earthMountainPosition 7.400000 33.400002 1
+earthMountainScale 4.200000 3.300000
 earthMountainGradient -0.700000
-earthMountainPosition 2.800000 37.100002 1
-earthMountainScale 3.800000 5.100000
-earthMountainGradient -0.500000
 earthBuildingType 2
-earthBuildingPosition 57.000000 -21.000000
+earthBuildingPosition 63.000000 -18.000000
 earthBuildingRotation 0.0

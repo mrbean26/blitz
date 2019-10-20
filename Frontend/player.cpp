@@ -246,6 +246,8 @@ void exitToMenus() {
 	currentAllLines = rewriteLine(currentAllLines, "rocketSpeed", to_string(rocketSpeed));
 	rocketFlying = false;
 	mainPlayer.insideRocketFixed = false;
+	allParticles.clear();
+	allRocketLauncherBullets.clear();
 	// write
 	writeLines(WorldGeneration.worldLinesPath, currentAllLines);
 	// structures.h
@@ -271,6 +273,8 @@ void exitToMenus() {
 	mainPlayer.canGoFixed = true;
 	doorRot = 0.0f;
 	
+	rocketLauncherGun.position.x = 0.0f;
+	rocketGun.position.x = 0.0f;
 }
 
 void pauseUIInteraction() {
@@ -1106,6 +1110,7 @@ float shotDelays[] = { 0.25f, 0.1f };
 float automaticGun[] = { false, true };
 
 void player::shoot() {
+	if (rocketFlying) { return; }
 	if (allWeapons[currentWeapon].currentAmmo < 1) {
 		canShoot = false;
 	}

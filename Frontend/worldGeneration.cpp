@@ -122,6 +122,7 @@ void createSave(const char* filePath, int saveType) {
         saveLines[newVectorPos(&saveLines)] = "playerHealth 100";
 		saveLines[newVectorPos(&saveLines)] = "playerInRocket 0";
 		saveLines[newVectorPos(&saveLines)] = "flyingRocket 0";
+		saveLines[newVectorPos(&saveLines)] = "rocketSpeed 0.0";
 		//land scale
 		int earthScaleX = randomInt(35, 65);
 		if (saveType == LARGE_WORLD) {

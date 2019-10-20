@@ -19,23 +19,35 @@ using namespace glm;
 #define SLIDE_END_POS_FOR_COLLIDER -3.85f
 #define ROCKET_CAMERA_WORLD_DISTANCE 17.5f
 #define SLIDE_TOP_HEIGHT 5.5f
-#define FIRE_SPAWN_RATE 5
+#define FIRE_SPAWN_RATE 3
 #define FIRE_ROT_RANDOMNESS 50.0f
 #define PARTICLE_SCALE 0.4f
 
 #define ROCKET_MAX_ROTATE_SPEED 60.0f
 #define ROCKET_ROTATE_SPEED_INCREASE 50.0f
 #define ROTATION_DECREASE_MULTIPLIER 6.0f
-#define ROCKET_SPEED_INCREASE 2.0f
+#define ROCKET_SPEED_INCREASE 20.0f
 #define ROCKET_SPEED_MAX 60.0f
 #define ROCKET_ROTATION_CUTOFF 5.0f
 #define PARTICLE_DYING_SPEED 2.5f
-#define PARTICLE_LIFETIME 1.0f
+#define PARTICLE_LIFETIME 2.0f
 
-#define WEAPON_LAUNCH_MULTIPLIER 3.0f
+#define WEAPON_LAUNCH_MULTIPLIER 1.0f
+
+#define WEAPON_GUN_MIN_X 0.0f
 #define WEAPON_GUN_MAX_X 3.0f
 
-void createParticle(vec3 position, vec3 rotation);
+#define WEAPON_ROCKET_LAUNCHER_MAX_X -1.5f
+#define WEAPON_ROCKET_LAUNCHER_MIN_X -4.0f
+
+#define ROCKET_LAUNCHER_BULLET_SPEED 15.0f
+#define ROCKET_LAUNCHER_SHOOT_DELAY 2.0f
+#define ROCKET_LAUNCHER_BULLET_QUALITY 45
+
+#define ROCKET_GUN_BULLET_DELLAY 0.15f
+#define ROCKET_GUN_BULLET_SPEED 45.0f
+
+void createParticle(vec3 position, vec3 rotation, bool rocket = true);
 void fireBegin();
 void fireMainloop();
 void spawnParticles();
@@ -56,11 +68,51 @@ public:
 
 	bool active = true;
 };
+extern vector<fireParticle> allParticles;
+
+extern float rocketShootDelay, rocketBulletShootDelay;
+int createRocketLauncherBullet();
+
+class rocketLauncherBulletIndividual {
+public:
+	bool active = true;
+	void mainloop();
+
+	void render();
+	void begin();
+
+	void move();
+	void explode();
+
+	float explodeTime = 0.25f;
+	float lifetime = 2.5f;
+
+	vec3 position = vec3(0.0f);
+	vec3 rotation = vec3(0.0f);
+};
+
+int createRocketGunBullet();
+class rocketGunBulletIndividual {
+public:
+	bool active = true;
+	void mainloop();
+
+	void render();
+	void begin();
+
+	void move();
+
+	vec3 position = vec3(0.0f);
+	vec3 rotation = vec3(0.0f);
+};
 
 extern buildingColour rocket;
 extern buildingColour rocketHolder;
 
-extern buildingColour rocketGun;
+extern buildingColour rocketGun, rocketGunBullet;
+extern buildingColour rocketLauncherGun, rocketLauncherBullet;
+extern vector<rocketLauncherBulletIndividual> allRocketLauncherBullets; // position
+extern vector<rocketGunBulletIndividual> allRocketGunBullets;
 
 extern float doorRot;
 vec4 rocketColliders(vec3 original, bool player = false);
