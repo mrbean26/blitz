@@ -232,9 +232,11 @@ void openDoor() {
 	}
 }
 
+float rocketDriveDelay = ROCKET_CANNOT_DRIVE_TIME;
 void startRocket(){
-	if (checkKey(stoi(inputLines[0])) && mainPlayer.insideRocketFixed && doorRot == 0.0f) {
+	if (checkKey(stoi(inputLines[0])) && mainPlayer.insideRocketFixed && doorRot == 0.0f && !rocketFlying) {
 		rocketFlying = true;
+		rocketDriveDelay = ROCKET_CANNOT_DRIVE_TIME;
 	}
 }
 
@@ -243,6 +245,69 @@ float rotateSpeedY = 0.0f;
 float rotateSpeedX = 0.0f;
 
 float rocketShootDelay = 0.0f, rocketBulletShootDelay = 0.0f;
+
+float rocketLauncherExplodeTime = ROCKET_EXPLODE_TIME, rocketGunExplodeTime = ROCKET_EXPLODE_TIME, rocketExplodeTime = ROCKET_EXPLODE_TIME;
+bool rocketLauncherExploding = false, rocketGunExploding = false, rocketExploding = false;
+void rocketExplodingMethod() {
+	// setting exploding
+	if (checkKey(GLFW_KEY_L)) {
+		rocketGunExploding = true;
+		rocketLauncherExploding = true;
+		rocketExploding = true;
+	}
+
+	// actual exploding
+	if (rocketLauncherExploding && rocketLauncherExplodeTime > 0.0f) {
+		vec4 position = vec4(-1.0f, 0.0f, 0.0f, 1.0f);
+		position = modelMatrix(vec3(0.0f), vec3(0.0f), rocket.scale, true, rocket.position, rocket.rotation) * position;
+		vec3 createPos = vec3(position);
+
+		for (int x = 0; x < 360.0f / ROCKET_EXPLODE_QUALITY; x++) {
+			for (int y = 0; y < 360.0f / ROCKET_EXPLODE_QUALITY; y++) {
+				vec3 rotation = vec3(0.0f);
+				rotation.x = (float)x * ROCKET_EXPLODE_QUALITY;
+				rotation.y = (float)y * ROCKET_EXPLODE_QUALITY;
+
+				createParticle(createPos, rotation, false);
+			}
+		}
+		rocketLauncherGun.scale = glm::clamp(rocketLauncherGun.scale - vec3(deltaTime), 0.0f, 100.0f);
+		rocketLauncherExplodeTime -= deltaTime;
+	}
+	if (rocketGunExploding && rocketGunExplodeTime > 0.0f) {
+		vec4 position = vec4(1.0125f, 0.0f, 0.0f, 1.0f);
+		position = modelMatrix(vec3(0.0f), vec3(0.0f), rocket.scale, true, rocket.position, rocket.rotation) * position;
+		vec3 createPos = vec3(position);
+
+		for (int x = 0; x < 360.0f / ROCKET_EXPLODE_QUALITY; x++) {
+			for (int y = 0; y < 360.0f / ROCKET_EXPLODE_QUALITY; y++) {
+				vec3 rotation = vec3(0.0f);
+				rotation.x = (float)x * ROCKET_EXPLODE_QUALITY;
+				rotation.y = (float)y * ROCKET_EXPLODE_QUALITY;
+
+				createParticle(createPos, rotation, false);
+			}
+		}
+		rocketGun.scale = glm::clamp(rocketGun.scale - vec3(deltaTime), 0.0f, 100.0f);
+		rocketGunExplodeTime -= deltaTime;
+	}
+	if (rocketExploding && rocketExplodeTime > 0.0f) {
+		for (int x = 0; x < 360.0f / ROCKET_EXPLODE_QUALITY; x++) {
+			for (int y = 0; y < 360.0f / ROCKET_EXPLODE_QUALITY; y++) {
+				vec3 rotation = vec3(0.0f);
+				rotation.x = (float)x * ROCKET_EXPLODE_QUALITY;
+				rotation.y = (float)y * ROCKET_EXPLODE_QUALITY;
+
+				createParticle(rocket.position, rotation, false);
+			}
+		}
+		rocket.scale = glm::clamp(rocket.scale - vec3(deltaTime * 1.6f), vec3(0.0f), vec3(100.0f));
+		vec3 statusMinus= vec3(deltaTime) * vec3(0.65f, 0.9f, 2.5f);
+		rocketStatusScale = glm::clamp(rocketStatusScale - statusMinus, vec3(0.0f), vec3(1000.0f));
+
+		rocketExplodeTime -= deltaTime;
+	}
+}
 
 void flyRocket() {
 	if (!rocketFlying) {
@@ -256,9 +321,25 @@ void flyRocket() {
 	direction = direction * vec3(deltaTime);
 	direction = direction * vec3(rocketSpeed);
 
-	rocket.position = rocket.position + direction;
+	if(!rocketExploding){ rocket.position = rocket.position + direction; }
 	mainPlayer.position = rocket.position;
 	mainPlayer.rotation = rocket.rotation;
+
+	rocketSpeed += deltaTime * ROCKET_SPEED_INCREASE;
+	rocketSpeed = glm::clamp(rocketSpeed, 0.0f, ROCKET_SPEED_MAX);
+
+	holderRot = glm::clamp(holderRot + deltaTime * HOLDER_ROTATION_MULTIPLIER, 0.0f, 140.0f);
+
+	float speed = glm::distance(WEAPON_GUN_MIN_X, WEAPON_GUN_MAX_X) * WEAPON_LAUNCH_MULTIPLIER;
+	rocketGun.position.x = glm::clamp(rocketGun.position.x + deltaTime * speed, WEAPON_GUN_MIN_X, WEAPON_GUN_MAX_X);
+
+	speed = glm::distance(WEAPON_ROCKET_LAUNCHER_MIN_X, WEAPON_ROCKET_LAUNCHER_MAX_X) * WEAPON_LAUNCH_MULTIPLIER;
+	rocketLauncherGun.position.x = glm::clamp(rocketLauncherGun.position.x - deltaTime * speed, WEAPON_ROCKET_LAUNCHER_MIN_X, WEAPON_ROCKET_LAUNCHER_MAX_X);
+
+	rocketDriveDelay -= deltaTime;
+	if (rocketDriveDelay > 0.0f || rocketExploding) {
+		return;
+	}
 
 	int forwardKey = stoi(inputLines[0]);
 	int leftKey = stoi(inputLines[1]);
@@ -315,23 +396,12 @@ void flyRocket() {
 	rocket.rotation.x += deltaTime * rotateSpeedX;
 	rocket.rotation.y += deltaTime * rotateSpeedY;
 
-	rocketSpeed += deltaTime * ROCKET_SPEED_INCREASE;
-	rocketSpeed = glm::clamp(rocketSpeed, 0.0f, ROCKET_SPEED_MAX);
-
-	holderRot = glm::clamp(holderRot + deltaTime * HOLDER_ROTATION_MULTIPLIER, 0.0f, 140.0f);
-
-	float speed = glm::distance(WEAPON_GUN_MIN_X, WEAPON_GUN_MAX_X) * WEAPON_LAUNCH_MULTIPLIER;
-	rocketGun.position.x = glm::clamp(rocketGun.position.x + deltaTime * speed, WEAPON_GUN_MIN_X, WEAPON_GUN_MAX_X);
-
-	speed = glm::distance(WEAPON_ROCKET_LAUNCHER_MIN_X, WEAPON_ROCKET_LAUNCHER_MAX_X) * WEAPON_LAUNCH_MULTIPLIER;
-	rocketLauncherGun.position.x = glm::clamp(rocketLauncherGun.position.x - deltaTime * speed, WEAPON_ROCKET_LAUNCHER_MIN_X, WEAPON_ROCKET_LAUNCHER_MAX_X);
-
-	if (checkKeyDown(shootButton) && rocketShootDelay < 0.0f) {
+	if (checkKeyDown(shootButton) && rocketShootDelay < 0.0f && !rocketLauncherExploding) {
 		createRocketLauncherBullet();
 		rocketShootDelay = ROCKET_LAUNCHER_SHOOT_DELAY;
 	}
 
-	if (checkKey(aimButton) && rocketBulletShootDelay < 0.0f) {
+	if (checkKey(aimButton) && rocketBulletShootDelay < 0.0f && !rocketGunExploding) {
 		createRocketGunBullet();
 		rocketBulletShootDelay = ROCKET_GUN_BULLET_DELLAY;
 	}
@@ -352,9 +422,10 @@ vector<string> saveRocket(vector<string> current){
 	return original;
 }
 
+vec3 rocketStatusScale = vec3(1.3f, 1.8f, 5.0f);
 void renderRocket() {
 	glUseProgram(playerShader);
-
+	rocketExplodingMethod();
 	bool inWater = false;
 	if (cameraThirdPos.y <= 0.05f) {
 		int index = (int)terrainColliders(cameraThirdPos, 0.0f).w;
@@ -382,12 +453,18 @@ void renderRocket() {
 
 	rocketLauncherGun.position.x = glm::clamp(rocketLauncherGun.position.x, WEAPON_ROCKET_LAUNCHER_MIN_X, WEAPON_ROCKET_LAUNCHER_MAX_X);
 	if (rocketFlying) {
-		setMat4(playerShader, "model", modelMatrix(rocketGun.position, rocketGun.rotation, 
+		vec3 gunPos = rocketGun.position;
+		gunPos = gunPos * (rocket.scale / vec3(4.0f));
+
+		setMat4(playerShader, "model", modelMatrix(gunPos, rocketGun.rotation, 
 			rocketGun.scale, true, rocket.position, rocket.rotation, true));
 		glBindVertexArray(rocketGun.VAO);
 		glDrawArrays(GL_TRIANGLES, 0, rocketGun.size);
 
-		setMat4(playerShader, "model", modelMatrix(rocketLauncherGun.position, rocketLauncherGun.rotation, 
+		vec3 launcherPos = rocketLauncherGun.position;
+		launcherPos = launcherPos * (rocket.scale / vec3(4.0f));
+
+		setMat4(playerShader, "model", modelMatrix(launcherPos, rocketLauncherGun.rotation, 
 			rocketLauncherGun.scale, true, rocket.position, rocket.rotation, true));
 		glBindVertexArray(rocketLauncherGun.VAO);
 		glDrawArrays(GL_TRIANGLES, 0, rocketLauncherGun.size);
@@ -423,7 +500,10 @@ void renderRocket() {
 
 	glLinkProgram(playerShader);
 
-	rocketStatus.render(modelMatrix(vec3(0.0f, 4.1f, -2.475f), vec3(doorRot, 0.0f, 0.0f), vec3(1.3f, 1.8f, 5.0f), true, rocket.position, rocket.rotation + vec3(0.0f, 0.0f, 180.0f), true),
+	vec3 statusPos = vec3(0.0f, 4.1f, -2.475f);
+	statusPos = statusPos * vec3(1.0f, rocketStatusScale.y / 1.8f, rocketStatusScale.z / 5.0f);
+
+	rocketStatus.render(modelMatrix(statusPos, vec3(doorRot, 0.0f, 0.0f), rocketStatusScale, true, rocket.position, rocket.rotation + vec3(0.0f, 0.0f, 180.0f), true),
 		true, vec3(1.0f), inWater, WorldGeneration.waterMultiplyColour);
 
 }
@@ -503,7 +583,7 @@ void fireParticle::render() {
 	glDrawArrays(GL_TRIANGLES, 0, flameCube.size);
 }
 
-void createParticle(vec3 position, vec3 rotation, bool rocket) {
+int createParticle(vec3 position, vec3 rotation, bool rocket) {
 	fireParticle newParticle;
 	newParticle.position = position;
 
@@ -526,14 +606,15 @@ void createParticle(vec3 position, vec3 rotation, bool rocket) {
 	
 	newParticle.colour = usedColour;
 
+	int vectorSize = allParticles.size();
 	allParticles[newVectorPos(&allParticles)] = newParticle;
+	return vectorSize;
 }
 
 void spawnParticles() {
-	if (!rocketFlying) {
+	if (!rocketFlying || rocketExploding) {
 		return;
 	}
-
 	vector<vec3> positions = {
 		vec3(0.5f, -1.5f, 0.5f),
 		vec3(-0.5f, -1.5f, 0.5f),

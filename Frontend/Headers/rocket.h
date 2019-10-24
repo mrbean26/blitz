@@ -15,6 +15,10 @@ using namespace glm;
 #define ROCKET_DOOR_COLLIDER_LENGTH 13.25f
 #define ROCKET_DOOR_WIDTH 1.8f
 #define HOLDER_ROTATION_MULTIPLIER 22.5f
+#define ROCKET_CANNOT_DRIVE_TIME 1.0f
+
+#define ROCKET_EXPLODE_TIME 2.5f
+#define ROCKET_EXPLODE_QUALITY 36
 
 #define SLIDE_END_POS_FOR_COLLIDER -3.85f
 #define ROCKET_CAMERA_WORLD_DISTANCE 17.5f
@@ -43,11 +47,13 @@ using namespace glm;
 #define ROCKET_LAUNCHER_BULLET_SPEED 15.0f
 #define ROCKET_LAUNCHER_SHOOT_DELAY 2.0f
 #define ROCKET_LAUNCHER_BULLET_QUALITY 45
+#define ROCKET_LAUNCHER_BULLET_EXPLODE_DELAY 0.25f
+#define ROCKET_LAUNCHER_BULLET_LIFETIME 3.0f
 
 #define ROCKET_GUN_BULLET_DELLAY 0.15f
 #define ROCKET_GUN_BULLET_SPEED 45.0f
 
-void createParticle(vec3 position, vec3 rotation, bool rocket = true);
+int createParticle(vec3 position, vec3 rotation, bool rocket = true);
 void fireBegin();
 void fireMainloop();
 void spawnParticles();
@@ -71,6 +77,7 @@ public:
 extern vector<fireParticle> allParticles;
 
 extern float rocketShootDelay, rocketBulletShootDelay;
+extern float rocketDriveDelay;
 int createRocketLauncherBullet();
 
 class rocketLauncherBulletIndividual {
@@ -84,8 +91,8 @@ public:
 	void move();
 	void explode();
 
-	float explodeTime = 0.25f;
-	float lifetime = 2.5f;
+	float explodeTime = ROCKET_LAUNCHER_BULLET_EXPLODE_DELAY;
+	float lifetime = ROCKET_LAUNCHER_BULLET_LIFETIME;
 
 	vec3 position = vec3(0.0f);
 	vec3 rotation = vec3(0.0f);
@@ -108,6 +115,11 @@ public:
 
 extern buildingColour rocket;
 extern buildingColour rocketHolder;
+
+extern float rocketLauncherExplodeTime, rocketGunExplodeTime, rocketExplodeTime;
+extern bool rocketLauncherExploding, rocketGunExploding, rocketExploding;
+extern vec3 rocketStatusScale;
+void rocketExplodingMethod();
 
 extern buildingColour rocketGun, rocketGunBullet;
 extern buildingColour rocketLauncherGun, rocketLauncherBullet;

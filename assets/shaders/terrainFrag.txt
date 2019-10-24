@@ -19,15 +19,15 @@ uniform float lowestLight = 0.0f;
 
 out vec4 colour;
 void main(){
-	vec3 usedPosition = vec3(position.x, 0.0f, position.z);
-	float distanceLight = distance(usedPosition, lightPos);
-	float multiply = (1.0f - (distanceLight / lightRadius)) * lightIntensity;
-	if(multiply < lowestLight){
-		multiply = lowestLight;
-	}
+    vec3 usedPosition = vec3(position.x, 0.0f, position.z);
+    float distanceLight = distance(usedPosition, lightPos);
+    float multiply = (1.0f - (distanceLight / lightRadius)) * lightIntensity;
+    if(multiply < lowestLight){
+	multiply = lowestLight;
+    }
 
-	if(useLight) { lightMultiplier = vec3(multiply); }
-	if(!useLight) { lightMultiplier = vec3(1.0f); }
+    if(useLight) { lightMultiplier = vec3(multiply); }
+    if(!useLight) { lightMultiplier = vec3(1.0f); }
 
     colour = vec4(aColour * multiplyColour, alpha);
     if(cameraInWater){
@@ -35,5 +35,6 @@ void main(){
 	    colour = colour * vec4(waterMultiplyColour, 1.0f);
 	}
     }
+
     colour = colour * vec4(lightMultiplier, 1.0f);
 }
