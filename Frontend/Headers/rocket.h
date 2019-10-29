@@ -127,7 +127,7 @@ extern vector<rocketLauncherBulletIndividual> allRocketLauncherBullets; // posit
 extern vector<rocketGunBulletIndividual> allRocketGunBullets;
 
 extern float doorRot;
-vec4 rocketColliders(vec3 original, bool player = false);
+vec4 rocketColliders(vec3 original, bool player = false, int monsterType = -1);
 vec3 rocketCameraColliders(vec3 original, vec3 playerPos);
 void renderRocket();
 

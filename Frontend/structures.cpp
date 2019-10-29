@@ -269,20 +269,26 @@ void changeBuildings() {
 	}
 }
 
+texture standardHouseTexture, pointHouseTexture;
 void startBuildingSelectUI() {
 	buildingSelectButtons.clear();
 	int empty = createButton();
 	allButtons[empty].position = vec3(1000.0f);
 
+	if (!standardHouseTexture.name) {
+		standardHouseTexture = loadTexture("assets/images/standardHouseImage.png");
+		pointHouseTexture = loadTexture("assets/images/pointRoofHouse.png");
+	}
+
 	standardHouseButton = createButton();
-	allButtons[standardHouseButton].texture = loadTexture("assets/images/standardHouseImage.png");
+	allButtons[standardHouseButton].texture = standardHouseTexture;
 	allButtons[standardHouseButton].scale = vec2(0.5f);
 	allButtons[standardHouseButton].position = vec3(-8.0, 3.75f, 0.0f);
 	allButtons[standardHouseButton].active = false;
 	buildingSelectButtons[newVectorPos(&buildingSelectButtons)] = standardHouseButton;
 
 	pointyHouseButton = createButton();
-	allButtons[pointyHouseButton].texture = loadTexture("assets/images/pointRoofHouse.png");
+	allButtons[pointyHouseButton].texture = pointHouseTexture;
 	allButtons[pointyHouseButton].scale = vec2(0.5f);
 	allButtons[pointyHouseButton].position = vec3(-8.0f, 1.5f, 0.0f);
 	allButtons[pointyHouseButton].active = false;

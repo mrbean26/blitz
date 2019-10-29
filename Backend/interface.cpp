@@ -384,7 +384,7 @@ bool checkKey(int key){
 }
 
 vector<bool> allKeysPrevious(146);
-bool rightButtonDown, leftButtonDown, middleButtonDown;
+vector<bool> mousePrevious = { false, false, false };
 vector<int> keyIndexes = { 32, 39, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68,
 							69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 96, 
 							161, 162, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 
@@ -393,25 +393,18 @@ vector<int> keyIndexes = { 32, 39, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 5
 							314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 
 							334, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 347 };
 bool checkKeyDown(int key) {
-	vector<bool> booleans = { rightButtonDown, leftButtonDown, middleButtonDown };
 	vector<int> blitzMouse = { 256256, 128128, 512512 };
 	bool returned = false;
 	for (int m = 0; m < 3; m++) {
 		if (key == blitzMouse[m]) {
 			if (checkKey(blitzMouse[m])) {
-				if (!booleans[m]) {
+				if (!mousePrevious[m]) {
 					returned = true;
 				}
-				booleans[m] = true;
 				continue;
 			}
-			booleans[m] = false;
 		}
 	}
-	// update vector
-	rightButtonDown = booleans[0];
-	leftButtonDown = booleans[1];
-	middleButtonDown = booleans[2];
 	if (key == 256256 || key == 128128 || key == 512512) {
 		return returned;
 	}
@@ -432,6 +425,13 @@ void updateKeys() {
 		allKeysPrevious[i] = false;
 		if (checkKey(keyIndexes[i])) {
 			allKeysPrevious[i] = true;
+		}
+	}
+	vector<int> blitzMouse = { 256256, 128128, 512512 };
+	for (int m = 0; m < 3; m++) {
+		mousePrevious[m] = false;
+		if (checkKey(blitzMouse[m])) {
+			mousePrevious[m] = true;
 		}
 	}
 }

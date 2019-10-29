@@ -58,7 +58,6 @@ struct bullet {
 	float damage;
 };
 
-void bulletColliders();
 void removeBullet(int index);
 
 extern vector<weapon> allWeapons;

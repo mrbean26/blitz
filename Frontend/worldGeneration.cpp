@@ -91,6 +91,17 @@ bool insideRocket(vec2 currentPos, float currentScale, vec2 areaScale) {
 	if (insideCircle(currentPos, currentScale, rocketPos)) {
 		return true;
 	}
+
+	vec2 rocketDoorPoint = vec2(areaScale.x / 2.0f + ROCKET_DOOR_WIDTH / 2.0f, ROCKET_DOOR_COLLIDER_LENGTH);
+	if (insideCircle(currentPos, currentScale, rocketDoorPoint)) {
+		return true;
+	}
+
+	rocketDoorPoint = vec2(areaScale.x / 2.0f - ROCKET_DOOR_WIDTH / 2.0f, ROCKET_DOOR_COLLIDER_LENGTH);
+	if (insideCircle(currentPos, currentScale, rocketDoorPoint)) {
+		return true;
+	}
+
 	return false;
 }
 
@@ -124,7 +135,7 @@ void createSave(const char* filePath, int saveType) {
 		saveLines[newVectorPos(&saveLines)] = "flyingRocket 0";
 		saveLines[newVectorPos(&saveLines)] = "rocketSpeed 0.0";
 		//land scale
-		int earthScaleX = randomInt(35, 65);
+		int earthScaleX = (randomInt(35, 65) / 2) * 2;
 		if (saveType == LARGE_WORLD) {
 			earthScaleX = randomInt(100, 200);
 		}
@@ -202,6 +213,8 @@ void createSave(const char* filePath, int saveType) {
 				}
 				continue;
 			}
+			// check if inside rocket
+
             // check if water in crater
             bool waterInCrater = false;
             if(mountainGradient < 0){
@@ -937,15 +950,8 @@ void worldGeneration::renderTerrain() {
 				newPosition.z += currentAreaScale.y * (float) y;
 
 				// check not inside original flat terrain
-				float distanceLowest = glm::distance(mainChunkPos + vec3(currentAreaScale.x, 0.0f, currentAreaScale.y), mainChunkPos);
-				if (glm::distance(newPosition, mainChunkPos) < distanceLowest) {
-					continue;
-				}
-				if (glm::distance(newPosition, mainChunkPos) == distanceLowest) {
-					if (newPosition.x != mainChunkPos.x) {
-						continue;
-					}
-					if (newPosition.z != mainChunkPos.z) {
+				if (glm::distance(newPosition.x, mainChunkPos.x) < currentAreaScale.x * 1.5f) {
+					if (glm::distance(newPosition.z, mainChunkPos.z) < currentAreaScale.y * 1.5f) {
 						continue;
 					}
 				}

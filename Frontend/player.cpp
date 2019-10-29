@@ -34,8 +34,9 @@ vector<string> inputLines;
 
 int diedText, respawnButton;
 int pauseKey;
+texture respawnButtonTexture;
 void player::begin() {
-	playerTexture = loadTexture("assets/models/player/skin.png");
+	if (!playerTexture.name) { playerTexture = loadTexture("assets/models/player/skin.png"); }
 	startCharacterVertices();
 	playerView = true;
 	inputLines = readLines("assets/saves/inputs.save");
@@ -50,8 +51,10 @@ void player::begin() {
 	allTexts[diedText].centered = true;
 	allTexts[diedText].active = false;
 	allTexts[diedText].fontSize = display_x / 40;
+
+	if(!respawnButtonTexture.name){ respawnButtonTexture = loadTexture("assets/images/respawnButton.png"); }
 	respawnButton = createButton();
-	allButtons[respawnButton].texture = loadTexture("assets/images/respawnButton.png");
+	allButtons[respawnButton].texture = respawnButtonTexture;
 	allButtons[respawnButton].scale = vec2(0.5f);
 	allButtons[respawnButton].position = vec3(0.0f, -1.0f, 0.0f);
 	allButtons[respawnButton].active = false;
@@ -106,24 +109,33 @@ int continueButton, exitButton;
 int ammoIcon, healthIcon;
 int ammoText, healthText;
 bool paused = false;
+
+texture continueTexture, exitTexture, ammoTexture, healthTexture;
 void startPlayerUI() {
+	if (!continueTexture.name) {
+		continueTexture = loadTexture("assets/images/continueButton.png");
+		exitTexture = loadTexture("assets/images/exitButton.png");
+		ammoTexture = loadTexture("assets/images/ammoIcon.png");
+		healthTexture = loadTexture("assets/images/healthIcon.png");
+	}
+
 	continueButton = createButton();
-	allButtons[continueButton].texture = loadTexture("assets/images/continueButton.png");
+	allButtons[continueButton].texture = continueTexture;
 	allButtons[continueButton].scale = vec2(1.2f, 0.45f);
 	allButtons[continueButton].position = vec3(0.0f, 1.2f, 0.0f);
 	allButtons[continueButton].active = false;
 	exitButton = createButton();
-	allButtons[exitButton].texture = loadTexture("assets/images/exitButton.png");
+	allButtons[exitButton].texture = exitTexture;
 	allButtons[exitButton].scale = vec2(1.2f, 0.45f);
 	allButtons[exitButton].position = vec3(0.0f, -1.2f, 0.0f);
 	allButtons[exitButton].active = false;
 	ammoIcon = createButton();
-	allButtons[ammoIcon].texture = loadTexture("assets/images/ammoIcon.png");
+	allButtons[ammoIcon].texture = ammoTexture;
 	allButtons[ammoIcon].scale = vec2(0.3f);
 	allButtons[ammoIcon].interactive = false;
 	allButtons[ammoIcon].position = vec3(-11.0f, -8.3f, 0.0f);
 	healthIcon = createButton();
-	allButtons[healthIcon].texture = loadTexture("assets/images/healthIcon.png");
+	allButtons[healthIcon].texture = healthTexture;
 	allButtons[healthIcon].scale = vec2(0.25f);
 	allButtons[healthIcon].interactive = false;
 	allButtons[healthIcon].position = vec3(-18.5f, -10.0f, 0.0f);
@@ -700,7 +712,9 @@ void player::collisions() {
 	lowestY = playerCollide.y;
 	lowestCameraY = cameraCollide.y + 0.5f;
 	bool useless = false;
-	buildCollisions(position, insideBuildingIndex, jumpVelocity, lastOnBench, useless);
+	if (insideRocketFixed) {
+		buildCollisions(position, insideBuildingIndex, jumpVelocity, lastOnBench, useless);
+	}
 	// flat terrain collisions
 	float legPos = position.y - LEG_LENGTH;
 	if (crouching) {

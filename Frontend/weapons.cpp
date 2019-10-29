@@ -20,7 +20,6 @@ void weaponsMainloop(){
 	}
 	moveBullets();
 	weaponUI();
-	bulletColliders();
 }
 
 void startWeapons() {
@@ -162,11 +161,19 @@ void getCurrentWeapons() {
 int weaponSelectImage, weaponSelectCornerOne, weaponSelectCornerTwo, weaponSelectCornerThree, weaponSelectCornerFour,
 	weaponIconOne, weaponIconTwo, weaponIconThree, weaponIconFour;
 vector<texture> weaponIconTextures = {};
-texture transparentTexture;
+texture transparentTexture, weaponSelectCornerTexture, weaponSelectTexture, pistolTexture, rifleTexture;
 void startWeaponUI(){
+	if (!transparentTexture.name) {
+		transparentTexture = loadTexture("assets/images/transparent.png");
+		weaponSelectCornerTexture = loadTexture("assets/images/weaponSelectCorner.png");
+		weaponSelectTexture = loadTexture("assets/images/weaponSelectImage.png");
+		pistolTexture = loadTexture("assets/images/pistolIcon.png");
+		rifleTexture = loadTexture("assets/images/rifleIcon.png");
+	}
+
 	// select buttons
 	button defaultSelect;
-	defaultSelect.texture = loadTexture("assets/images/weaponSelectCorner.png");
+	defaultSelect.texture = weaponSelectCornerTexture;
 	defaultSelect.position = vec3(1.15f, -1.15f, 0.0f);
 	defaultSelect.colour = vec3(0.05f);
 	defaultSelect.alpha = 0.6f;
@@ -194,14 +201,13 @@ void startWeaponUI(){
 	allButtons[weaponSelectImage].interactive = false;
 	allButtons[weaponSelectImage].scale = vec2(0.51f, 0.267f);
 	allButtons[weaponSelectImage].position = vec3(0.0f, -0.267f / 2.0f, 0.0);
-	allButtons[weaponSelectImage].texture = loadTexture("assets/images/weaponSelectImage.png");
+	allButtons[weaponSelectImage].texture = weaponSelectTexture;
 	allButtons[weaponSelectImage].colour = vec3(0.05f);
 	allButtons[weaponSelectImage].alpha = 0.9f;
 
 	// icons
-	transparentTexture = loadTexture("assets/images/transparent.png");
-	weaponIconTextures[newVectorPos(&weaponIconTextures)] = loadTexture("assets/images/pistolIcon.png");
-	weaponIconTextures[newVectorPos(&weaponIconTextures)] = loadTexture("assets/images/rifleIcon.png");
+	weaponIconTextures[newVectorPos(&weaponIconTextures)] = pistolTexture;
+	weaponIconTextures[newVectorPos(&weaponIconTextures)] = rifleTexture;
 	// get weapons
 	weaponIconOne = createButton();
 	allButtons[weaponIconOne].interactive = false;
@@ -359,38 +365,6 @@ void weapon::render(mat4 model){
 }
 
 vector<bullet> allBullets;
-
-void bulletColliders(){
-	vector<int> badBullets;
-
-	int bCount = allBullets.size();
-	for(int b = 0; b < bCount; b++){
-		vec3 bulletPos = allBullets[b].position;
-		vec3 bulletThree = vec3(bulletPos.x, 0.0f, bulletPos.z);
-		float yLowest = 0.0f;
-
-		vec4 bulletCollide = terrainColliders(bulletPos, 0.0f);
-
-		if(bulletPos.y + 1.0f < yLowest){
-			badBullets[newVectorPos(&badBullets)] = b;
-			continue;
-		}
-
-		// buildings
-		int intEmpty = 0; float floatEmpty = 0.0f; bool boolEmpty = false;
-		bool hitBuilding = false;
-		buildCollisions(bulletPos, intEmpty, floatEmpty, boolEmpty, hitBuilding, 0.0f);
-		if(hitBuilding){
-			badBullets[newVectorPos(&badBullets)] = b;
-		}
-	}
-
-	int badBulletCount = badBullets.size();
-	for(int bb = 0; bb < badBulletCount; bb++){
-		removeBullet(badBullets[bb]);
-	}
-}
-
 void removeBullet(int index){
 	allBullets.erase(allBullets.begin() + index);
 }
@@ -416,7 +390,8 @@ void moveBullets() {
 				vec3 bulletThree = vec3(bulletPos.x, 0.0f, bulletPos.z);
 				float yLowest = 0.0f;
 
-				vec4 bulletCollide = terrainColliders(bulletPos, 0.0f);
+				vec4 bulletCollide = terrainColliders(bulletPos, -0.5f);
+				yLowest = bulletCollide.y;
 
 				if (bulletPos.y + 1.0f < yLowest) {
 					badBullets[newVectorPos(&badBullets)] = i;

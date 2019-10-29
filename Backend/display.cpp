@@ -27,6 +27,11 @@ int totalFrames;
 vector<vec2> faceCirclePoints;
 vector<vec2> sideCirclePoints;
 int aspectDivider(int x, int y){
+	// make UI suitable for widescreen displays, clamp values to 16:9, probably a bad way to do it when I look back at this
+	if (ceil(y * 1.777777777777777) != x) {
+		x = (int)(y * 1.777777777777777);
+	}
+	// return values
 	int max = x;
 	if (y > x) {
 		max = y;
@@ -219,7 +224,9 @@ mat4 viewMatrix(){ // camera matrix - apply transformations to the opposite sign
 	//cameraZPos = glm::clamp(cameraZPos, -currentPlanetScale.y, 0.1f);
 	cameraYPos = glm::clamp(cameraYPos, lowestCameraY, 10000.0f);
 	cameraThirdPos = vec3(cameraXPos, cameraYPos, cameraZPos);
-	cameraThirdPos = cameraBuildingCollisions(cameraThirdPos);
+	if (!mainPlayer.insideRocketFixed) {
+		cameraThirdPos = cameraBuildingCollisions(cameraThirdPos);
+	}
 	cameraThirdPos = rocketCameraColliders(cameraThirdPos, mainPlayer.position);
 	// matrix
 	newMatrix = glm::lookAt(cameraThirdPos, 

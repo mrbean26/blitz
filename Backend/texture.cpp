@@ -28,7 +28,7 @@ texture loadTexture(const char * filePath){
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, newTexture.width,
                  newTexture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, newTexture.data);
     glGenerateMipmap(GL_TEXTURE_2D);
-    
+	
 	return newTexture;
 }
 texture emptyTexture;

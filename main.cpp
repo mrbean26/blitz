@@ -2,7 +2,7 @@
 #include "frontend.h"
 
 int main() {
-	if (!openglBegin(window, false, 1600, 900)) {
+	if (!openglBegin(window, false, 1050, 450)) {
 		return -1;
 	}
 	beginRandom();
@@ -13,7 +13,7 @@ int main() {
 
 		backendMainloop();
 		frontendMainloop();
-
+		
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
