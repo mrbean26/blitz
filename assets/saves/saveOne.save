@@ -1,0 +1,36 @@
+IN USE
+saveType 0
+inventory -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+inventoryQuantity 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+currentWeapons 0 0 0 0
+currentTime 0.0
+playerPos 30.000000 0 -20.000000
+playerHealth 100
+playerInRocket 0
+flyingRocket 0
+rocketSpeed 0.0
+currentPlanet earth
+currentPosition 0.0f, 0.0f, 0.0f
+rocketPos 30.000000 10.1 0.0
+rocketRot 0.0 0.0 0.0
+rocketSpeed 0.0
+planetEarthSize 60 40
+earthDataPoints 0
+earthMountainPosition 22.100000 34.700001 0
+earthMountainScale 4.800000 4.000000
+earthMountainGradient 0.500000
+earthMountainPosition 1.900000 15.900001 0
+earthMountainScale 3.400000 4.800000
+earthMountainGradient 0.800000
+earthMountainPosition 47.500000 18.800001 1
+earthMountainScale 3.600000 3.700000
+earthMountainGradient -0.300000
+earthMountainPosition 20.400000 1.200000 1
+earthMountainScale 2.000000 3.900000
+earthMountainGradient -0.300000
+earthMountainPosition 59.299999 0.100000 1
+earthMountainScale 2.600000 4.400000
+earthMountainGradient -0.800000
+earthBuildingType 2
+earthBuildingPosition 59.000000 -20.000000
+earthBuildingRotation 0.0
